@@ -36,6 +36,8 @@ fn fixture(n: usize) -> Vec<u8> {
 }
 
 fn remote_link_pdf(file: &str, destination: Option<&str>) -> Vec<u8> {
+    // A literal string: `\`, `(` and `)` are escaped, so a Windows path's `\r…` stays a backslash.
+    let file = file.replace('\\', "\\\\").replace('(', "\\(").replace(')', "\\)");
     let destination = destination.map_or_else(String::new, |d| format!("/D {d}"));
     let objects: Vec<Vec<u8>> = vec![
         b"<< /Type /Catalog /Pages 2 0 R >>".to_vec(),
@@ -3343,7 +3345,12 @@ fn local_gotor_link_open_applies_destinations_and_honors_root() {
     std::fs::write(root.join("non-pdf-source.pdf"), remote_link_pdf("not-pdf.pdf", Some("[0 /Fit]"))).unwrap();
     std::fs::write(root.join("encrypted.pdf"), protected_fixture("secret")).unwrap();
     std::fs::write(root.join("password-source.pdf"), remote_link_pdf("encrypted.pdf", Some("[0 /Fit]"))).unwrap();
-    std::fs::write(root.join("absolute.pdf"), remote_link_pdf(root.join("target.pdf").to_str().unwrap(), Some("[1 /Fit]"))).unwrap();
+    // canonicalize gives a verbatim `\\?\C:\…` path on Windows, which the resolver refuses like any
+    // `\\` network path; a link written by a real author says `C:\…`.
+    let absolute = root.join("target.pdf");
+    let absolute = absolute.to_str().unwrap();
+    let absolute = absolute.strip_prefix(r"\\?\").unwrap_or(absolute);
+    std::fs::write(root.join("absolute.pdf"), remote_link_pdf(absolute, Some("[1 /Fit]"))).unwrap();
     link_dir(&root, "outside-link", &base.join("outside"));
     std::fs::write(root.join("symlink.pdf"), remote_link_pdf("outside-link/secret.pdf", Some("[0 /Fit]"))).unwrap();
 
