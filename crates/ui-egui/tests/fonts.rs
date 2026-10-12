@@ -263,8 +263,9 @@ fn primary_ui_fonts_cover_latin_and_cyrillic_catalogs() {
         ("it", include_str!("../src/i18n/it.tsv")),
         ("tr", include_str!("../src/i18n/tr.tsv")),
         ("sl", include_str!("../src/i18n/sl.tsv")),
+        ("hr", include_str!("../src/i18n/hr.tsv")),
     ] {
-        let mut text = String::from("áčďéěíňóřšťúůýžÁČĎÉĚÍŇÓŘŠŤÚŮÝŽãõçâêôàÃÕÇÂÊÔÀñÑüÜäÄöÖőűß„“¿¡«»…ґҐєЄіІїЇәғқңөұүһӘҒҚҢӨҰҮҺ");
+        let mut text = String::from("ćđĆĐáčďéěíňóřšťúůýžÁČĎÉĚÍŇÓŘŠŤÚŮÝŽãõçâêôàÃÕÇÂÊÔÀñÑüÜäÄöÖőűß„“¿¡«»…ґҐєЄіІїЇәғқңөұүһӘҒҚҢӨҰҮҺ");
         for line in catalog.lines().filter(|l| !l.starts_with('#')) {
             if let Some(translation) = line.split('\t').nth(2) {
                 text.extend(translation.chars().filter(|c| !c.is_whitespace()));

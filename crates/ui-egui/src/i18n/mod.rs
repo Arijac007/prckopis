@@ -33,6 +33,12 @@ use catalog::Catalog;
 /// The `language` preference value that follows the system locale.
 pub const AUTO: &str = "auto";
 
+/// The `language` preference until the user picks one: Croatian, whatever the system language
+/// (Prckopis is set up for Croatia). [`AUTO`] stays available in Preferences. Unit tests keep
+/// [`AUTO`], which is English for them (see [`system_lang`]), so they can drive the UI by its
+/// English labels.
+pub const DEFAULT_LANGUAGE: &str = if cfg!(test) { AUTO } else { "hr" };
+
 /// One supported UI language.
 pub struct LangInfo {
     /// BCP 47 code, lowercase (`ja`, `zh-hans`, `pt-br`). Also the `language` preference value.
@@ -136,7 +142,7 @@ fn plural_sl(n: u64) -> usize {
 }
 
 /// The registry. English first: it is the fallback and the source language.
-pub static LANGUAGES: [LangInfo; 21] = [
+pub static LANGUAGES: [LangInfo; 22] = [
     LangInfo { code: "en", name: "English", source: "", plural: plural_one_other, rtl: false, catalog: OnceLock::new() },
     LangInfo { code: "ja", name: "日本語", source: include_str!("ja.tsv"), plural: plural_none, rtl: false, catalog: OnceLock::new() },
     // Simplified Chinese; `zh`, `zh-CN`, `zh-SG` and `zh-Hans-*` locales resolve here (see `candidates`).
@@ -191,6 +197,10 @@ pub static LANGUAGES: [LangInfo; 21] = [
     LangInfo { code: "pl", name: "Polski", source: include_str!("pl.tsv"), plural: plural_polish, rtl: false, catalog: OnceLock::new() },
     // Slovene; every `sl-*` locale (`sl-SI`) resolves here. Four plural forms (one, two, few, other).
     LangInfo { code: "sl", name: "Slovenščina", source: include_str!("sl.tsv"), plural: plural_sl, rtl: false, catalog: OnceLock::new() },
+    // Croatian; every `hr-*` locale (`hr-HR`, `hr-BA`) resolves here. The default interface
+    // language (`DEFAULT_LANGUAGE`). Three plural forms: one (1, 21 ...), few (2-4, 22-24 ...)
+    // and other, which Russian's rule computes as well.
+    LangInfo { code: "hr", name: "Hrvatski", source: include_str!("hr.tsv"), plural: plural_russian, rtl: false, catalog: OnceLock::new() },
     LangInfo { code: "el", name: "Ελληνικά", source: include_str!("el.tsv"), plural: plural_one_other, rtl: false, catalog: OnceLock::new() },
     // Turkish; every `tr-*` locale (`tr-TR`, `tr_TR.UTF-8`) resolves here.
     LangInfo { code: "tr", name: "Türkçe", source: include_str!("tr.tsv"), plural: plural_none, rtl: false, catalog: OnceLock::new() },
@@ -2122,6 +2132,107 @@ mod tests {
         assert!(literals.len() > 900, "source scan found only {} literals", literals.len());
         let missing: Vec<_> = literals.iter().filter(|label| !has(sl, label)).collect();
         assert!(missing.is_empty(), "untranslated Slovene UI literals: {missing:#?}");
+    }
+
+    #[test]
+    fn croatian_is_registered_persists_and_is_the_default() {
+        let hr = Lang::from_code("hr").expect("hr registered");
+        assert_eq!(hr.name(), "Hrvatski");
+        assert_eq!(normalize_pref("HR"), Some("hr"));
+        for tag in ["hr", "hr-HR", "hr_HR.UTF-8", "HR-hr", "hr_BA@variant"] {
+            assert_eq!(lang_from_tag(tag), Some(hr), "{tag}");
+        }
+        assert_eq!(tr(hr, "File"), "Datoteka");
+        assert_eq!(tr(hr, "Save as…"), "Spremi kao…");
+        assert_eq!(tr(hr, "Bookmarks"), "Knjižne oznake");
+        assert_eq!(tr(hr, "Layers"), "Slojevi");
+        assert_eq!(tr_ctx(hr, "comment menu", "Edit"), "Uredi");
+        assert_eq!(fmt(tr(hr, "{n} pages selected"), &[("n", "3")]), "Odabrano stranica: 3");
+        let mut app = crate::PrckopisApp::default();
+        app.set_option("language", "HR").unwrap();
+        assert_eq!(app.language, "hr");
+        let mut restored = crate::PrckopisApp::default();
+        restored.restore(&app.persist());
+        assert_eq!(restored.language, "hr");
+    }
+
+    #[test]
+    fn croatian_plurals_cover_few_teens_and_large_counts() {
+        let hr = Lang::from_code("hr").expect("hr registered");
+        for (counts, page, field) in [
+            (vec![1, 21, 31, 101, 1001], "stranica", "polje"),
+            (vec![2, 3, 4, 22, 24, 102, 1004], "stranice", "polja"),
+            (vec![0, 5, 10, 11, 12, 13, 14, 15, 20, 25, 100, 111, 112, 114, 1000, u64::MAX], "stranica", "polja"),
+        ] {
+            for n in counts {
+                assert_eq!(trn(hr, n, "{n} page", "{n} pages"), format!("{n} {page}"));
+                assert_eq!(trn(hr, n, "{n} field", "{n} fields"), format!("{n} {field}"));
+            }
+        }
+    }
+
+    /// Croatian translates every registered command and every All tools group, section and item.
+    #[test]
+    fn croatian_covers_commands_and_catalogue() {
+        let hr = Lang::from_code("hr").expect("hr registered");
+        for command in prckopis_engine::commands::COMMANDS {
+            assert!(has(hr, command.label), "missing command: {}", command.label);
+            if let Some(menu) = command.menu {
+                assert!(has(hr, menu), "missing menu: {menu}");
+            }
+        }
+        for group in prckopis_engine::catalog::TOOL_GROUPS {
+            assert!(has(hr, group.label), "missing group: {}", group.label);
+            for section in group.sections {
+                assert!(has(hr, section.title), "missing section: {}", section.title);
+                for item in section.items {
+                    assert!(has(hr, item.label), "missing item: {}", item.label);
+                }
+            }
+        }
+    }
+
+    /// New tl!("literal") labels must not silently fall back to English.
+    #[test]
+    fn croatian_covers_ui_literals() {
+        let hr = Lang::from_code("hr").expect("hr registered");
+        let mut stack = vec![std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("src")];
+        let mut literals = std::collections::BTreeSet::new();
+        while let Some(dir) = stack.pop() {
+            for entry in std::fs::read_dir(dir).expect("UI source directory") {
+                let path = entry.expect("UI source entry").path();
+                if path.is_dir() {
+                    if path.file_name().is_some_and(|name| name != "i18n") {
+                        stack.push(path);
+                    }
+                } else if path.extension().is_some_and(|ext| ext == "rs") {
+                    let source = std::fs::read_to_string(path).expect("UI source file").replace("\r\n", "\n");
+                    let mut rest = source.split("#[cfg(test)]\nmod ").next().unwrap_or_default();
+                    while let Some((_, after)) = rest.split_once("tl!(\"") {
+                        let mut escaped = false;
+                        let end = after
+                            .char_indices()
+                            .find_map(|(i, c)| {
+                                if c == '"' && !escaped {
+                                    return Some(i);
+                                }
+                                escaped = c == '\\' && !escaped;
+                                None
+                            })
+                            .expect("closed tl! literal");
+                        let (raw, tail) = after.split_at(end);
+                        if tail.starts_with("\")") {
+                            let label: String = serde_json::from_str(&format!("\"{raw}\"")).expect("UI literal escapes");
+                            literals.insert(label);
+                        }
+                        rest = tail.strip_prefix('"').expect("closing quote");
+                    }
+                }
+            }
+        }
+        assert!(literals.len() > 900, "source scan found only {} literals", literals.len());
+        let missing: Vec<_> = literals.iter().filter(|label| !has(hr, label)).collect();
+        assert!(missing.is_empty(), "untranslated Croatian UI literals: {missing:#?}");
     }
 
     #[test]

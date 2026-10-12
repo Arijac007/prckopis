@@ -59,7 +59,7 @@ const AR_DAYS: [&str; 7] = ["الأحد", "الاثنين", "الثلاثاء", 
 
 /// The languages month and weekday names can be written in (Preferences ▸ Date format ▸ Language):
 /// the interface languages, in the same order and with the same names.
-pub static DATE_LANGUAGES: [DateLanguage; 21] = [
+pub static DATE_LANGUAGES: [DateLanguage; 22] = [
     DateLanguage {
         code: "en",
         name: "English",
@@ -296,6 +296,28 @@ pub static DATE_LANGUAGES: [DateLanguage; 21] = [
         months_short: ["jan.", "feb.", "mar.", "apr.", "maj", "jun.", "jul.", "avg.", "sep.", "okt.", "nov.", "dec."],
         days: ["nedelja", "ponedeljek", "torek", "sreda", "četrtek", "petek", "sobota"],
         days_short: ["ned.", "pon.", "tor.", "sre.", "čet.", "pet.", "sob."],
+    },
+    DateLanguage {
+        code: "hr",
+        name: "Hrvatski",
+        months: ["siječanj", "veljača", "ožujak", "travanj", "svibanj", "lipanj", "srpanj", "kolovoz", "rujan", "listopad", "studeni", "prosinac"],
+        months_with_day: Some([
+            "siječnja",
+            "veljače",
+            "ožujka",
+            "travnja",
+            "svibnja",
+            "lipnja",
+            "srpnja",
+            "kolovoza",
+            "rujna",
+            "listopada",
+            "studenoga",
+            "prosinca",
+        ]),
+        months_short: ["sij", "velj", "ožu", "tra", "svi", "lip", "srp", "kol", "ruj", "lis", "stu", "pro"],
+        days: ["nedjelja", "ponedjeljak", "utorak", "srijeda", "četvrtak", "petak", "subota"],
+        days_short: ["ned", "pon", "uto", "sri", "čet", "pet", "sub"],
     },
     DateLanguage {
         code: "el",
