@@ -16,6 +16,7 @@
 //! needs to type an address. Every byte read from the network is untrusted: replies are capped
 //! in size, parsed with bounds checks, and turned into errors rather than panics.
 
+pub mod find;
 pub mod http;
 pub mod ipp;
 pub mod lpd;
@@ -462,6 +463,7 @@ fn ipp_only(target: &Target) -> Result<(), PrintError> {
     }
 }
 
+pub use find::{SearchOptions, parse_range, search};
 pub use mdns::{Found, discover, discover_with};
 #[cfg(test)]
 mod tests;

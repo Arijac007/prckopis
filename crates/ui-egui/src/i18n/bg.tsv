@@ -2309,3 +2309,8 @@ animation effects	Off	Изключени
 	Printer status	Състояние на принтера
 	Status: {status}	Състояние: {status}
 	An ipp://, lpd:// or socket:// address of a printer on your network	Адрес ipp://, lpd:// или socket:// на принтер във вашата мрежа
+	Also search:	Търсене също в:
+	Printers in another subnet or VLAN don't answer a network search; name their address range here.	Принтерите в друга подмрежа или VLAN не отговарят на търсене в мрежата; въведете тук техния диапазон от адреси.
+	No printers answered. A printer in another subnet: add its range under Also search, or type its address.	Никой принтер не отговори. За принтер в друга подмрежа: добавете диапазона му в „Търсене също в“ или въведете адреса му.
+	No printers answered. A VPN is connected: it may send the local network through its tunnel. Allow local network access in the VPN, or disconnect it, and search again.	Никой принтер не отговори. Свързана е VPN, която може да пренасочва локалната мрежа през своя тунел. Разрешете във VPN достъпа до локалната мрежа или я прекъснете и потърсете отново.
+	This printer says it doesn't read PDF, so a direct job may be refused or print as text. It needs its PDF option (on Canon: PDF Direct Print), or install it in the system with its driver.	Този принтер съобщава, че не чете PDF, така че директно задание може да бъде отказано или отпечатано като текст. Нужна е опцията му за PDF (при Canon: PDF Direct Print) или го инсталирайте в системата с драйвера му.

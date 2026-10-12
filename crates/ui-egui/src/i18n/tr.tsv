@@ -2342,3 +2342,8 @@ animation effects	Off	Kapalı
 	Printer status	Yazıcı durumu
 	Status: {status}	Durum: {status}
 	An ipp://, lpd:// or socket:// address of a printer on your network	Ağınızdaki bir yazıcının ipp://, lpd:// veya socket:// adresi
+	Also search:	Şurada da ara:
+	Printers in another subnet or VLAN don't answer a network search; name their address range here.	Başka bir alt ağdaki veya VLAN'daki yazıcılar ağ aramasına yanıt vermez; adres aralıklarını buraya yazın.
+	No printers answered. A printer in another subnet: add its range under Also search, or type its address.	Hiçbir yazıcı yanıt vermedi. Başka bir alt ağdaki yazıcı için aralığını “Şurada da ara” alanına ekleyin veya adresini yazın.
+	No printers answered. A VPN is connected: it may send the local network through its tunnel. Allow local network access in the VPN, or disconnect it, and search again.	Hiçbir yazıcı yanıt vermedi. Bağlı bir VPN yerel ağı kendi tüneline yönlendiriyor olabilir. VPN'de yerel ağ erişimine izin verin veya bağlantıyı kesin ve yeniden arayın.
+	This printer says it doesn't read PDF, so a direct job may be refused or print as text. It needs its PDF option (on Canon: PDF Direct Print), or install it in the system with its driver.	Bu yazıcı PDF okumadığını bildiriyor; doğrudan bir iş reddedilebilir veya metin olarak yazdırılabilir. PDF seçeneği gerekir (Canon'da: PDF Direct Print) ya da yazıcıyı sürücüsüyle sisteme kurun.

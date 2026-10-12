@@ -2351,3 +2351,8 @@ animation effects	Off	Izklopljeni
 	Printer status	Stanje tiskalnika
 	Status: {status}	Stanje: {status}
 	An ipp://, lpd:// or socket:// address of a printer on your network	Naslov ipp://, lpd:// ali socket:// tiskalnika v vašem omrežju
+	Also search:	Išči tudi:
+	Printers in another subnet or VLAN don't answer a network search; name their address range here.	Tiskalniki v drugem podomrežju ali VLAN-u se na iskanje v omrežju ne odzovejo; tukaj navedite njihov obseg naslovov.
+	No printers answered. A printer in another subnet: add its range under Also search, or type its address.	Noben tiskalnik se ni odzval. Za tiskalnik v drugem podomrežju: dodajte njegov obseg v polje Išči tudi ali vpišite njegov naslov.
+	No printers answered. A VPN is connected: it may send the local network through its tunnel. Allow local network access in the VPN, or disconnect it, and search again.	Noben tiskalnik se ni odzval. Povezan je VPN, ki morda pošilja lokalno omrežje skozi svoj tunel. V VPN-ju dovolite dostop do lokalnega omrežja ali ga prekinite in znova poiščite.
+	This printer says it doesn't read PDF, so a direct job may be refused or print as text. It needs its PDF option (on Canon: PDF Direct Print), or install it in the system with its driver.	Ta tiskalnik sporoča, da ne bere PDF-jev, zato je lahko neposredno opravilo zavrnjeno ali natisnjeno kot besedilo. Potrebuje svojo možnost PDF (pri Canonu PDF Direct Print) ali pa ga namestite v sistem z gonilnikom.

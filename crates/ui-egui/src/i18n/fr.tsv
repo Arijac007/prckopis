@@ -2346,3 +2346,8 @@ animation effects	Off	Désactivés
 	Printer status	État de l’imprimante
 	Status: {status}	État : {status}
 	An ipp://, lpd:// or socket:// address of a printer on your network	Adresse ipp://, lpd:// ou socket:// d’une imprimante de votre réseau
+	Also search:	Rechercher aussi :
+	Printers in another subnet or VLAN don't answer a network search; name their address range here.	Les imprimantes d’un autre sous-réseau ou VLAN ne répondent pas à une recherche réseau ; indiquez ici leur plage d’adresses.
+	No printers answered. A printer in another subnet: add its range under Also search, or type its address.	Aucune imprimante n’a répondu. Pour une imprimante d’un autre sous-réseau : ajoutez sa plage dans « Rechercher aussi » ou saisissez son adresse.
+	No printers answered. A VPN is connected: it may send the local network through its tunnel. Allow local network access in the VPN, or disconnect it, and search again.	Aucune imprimante n’a répondu. Un VPN est connecté et fait peut-être passer le réseau local par son tunnel. Autorisez l’accès au réseau local dans le VPN, ou déconnectez-le, puis relancez la recherche.
+	This printer says it doesn't read PDF, so a direct job may be refused or print as text. It needs its PDF option (on Canon: PDF Direct Print), or install it in the system with its driver.	Cette imprimante indique qu’elle ne lit pas le PDF : un travail direct peut être refusé ou imprimé comme du texte. Il lui faut son option PDF (chez Canon : PDF Direct Print), ou installez-la dans le système avec son pilote.

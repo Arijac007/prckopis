@@ -2420,3 +2420,8 @@ animation effects	Off	Vypnuto
 	Printer status	Stav tiskárny
 	Status: {status}	Stav: {status}
 	An ipp://, lpd:// or socket:// address of a printer on your network	Adresa ipp://, lpd:// nebo socket:// tiskárny ve vaší síti
+	Also search:	Hledat také:
+	Printers in another subnet or VLAN don't answer a network search; name their address range here.	Tiskárny v jiné podsíti nebo VLAN na hledání v síti neodpovídají; zadejte zde jejich rozsah adres.
+	No printers answered. A printer in another subnet: add its range under Also search, or type its address.	Žádná tiskárna neodpověděla. Tiskárna v jiné podsíti: přidejte její rozsah do pole Hledat také nebo zadejte její adresu.
+	No printers answered. A VPN is connected: it may send the local network through its tunnel. Allow local network access in the VPN, or disconnect it, and search again.	Žádná tiskárna neodpověděla. Je připojena VPN, která může posílat místní síť svým tunelem. Povolte ve VPN přístup k místní síti nebo ji odpojte a hledejte znovu.
+	This printer says it doesn't read PDF, so a direct job may be refused or print as text. It needs its PDF option (on Canon: PDF Direct Print), or install it in the system with its driver.	Tato tiskárna uvádí, že nečte PDF, takže přímá úloha může být odmítnuta nebo vytištěna jako text. Potřebuje svou volbu PDF (u Canonu PDF Direct Print), nebo ji nainstalujte do systému s jejím ovladačem.

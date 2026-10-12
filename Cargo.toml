@@ -12,6 +12,8 @@ rust-version = "1.95"
 repository = "https://github.com/storytold/pdfcraft"
 
 [workspace.dependencies]
+# Local network interfaces, so printer discovery asks on every network (not only through a VPN).
+if-addrs = "0.13"
 # Shared frontend components; engines remain independent of egui.
 craft-ui = { git = "https://github.com/storytold/craft-libs", version = "0.1.0", rev = "5c874d51eeb3de70e735c8ce87a59a7dedd47675", features = ["serde"] }
 # Shared system spooler; document composition remains in pdfcraft-print.

@@ -306,17 +306,65 @@ pub fn discover() -> Result<Vec<Found>, PrintError> {
 }
 
 /// Look for printers for `wait`, asking again once for the details of printers whose first
-/// replies left something out.
+/// replies left something out. The query goes out through every IPv4 interface, so a VPN that
+/// holds the default route doesn't hide the office network.
 pub fn discover_with(wait: Duration) -> Result<Vec<Found>, PrintError> {
+    discover_on(&super::find::interfaces(), wait)
+}
+
+/// [`discover_with`] through the given interfaces (address and netmask); none means the default
+/// route only.
+pub fn discover_on(ifaces: &[(Ipv4Addr, Ipv4Addr)], wait: Duration) -> Result<Vec<Found>, PrintError> {
     let wait = wait.clamp(Duration::from_millis(200), Duration::from_secs(30));
-    let sock = UdpSocket::bind((Ipv4Addr::UNSPECIFIED, 0)).map_err(|e| PrintError::Spool(format!("cannot search the network for printers: {e}")))?;
-    let _ = sock.set_multicast_ttl_v4(255);
+    let mut locals: Vec<Ipv4Addr> = ifaces.iter().map(|(ip, _)| *ip).collect();
+    if locals.is_empty() {
+        locals.push(Ipv4Addr::UNSPECIFIED);
+    }
+    let mut first_error = None;
+    let records = std::sync::Mutex::new(Vec::new());
+    let mut sockets = Vec::new();
+    for ip in locals {
+        match UdpSocket::bind((ip, 0)) {
+            Ok(sock) => {
+                let _ = sock.set_multicast_ttl_v4(255);
+                sockets.push(sock);
+            }
+            Err(e) => {
+                first_error.get_or_insert(e);
+            }
+        }
+    }
+    let sent = std::sync::atomic::AtomicUsize::new(0);
+    std::thread::scope(|s| {
+        for sock in &sockets {
+            let (records, sent) = (&records, &sent);
+            s.spawn(move || {
+                let mine = ask(sock, wait);
+                if let Some(mine) = mine {
+                    sent.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                    if let Ok(mut r) = records.lock() {
+                        let room = MAX_RECORDS.saturating_sub(r.len());
+                        r.extend(mine.into_iter().take(room));
+                    }
+                }
+            });
+        }
+    });
+    if sent.load(std::sync::atomic::Ordering::Relaxed) == 0 {
+        let why = first_error.map_or_else(|| "no network interface could send the query".to_string(), |e| e.to_string());
+        return Err(PrintError::Spool(format!("cannot search the network for printers: {why}")));
+    }
+    Ok(assemble(&records.into_inner().unwrap_or_default()))
+}
+
+/// Ask through one socket; `None` when the query couldn't be sent.
+fn ask(sock: &UdpSocket, wait: Duration) -> Option<Vec<Record>> {
     let id = (std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.subsec_nanos()).unwrap_or(1) & 0xFFFF) as u16;
     let questions: Vec<(&str, u16)> = SERVICES.iter().map(|(s, _)| (*s, TYPE_PTR)).collect();
-    sock.send_to(&query(id, &questions), MDNS).map_err(|e| PrintError::Spool(format!("cannot search the network for printers: {e}")))?;
+    sock.send_to(&query(id, &questions), MDNS).ok()?;
     let mut records = Vec::new();
     let half = wait / 2;
-    collect(&sock, half, &mut records);
+    collect(sock, half, &mut records);
 
     // Ask for whatever the first replies left out: an instance's SRV/TXT, a host's address.
     let partial = missing(&records);
@@ -324,8 +372,8 @@ pub fn discover_with(wait: Duration) -> Result<Vec<Found>, PrintError> {
         let qs: Vec<(&str, u16)> = partial.iter().take(32).map(|n| (n.as_str(), TYPE_ANY)).collect();
         let _ = sock.send_to(&query(id.wrapping_add(1), &qs), MDNS);
     }
-    collect(&sock, wait.saturating_sub(half), &mut records);
-    Ok(assemble(&records))
+    collect(sock, wait.saturating_sub(half), &mut records);
+    Some(records)
 }
 
 fn collect(sock: &UdpSocket, wait: Duration, records: &mut Vec<Record>) {

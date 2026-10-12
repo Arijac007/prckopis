@@ -189,7 +189,21 @@ impl Automation {
         if !(0.2..=30.0).contains(&seconds) {
             return Err(bad("seconds must be between 0.2 and 30"));
         }
-        let found = net::discover_with(std::time::Duration::from_secs_f64(seconds)).map_err(|e| failed(e.to_string()))?;
+        let scan = a.opt_bool("scan")?.unwrap_or(true);
+        let mut ranges = Vec::new();
+        if let Some(v) = a.get("ranges") {
+            let list = v.as_array().ok_or_else(|| bad("ranges must be an array of strings"))?;
+            if list.len() > 16 {
+                return Err(bad("at most 16 ranges"));
+            }
+            for r in list {
+                let r = r.as_str().ok_or_else(|| bad("ranges must be an array of strings"))?;
+                net::parse_range(r).map_err(|e| bad(e.to_string()))?;
+                ranges.push(r.to_string());
+            }
+        }
+        let opts = net::SearchOptions { wait: std::time::Duration::from_secs_f64(seconds), scan_local: scan, ranges };
+        let found = net::search(&opts).map_err(|e| failed(e.to_string()))?;
         let list: Vec<Value> = found
             .iter()
             .map(|f| {

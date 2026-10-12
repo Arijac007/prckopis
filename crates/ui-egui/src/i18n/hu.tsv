@@ -2345,3 +2345,8 @@ animation effects	Off	Ki
 	Printer status	Nyomtató állapota
 	Status: {status}	Állapot: {status}
 	An ipp://, lpd:// or socket:// address of a printer on your network	Egy hálózati nyomtató ipp://, lpd:// vagy socket:// címe
+	Also search:	Keresés itt is:
+	Printers in another subnet or VLAN don't answer a network search; name their address range here.	A más alhálózatban vagy VLAN-ban lévő nyomtatók nem válaszolnak a hálózati keresésre; itt adja meg a címtartományukat.
+	No printers answered. A printer in another subnet: add its range under Also search, or type its address.	Egy nyomtató sem válaszolt. Más alhálózatban lévő nyomtató: adja meg a tartományát a „Keresés itt is” mezőben, vagy írja be a címét.
+	No printers answered. A VPN is connected: it may send the local network through its tunnel. Allow local network access in the VPN, or disconnect it, and search again.	Egy nyomtató sem válaszolt. VPN kapcsolódik, amely a helyi hálózatot is a saját alagútján keresztül küldheti. Engedélyezze a VPN-ben a helyi hálózat elérését, vagy bontsa a kapcsolatot, és keressen újra.
+	This printer says it doesn't read PDF, so a direct job may be refused or print as text. It needs its PDF option (on Canon: PDF Direct Print), or install it in the system with its driver.	Ez a nyomtató azt jelzi, hogy nem olvas PDF-et, így a közvetlen feladatot elutasíthatja vagy szövegként nyomtathatja ki. Szüksége van a PDF-opciójára (Canonnál: PDF Direct Print), vagy telepítse a rendszerbe az illesztőprogramjával.

@@ -2220,3 +2220,8 @@ animation effects	Off	關
 	Printer status	印表機狀態
 	Status: {status}	狀態：{status}
 	An ipp://, lpd:// or socket:// address of a printer on your network	網路中印表機的 ipp://、lpd:// 或 socket:// 位址
+	Also search:	同時搜尋：
+	Printers in another subnet or VLAN don't answer a network search; name their address range here.	其他子網路或 VLAN 中的印表機不會回應網路搜尋；請在此輸入它們的位址範圍。
+	No printers answered. A printer in another subnet: add its range under Also search, or type its address.	沒有印表機回應。其他子網路中的印表機：在「同時搜尋」中加入其範圍，或輸入其位址。
+	No printers answered. A VPN is connected: it may send the local network through its tunnel. Allow local network access in the VPN, or disconnect it, and search again.	沒有印表機回應。已連線 VPN，它可能將區域網路也透過通道傳送。請在 VPN 中允許存取區域網路或中斷 VPN，然後重新搜尋。
+	This printer says it doesn't read PDF, so a direct job may be refused or print as text. It needs its PDF option (on Canon: PDF Direct Print), or install it in the system with its driver.	此印表機表示無法讀取 PDF，直接傳送的工作可能被拒絕或以文字列印。它需要 PDF 選件（Canon 為 PDF 直接列印），或以其驅動程式將其安裝到系統中。

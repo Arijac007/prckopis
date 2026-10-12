@@ -2344,3 +2344,8 @@ animation effects	Off	Өшірулі
 	Printer status	Принтер күйі
 	Status: {status}	Күйі: {status}
 	An ipp://, lpd:// or socket:// address of a printer on your network	Желідегі принтердің ipp://, lpd:// немесе socket:// мекенжайы
+	Also search:	Сонымен қатар іздеу:
+	Printers in another subnet or VLAN don't answer a network search; name their address range here.	Басқа ішкі желідегі немесе VLAN-дағы принтерлер желілік іздеуге жауап бермейді; олардың мекенжай ауқымын осында көрсетіңіз.
+	No printers answered. A printer in another subnet: add its range under Also search, or type its address.	Ешбір принтер жауап бермеді. Басқа ішкі желідегі принтер үшін оның ауқымын «Сонымен қатар іздеу» өрісіне қосыңыз немесе мекенжайын енгізіңіз.
+	No printers answered. A VPN is connected: it may send the local network through its tunnel. Allow local network access in the VPN, or disconnect it, and search again.	Ешбір принтер жауап бермеді. Қосылған VPN жергілікті желіні өз туннелі арқылы жіберуі мүмкін. VPN-де жергілікті желіге қатынауға рұқсат беріңіз немесе оны ажыратып, қайта іздеңіз.
+	This printer says it doesn't read PDF, so a direct job may be refused or print as text. It needs its PDF option (on Canon: PDF Direct Print), or install it in the system with its driver.	Бұл принтер PDF оқымайтынын хабарлайды, сондықтан тікелей тапсырма қабылданбауы немесе мәтін ретінде басылуы мүмкін. Оған PDF опциясы керек (Canon-да: PDF Direct Print) немесе оны драйверімен жүйеге орнатыңыз.

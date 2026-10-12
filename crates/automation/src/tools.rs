@@ -469,9 +469,12 @@ pub fn tools() -> Vec<ToolDef> {
         t("printer_options", "List printer options", "A printer driver's own job options (CUPS: from its PPD), such as the paper tray, paper type or finishing: key, label, group, default and choices. Pass chosen values to doc_print as options. Empty on Windows, where the driver's preferences window holds them.")
             .ro()
             .with(schema(json!({ "printer": { "type": "string" } }), &["printer"])),
-        t("net_printers", "Find network printers", "Search the local network for printers (multicast DNS / Bonjour, about `seconds`, default 2): name, uri to print to with doc_print, protocol (ipp, ipps, socket, lpd), address, model, location, and whether it says it takes PDF, prints in colour or two-sided. ipps printers are listed but can't take direct jobs yet.")
+        t("net_printers", "Find network printers", "Search the network for printers: multicast DNS / Bonjour and WS-Discovery on every network interface (about `seconds`, default 2), and unless scan is false a check of the IPP (631), raw (9100) and LPD (515) ports on every address of this computer's subnets (up to 1024 each). ranges adds other subnets or address ranges to check (\"10.20.30.0/24\", \"10.20.30.10-80\", \"10.20.30.7\"; up to 1024 addresses each), for printers in another VLAN that multicast doesn't reach. Each printer: name, uri to print to with doc_print, protocol (ipp, ipps, socket, lpd), address, model, location, and whether it takes PDF (false: it needs a driver; true or null: it does or doesn't say), prints in colour or two-sided. ipps printers are listed but can't take direct jobs yet.")
             .ro()
-            .with(schema(json!({ "seconds": { "type": "number", "minimum": 0.2, "maximum": 30 } }), &[])),
+            .with(schema(
+                json!({ "seconds": { "type": "number", "minimum": 0.2, "maximum": 30 }, "scan": { "type": "boolean" }, "ranges": { "type": "array", "items": { "type": "string" }, "maxItems": 16 } }),
+                &[],
+            )),
         t("net_printer_status", "Network printer status", "Ask a network printer how it is: state (idle, processing, stopped) and its reasons (e.g. toner-low, media-jam), whether it accepts jobs, queued jobs, toner / ink levels, the document formats it takes, two-sided and colour support. Full detail over IPP; LPD reports the queue's text; a raw socket only whether it answers.")
             .ro()
             .with(schema(json!({ "uri": uri_prop() }), &["uri"])),

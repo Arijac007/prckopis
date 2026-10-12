@@ -3021,6 +3021,8 @@ fn network_printing_through_tools() {
     }
     assert!(matches!(a.call("net_job_cancel", &json!({ "uri": uri, "job_id": 0 })), Err(ToolError::InvalidArgs(_))));
     assert!(matches!(a.call("net_printers", &json!({ "seconds": 99 })), Err(ToolError::InvalidArgs(_))));
+    assert!(matches!(a.call("net_printers", &json!({ "ranges": ["10.0.0.0/8"] })), Err(ToolError::InvalidArgs(_))), "too big to scan");
+    assert!(matches!(a.call("net_printers", &json!({ "ranges": ["printer"] })), Err(ToolError::InvalidArgs(_))));
     // Job control needs IPP.
     assert!(a.call("net_jobs", &json!({ "uri": "socket://127.0.0.1:9" })).is_err());
 }

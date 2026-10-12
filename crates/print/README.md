@@ -82,9 +82,22 @@ let found = net::discover()?;                                   // printers on t
   `image/urf` or PWG raster) is refused with a message instead of printing pages of PDF source.
   A printer that sniffs formats gets `application/octet-stream`. Sheets go out with
   `print-scaling=none`: they are already laid out at their physical size.
-- **Discovery** sends legacy-unicast multicast-DNS queries (no port 5353 needed) for
-  `_ipp._tcp`, `_ipps._tcp`, `_pdl-datastream._tcp` and `_printer._tcp`, then asks once more for
-  what the first answers left out. Numeric addresses are preferred to `.local` names.
+- **Discovery** (`net::search`) combines three ways, because office printers are often
+  invisible to Bonjour (many Canon imageRUNNER, Ricoh and Kyocera models ship with it off, and
+  multicast never crosses VLANs):
+  - legacy-unicast multicast-DNS queries for `_ipp._tcp`, `_ipps._tcp`, `_pdl-datastream._tcp`
+    and `_printer._tcp`, sent through **every** IPv4 interface (a VPN that holds the default
+    route no longer hides the office network), asking once more for what the first answers left
+    out;
+  - a WS-Discovery probe for `wprt:PrintDeviceType` (Windows' "WSD" printers), every interface;
+  - a TCP check of 631 / 9100 / 515 on every address of the local subnets (up to 1,024 each,
+    64 connections at a time) and of ranges the user names (`10.20.30.0/24`, `10.20.30.10-80`),
+    asking IPP printers for name, model, location and formats at `/ipp/print`, `/ipp`, `/ipp/lp`
+    (Canon), `/printer` and `/`.
+  Printers that list no PDF format are kept and marked (`pdf: false`); the dialog explains they
+  need their PDF option (Canon: PDF Direct Print) or the system driver. When nothing answers and
+  a /32 tunnel interface is up, the dialog says a VPN may be sending the local network through
+  its tunnel.
 - **Untrusted input**: every reply is capped (HTTP headers 64 KiB, bodies 16 MiB, 20,000 IPP
   attributes, 2,000 DNS records), parsed with bounds checks, collections and DNS compression
   pointers are depth-limited, and PJL strings can't leave their quotes. Credentials in an address

@@ -86,6 +86,10 @@ pub struct PrintDraft {
     /// The Add network printer panel is open, with the address being typed.
     pub net_adding: bool,
     pub net_address: String,
+    /// Other subnets or ranges to search, comma separated ("10.20.30.0/24, 10.0.5.10-40").
+    pub net_ranges: String,
+    /// Network printers that said they don't read PDF (their addresses).
+    pub net_no_pdf: Vec<String>,
     /// A network search was asked for (the app starts it) or is running.
     pub net_search: NetSearch,
     /// Network job options: hold at the printer, a release PIN, a cost-centre code, stapling.
@@ -108,6 +112,8 @@ pub enum NetSearch {
     Running,
     /// The last search found nothing.
     NoneFound,
+    /// The last search found nothing and a VPN tunnel is up.
+    NoneFoundVpn,
 }
 
 /// Whether a printer chosen in the dialog is a network address rather than a system queue.
@@ -156,6 +162,8 @@ impl Default for PrintDraft {
             net_printers: Vec::new(),
             net_adding: false,
             net_address: String::new(),
+            net_ranges: String::new(),
+            net_no_pdf: Vec::new(),
             net_search: NetSearch::Idle,
             net_hold: false,
             net_pin: String::new(),
@@ -437,8 +445,16 @@ impl PdfCraftApp {
         };
         if self.print_draft.net_search == NetSearch::Wanted && self.print_tasks.net_search.is_none() {
             let (tx, rx) = std::sync::mpsc::channel();
+            let ranges: Vec<String> =
+                self.print_draft.net_ranges.split([',', ';', ' ']).map(str::trim).filter(|r| !r.is_empty()).map(str::to_string).collect();
+            if let Some(e) = ranges.iter().find_map(|r| net::parse_range(r).err()) {
+                self.print_draft.net_search = NetSearch::Idle;
+                self.notify_error(e);
+                return;
+            }
             spawn(Box::new(move || {
-                let _ = tx.send(net::discover().map_err(|e| e.to_string()));
+                let opts = net::SearchOptions { ranges, ..Default::default() };
+                let _ = tx.send(net::search(&opts).map_err(|e| e.to_string()));
             }));
             self.print_tasks.net_search = Some(rx);
             self.print_draft.net_search = NetSearch::Running;
@@ -455,14 +471,27 @@ impl PdfCraftApp {
                 match answer {
                     Ok(found) => {
                         let mut added = 0;
-                        for f in found.iter().filter(|f| f.protocol != net::Protocol::Ipps && f.pdf != Some(false)) {
+                        for f in found.iter().filter(|f| f.protocol != net::Protocol::Ipps) {
                             let uri = f.uri();
+                            if f.pdf == Some(false) && !d.net_no_pdf.contains(&uri) {
+                                d.net_no_pdf.push(uri.clone());
+                            }
                             if !d.net_printers.iter().any(|(_, u)| *u == uri) {
-                                d.net_printers.push((f.name.clone(), uri));
+                                let name = match &f.location {
+                                    Some(l) => format!("{} — {l}", f.name),
+                                    None => f.name.clone(),
+                                };
+                                d.net_printers.push((name, uri));
                                 added += 1;
                             }
                         }
-                        d.net_search = if added == 0 && d.net_printers.is_empty() { NetSearch::NoneFound } else { NetSearch::Idle };
+                        d.net_search = if added > 0 || !d.net_printers.is_empty() {
+                            NetSearch::Idle
+                        } else if net::find::vpn_suspected() {
+                            NetSearch::NoneFoundVpn
+                        } else {
+                            NetSearch::NoneFound
+                        };
                     }
                     Err(e) => {
                         d.net_search = NetSearch::Idle;
@@ -910,16 +939,30 @@ fn add_network_printer_panel(ui: &mut egui::Ui, d: &mut PrintDraft, t: &Tokens) 
             if searching {
                 ui.spinner();
                 ui.label(egui::RichText::new(tl!("Searching the network for printers…")).small().color(t.text_muted));
-            } else if d.net_search == NetSearch::NoneFound {
-                ui.label(egui::RichText::new(tl!("No printers answered on the local network.")).small().color(t.text_muted));
             }
         });
+        ui.horizontal(|ui| {
+            ui.label(tl!("Also search:"));
+            ui.add(egui::TextEdit::singleline(&mut d.net_ranges).hint_text("10.20.30.0/24, 10.0.5.10-40").char_limit(200).desired_width(220.0))
+                .on_hover_text(tl!("Printers in another subnet or VLAN don't answer a network search; name their address range here."));
+        });
+        let note = match d.net_search {
+            NetSearch::NoneFound => Some(tl!("No printers answered. A printer in another subnet: add its range under Also search, or type its address.")),
+            NetSearch::NoneFoundVpn => Some(tl!("No printers answered. A VPN is connected: it may send the local network through its tunnel. Allow local network access in the VPN, or disconnect it, and search again.")),
+            _ => None,
+        };
+        if let Some(note) = note {
+            ui.label(egui::RichText::new(note).small().color(t.text_muted));
+        }
     });
 }
 
 /// Options only a network printer takes: held / PIN release, a cost-centre code, stapling, and
 /// its status.
 fn network_job_panel(ui: &mut egui::Ui, d: &mut PrintDraft, t: &Tokens) {
+    if d.printer.as_ref().is_some_and(|p| d.net_no_pdf.contains(p)) {
+        ui.label(egui::RichText::new(tl!("This printer says it doesn't read PDF, so a direct job may be refused or print as text. It needs its PDF option (on Canon: PDF Direct Print), or install it in the system with its driver.")).small().color(t.text_muted));
+    }
     egui::Grid::new("print-network").num_columns(2).spacing([10.0, 6.0]).show(ui, |ui| {
         ui.label("");
         ui.horizontal(|ui| {

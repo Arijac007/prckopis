@@ -597,3 +597,134 @@ fn pjl_strings_cannot_break_out_of_their_quotes() {
     assert!(lines.iter().all(|l| l.matches('"').count() % 2 == 0 && !l.contains('\r') && !l.contains('\u{1b}')));
     assert!(!lines.iter().any(|l| l.starts_with("@PJL SET JOBACCT")), "an empty account is left out");
 }
+
+/// A fake printer that answers IPP only on `path` (Canon's `/ipp/lp`), takes the formats given,
+/// and shrugs off bare connections (a port check connects and closes).
+fn picky_ipp_printer(path: &'static str, formats: &'static [&'static str]) -> u16 {
+    let l = TcpListener::bind("127.0.0.1:0").unwrap();
+    let port = l.local_addr().unwrap().port();
+    thread::spawn(move || {
+        for stream in l.incoming().take(32) {
+            let Ok(stream) = stream else { continue };
+            let _ = stream.set_read_timeout(Some(T));
+            let mut r = BufReader::new(stream);
+            let mut line = String::new();
+            if r.read_line(&mut line).unwrap_or(0) == 0 {
+                continue;
+            }
+            let asked = line.split_whitespace().nth(1).unwrap_or("").to_string();
+            let mut len = 0usize;
+            loop {
+                let mut h = String::new();
+                if r.read_line(&mut h).unwrap_or(0) == 0 || h == "\r\n" {
+                    break;
+                }
+                if let Some(v) = h.to_ascii_lowercase().strip_prefix("content-length:") {
+                    len = v.trim().parse().unwrap_or(0);
+                }
+            }
+            let mut body = vec![0u8; len];
+            if r.read_exact(&mut body).is_err() {
+                continue;
+            }
+            let mut s = r.into_inner();
+            if asked != path {
+                let _ = write!(s, "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n");
+                continue;
+            }
+            let Ok(req) = ipp::parse(&body) else { continue };
+            let mut resp = Request::new(0x0000, req.request_id);
+            resp.group(tag::PRINTER);
+            resp.str(tag::NAME, "printer-name", "iR-ADV C5535");
+            resp.str(tag::TEXT, "printer-make-and-model", "Canon iR-ADV C5535");
+            resp.str(tag::TEXT, "printer-location", "Accounting");
+            resp.int(tag::ENUM, "printer-state", 3);
+            let (first, rest) = formats.split_first().unwrap();
+            resp.str(tag::MIME, "document-format-supported", first);
+            for f in rest {
+                resp.also(tag::MIME, f);
+            }
+            let out = resp.finish(&[]);
+            let _ = write!(s, "HTTP/1.1 200 OK\r\nContent-Type: application/ipp\r\nContent-Length: {}\r\n\r\n", out.len());
+            let _ = s.write_all(&out);
+        }
+    });
+    port
+}
+
+fn closed_port() -> u16 {
+    let l = TcpListener::bind("127.0.0.1:0").unwrap();
+    l.local_addr().unwrap().port()
+}
+
+#[test]
+fn ranges_parse_and_big_ones_are_refused() {
+    use std::net::Ipv4Addr;
+    let r = parse_range("10.1.2.0/24").unwrap();
+    assert_eq!((r.len(), r[0], r[253]), (254, Ipv4Addr::new(10, 1, 2, 1), Ipv4Addr::new(10, 1, 2, 254)));
+    assert_eq!(parse_range("10.1.2.10-20").unwrap().len(), 11);
+    assert_eq!(parse_range("10.1.2.250-10.1.3.5").unwrap().len(), 12);
+    assert_eq!(parse_range(" 10.1.2.7 ").unwrap(), vec![Ipv4Addr::new(10, 1, 2, 7)]);
+    assert_eq!(parse_range("10.1.2.7/32").unwrap().len(), 1);
+    for bad in ["", "printer", "10.1.2.0/8", "10.1.2.0/33", "10.1.2.20-10", "10.0.0.0-10.1.0.0", "10.1.2.0/x", "1.2.3.4.5"] {
+        assert!(parse_range(bad).is_err(), "{bad:?} must be refused");
+    }
+}
+
+#[test]
+fn subnets_are_scanned_but_not_vpn_links_or_huge_networks() {
+    use super::find::subnet_hosts;
+    use std::net::Ipv4Addr;
+    let ip = Ipv4Addr::new(192, 168, 5, 40);
+    let hosts = subnet_hosts(ip, Ipv4Addr::new(255, 255, 255, 0));
+    assert_eq!(hosts.len(), 253, "254 addresses less our own");
+    assert!(!hosts.contains(&ip) && !hosts.contains(&Ipv4Addr::new(192, 168, 5, 255)));
+    assert!(subnet_hosts(Ipv4Addr::new(10, 2, 0, 2), Ipv4Addr::new(255, 255, 255, 255)).is_empty(), "a VPN's /32");
+    assert!(subnet_hosts(ip, Ipv4Addr::new(255, 255, 0, 0)).is_empty(), "a /16 is too big to scan unasked");
+    assert_eq!(subnet_hosts(ip, Ipv4Addr::new(255, 255, 252, 0)).len(), 1021);
+    assert!(subnet_hosts(ip, Ipv4Addr::new(255, 0, 255, 0)).is_empty(), "not a contiguous mask");
+}
+
+#[test]
+fn ws_discovery_replies_are_recognised_without_trusting_them() {
+    use super::find::is_printer_match;
+    let reply = br#"<s:Envelope><s:Body><d:ProbeMatches><d:ProbeMatch><d:Types>wprt:PrintDeviceType</d:Types><d:XAddrs>http://10.9.9.9/wsd</d:XAddrs></d:ProbeMatch></d:ProbeMatches></s:Body></s:Envelope>"#;
+    assert!(is_printer_match(reply));
+    assert!(!is_printer_match(b"<Probe><Types>wprt:PrintDeviceType</Types></Probe>"), "our own probe echoed back");
+    assert!(!is_printer_match(b"<ProbeMatch><Types>wscn:ScanDeviceType</Types></ProbeMatch>"));
+    assert!(!is_printer_match(&[0xFF; 70_000]));
+}
+
+/// A Canon-style printer: Bonjour off, IPP only at /ipp/lp, no PDF without its option, raw 9100
+/// open. A port check finds it, with its name, and says it doesn't take PDF.
+#[test]
+fn a_printer_without_bonjour_is_found_by_its_ports() {
+    use std::net::Ipv4Addr;
+    let ipp_port = picky_ipp_printer("/ipp/lp", &["application/vnd.canon-ufr2", "image/urf"]);
+    let raw = TcpListener::bind("127.0.0.1:0").unwrap();
+    let raw_port = raw.local_addr().unwrap().port();
+    thread::spawn(move || for _ in raw.incoming().take(4) {});
+    let found = super::find::probe_host_on(Ipv4Addr::LOCALHOST, [ipp_port, raw_port, closed_port()]);
+    assert_eq!(found.len(), 2, "{found:?}");
+    let ipp = &found[0];
+    assert_eq!((ipp.protocol, ipp.path.as_str(), ipp.name.as_str()), (Protocol::Ipp, "/ipp/lp", "iR-ADV C5535"));
+    assert_eq!(ipp.make_and_model.as_deref(), Some("Canon iR-ADV C5535"));
+    assert_eq!(ipp.location.as_deref(), Some("Accounting"));
+    assert_eq!(ipp.pdf, Some(false), "UFR II and URF only: needs the PDF Direct Print option");
+    assert_eq!(ipp.uri(), format!("ipp://127.0.0.1:{ipp_port}/ipp/lp"));
+    let rawf = &found[1];
+    assert_eq!((rawf.protocol, rawf.port, rawf.name.as_str()), (Protocol::Raw, raw_port, "iR-ADV C5535 (port 9100)"));
+
+    // Nothing listening: nothing found.
+    assert!(super::find::probe_host_on(Ipv4Addr::LOCALHOST, [closed_port(), closed_port(), closed_port()]).is_empty());
+}
+
+/// The same printer with PDF Direct Print: it takes PDF.
+#[test]
+fn a_printer_that_lists_pdf_is_marked_so() {
+    use std::net::Ipv4Addr;
+    let ipp_port = picky_ipp_printer("/ipp/print", &["application/pdf", "image/urf"]);
+    let found = super::find::probe_host_on(Ipv4Addr::LOCALHOST, [ipp_port, closed_port(), closed_port()]);
+    assert_eq!(found.len(), 1);
+    assert_eq!((found[0].path.as_str(), found[0].pdf), ("/ipp/print", Some(true)));
+}

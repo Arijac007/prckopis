@@ -2346,3 +2346,8 @@ animation effects	Off	オフ
 	Printer status	プリンターの状態
 	Status: {status}	状態: {status}
 	An ipp://, lpd:// or socket:// address of a printer on your network	ネットワーク上のプリンターの ipp://、lpd:// または socket:// アドレス
+	Also search:	追加の検索範囲:
+	Printers in another subnet or VLAN don't answer a network search; name their address range here.	別のサブネットや VLAN のプリンターはネットワーク検索に応答しません。ここにアドレス範囲を入力してください。
+	No printers answered. A printer in another subnet: add its range under Also search, or type its address.	応答したプリンターはありません。別のサブネットのプリンターは、「追加の検索範囲」に範囲を追加するか、アドレスを入力してください。
+	No printers answered. A VPN is connected: it may send the local network through its tunnel. Allow local network access in the VPN, or disconnect it, and search again.	応答したプリンターはありません。VPN が接続されており、ローカルネットワークの通信もトンネル経由になっている可能性があります。VPN でローカルネットワークへのアクセスを許可するか切断してから、もう一度検索してください。
+	This printer says it doesn't read PDF, so a direct job may be refused or print as text. It needs its PDF option (on Canon: PDF Direct Print), or install it in the system with its driver.	このプリンターは PDF を読めないと報告しています。直接送信したジョブは拒否されるか、テキストとして印刷される場合があります。PDF オプション(Canon では PDF ダイレクトプリント)が必要です。またはドライバーと一緒にシステムにインストールしてください。

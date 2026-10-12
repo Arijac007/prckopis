@@ -2362,3 +2362,8 @@ animation effects	Off	Ανενεργά
 	Printer status	Κατάσταση εκτυπωτή
 	Status: {status}	Κατάσταση: {status}
 	An ipp://, lpd:// or socket:// address of a printer on your network	Διεύθυνση ipp://, lpd:// ή socket:// ενός εκτυπωτή του δικτύου σας
+	Also search:	Αναζήτηση και σε:
+	Printers in another subnet or VLAN don't answer a network search; name their address range here.	Οι εκτυπωτές άλλου υποδικτύου ή VLAN δεν απαντούν σε αναζήτηση δικτύου· δώστε εδώ το εύρος διευθύνσεών τους.
+	No printers answered. A printer in another subnet: add its range under Also search, or type its address.	Κανένας εκτυπωτής δεν απάντησε. Για εκτυπωτή σε άλλο υποδίκτυο: προσθέστε το εύρος του στο «Αναζήτηση και σε» ή πληκτρολογήστε τη διεύθυνσή του.
+	No printers answered. A VPN is connected: it may send the local network through its tunnel. Allow local network access in the VPN, or disconnect it, and search again.	Κανένας εκτυπωτής δεν απάντησε. Είναι συνδεδεμένο VPN που ίσως στέλνει το τοπικό δίκτυο μέσα από τη σήραγγά του. Επιτρέψτε την πρόσβαση στο τοπικό δίκτυο στο VPN ή αποσυνδέστε το και αναζητήστε ξανά.
+	This printer says it doesn't read PDF, so a direct job may be refused or print as text. It needs its PDF option (on Canon: PDF Direct Print), or install it in the system with its driver.	Αυτός ο εκτυπωτής δηλώνει ότι δεν διαβάζει PDF, οπότε μια απευθείας εργασία μπορεί να απορριφθεί ή να τυπωθεί ως κείμενο. Χρειάζεται την επιλογή PDF του (στην Canon: PDF Direct Print) ή εγκαταστήστε τον στο σύστημα με το πρόγραμμα οδήγησής του.

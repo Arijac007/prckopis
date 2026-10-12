@@ -14,3 +14,6 @@ pdfcraft-cos = { workspace = true }
 pdfcraft-content = { workspace = true }
 pdfcraft-model = { workspace = true }
 thiserror = { workspace = true }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+if-addrs = { workspace = true }
