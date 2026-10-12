@@ -2357,3 +2357,13 @@ animation effects	Off	Ki
 	User name	Felhasználónév
 	Add server	Kiszolgáló hozzáadása
 	At most 32 timestamp servers.	Legfeljebb 32 időbélyegző-kiszolgáló.
+	Remove Bates numbering	Bates-számozás eltávolítása
+	Also number these files, continuing after this document	Ezeket a fájlokat is számozza, a dokumentum után folytatva
+	Add Files…	Fájlok hozzáadása…
+	Save them in	Mentés ide
+	Choose Folder…	Mappa kiválasztása…
+	No folder chosen	Nincs kiválasztott mappa
+	Each is saved as a copy named <name>_bates.pdf; the originals are not changed.	Mindegyik <name>_bates.pdf nevű másolatként mentődik; az eredetik nem változnak.
+	No other files were numbered: {e}	Más fájlok nem lettek számozva: {e}
+	Numbered {n} more files, up to {last}, in {dir}.	További {n} fájl számozva, {last}-ig, itt: {dir}.
+	Not numbered: {e}	Nem számozott: {e}

@@ -2374,3 +2374,13 @@ animation effects	Off	Ανενεργά
 	User name	Όνομα χρήστη
 	Add server	Προσθήκη διακομιστή
 	At most 32 timestamp servers.	Έως 32 διακομιστές χρονοσήμανσης.
+	Remove Bates numbering	Κατάργηση αρίθμησης Bates
+	Also number these files, continuing after this document	Αρίθμηση και αυτών των αρχείων, συνεχίζοντας μετά από αυτό το έγγραφο
+	Add Files…	Προσθήκη αρχείων…
+	Save them in	Αποθήκευση στο
+	Choose Folder…	Επιλογή φακέλου…
+	No folder chosen	Δεν επιλέχθηκε φάκελος
+	Each is saved as a copy named <name>_bates.pdf; the originals are not changed.	Το καθένα αποθηκεύεται ως αντίγραφο με όνομα <name>_bates.pdf· τα πρωτότυπα δεν αλλάζουν.
+	No other files were numbered: {e}	Δεν αριθμήθηκαν άλλα αρχεία: {e}
+	Numbered {n} more files, up to {last}, in {dir}.	Αριθμήθηκαν άλλα {n} αρχεία, έως το {last}, στο {dir}.
+	Not numbered: {e}	Δεν αριθμήθηκαν: {e}

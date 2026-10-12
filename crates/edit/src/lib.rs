@@ -230,8 +230,35 @@ pub fn expand(template: &str, page_number: u32, count: usize, bates: u64, cx: &C
     out
 }
 
+/// Whether a header or footer template has a Bates number.
+pub fn has_bates(template: &str) -> bool {
+    template.contains("<<Bates Number")
+}
+
+/// `template` with its Bates number counting from `start` (used to carry numbering from one
+/// file to the next). Templates without a Bates number come back unchanged.
+pub fn with_bates_start(template: &str, start: u64) -> String {
+    let Some(i) = template.find("<<Bates Number") else {
+        return template.to_string();
+    };
+    // `<<` and the token name are ASCII, so these offsets are char boundaries.
+    let body_start = i + 2;
+    let Some(len) = template.get(body_start..).and_then(|t| t.find(">>")) else {
+        return template.to_string();
+    };
+    let body = template.get(body_start..body_start + len).unwrap_or_default();
+    let mut parts: Vec<String> = body.split('#').map(str::to_owned).collect();
+    while parts.len() < 3 {
+        parts.push(if parts.len() == 1 { "6".into() } else { String::new() });
+    }
+    if let Some(p) = parts.get_mut(2) {
+        *p = start.to_string();
+    }
+    format!("{}<<{}>>{}", &template[..i], parts.join("#"), template.get(body_start + len + 2..).unwrap_or_default())
+}
+
 /// The Bates start number in a template (`<<Bates Number#digits#start#…>>`), if any.
-fn bates_start(template: &str) -> Option<u64> {
+pub fn bates_start(template: &str) -> Option<u64> {
     let i = template.find("<<Bates Number")?;
     let t = &template[i + 2..];
     let t = &t[..t.find(">>")?];
@@ -328,8 +355,13 @@ fn place(doc: &mut Document, page: &pdfcraft_model::Page, kind: MarkKind, conten
 
 /// Put content on a page, tagged `tag` (see [`place`]).
 fn place_tagged(doc: &mut Document, page: &pdfcraft_model::Page, tag: &str, content: Vec<u8>, behind: bool) -> Result<(), EditError> {
+    place_dict(doc, page, tagged(tag), content, behind)
+}
+
+/// [`place_tagged`] with the whole stream dictionary given (it carries `/PCMark`).
+fn place_dict(doc: &mut Document, page: &pdfcraft_model::Page, dict: Dict, content: Vec<u8>, behind: bool) -> Result<(), EditError> {
     let mut list = contents(doc, page)?;
-    let mark = Object::Ref(doc.add(Object::Stream(Stream::flate(tagged(tag), &content))));
+    let mark = Object::Ref(doc.add(Object::Stream(Stream::flate(dict, &content))));
     if behind {
         list.insert(0, mark);
     } else {
@@ -436,12 +468,16 @@ pub fn add_header_footer(doc: &mut Document, pages: &[usize], hf: &HeaderFooter,
     let all = page_list(doc);
     let count = all.len();
     let bates0 = hf.text.iter().find_map(|t| bates_start(t)).unwrap_or(1);
+    if bates0.checked_add(pages.len() as u64).is_none() {
+        return Err(EditError::Invalid("the Bates start number is too large".into()));
+    }
+    let bates_mark = hf.text.iter().any(|t| has_bates(t));
     for (k, &i) in pages.iter().enumerate() {
         let page = &all[i];
         let (w, h) = page.display_size(doc);
         let number =
             u32::try_from(u64::from(hf.start_number) + k as u64).map_err(|_| EditError::Invalid("the header page numbers are too large".into()))?;
-        let bates = bates0 + k as u64;
+        let bates = bates0.saturating_add(k as u64);
         let size = hf.font_size;
         let [top, bottom, left, right] = hf.margins;
         let mut body: Vec<u8> = format!("BT\n/PCHelv {} Tf\n{}\n", n(size), rgb(hf.color)).into_bytes();
@@ -477,7 +513,12 @@ pub fn add_header_footer(doc: &mut Document, pages: &[usize], hf: &HeaderFooter,
         content.extend_from_slice(END.as_bytes());
         add_resources(doc, page, None, None)?;
         let page = &page_list(doc)[i];
-        place(doc, page, MarkKind::HeaderFooter, content, false)?;
+        let mut dict = tagged(MarkKind::HeaderFooter.tag());
+        if bates_mark {
+            // So Bates numbering ▸ Remove takes only these away.
+            dict.set(b"PCBates".to_vec(), Object::Bool(true));
+        }
+        place_dict(doc, page, dict, content, false)?;
     }
     Ok(())
 }
@@ -609,6 +650,55 @@ pub fn remove_marks(doc: &mut Document, pages: &[usize], kind: MarkKind) -> Resu
         }
     }
     Ok(removed)
+}
+
+/// Whether a content stream is a header or footer with a Bates number.
+fn is_bates(doc: &Document, o: &Object) -> bool {
+    let obj = doc.resolve(o);
+    obj.as_dict().is_some_and(|d| d.name(b"PCMark") == Some(&b"HeaderFooter"[..]) && matches!(d.get(b"PCBates"), Some(Object::Bool(true))))
+}
+
+/// Remove Bates numbers (headers and footers with a Bates number) from `pages`; other headers
+/// and footers stay. Returns how many were removed.
+pub fn remove_bates(doc: &mut Document, pages: &[usize]) -> Result<usize, EditError> {
+    let all = page_list(doc);
+    check(pages, all.len())?;
+    let mut removed = 0;
+    for &i in pages {
+        let page = &all[i];
+        let list = contents(doc, page)?;
+        let before = list.len();
+        let mut kept: Vec<Object> = list.into_iter().filter(|o| !is_bates(doc, o)).collect();
+        removed += before - kept.len();
+        let is_wrap = |o: &Object| stream_tag(doc, o).as_deref() == Some("Wrap");
+        let close = kept.iter().rposition(&is_wrap);
+        let marks_on_top =
+            close.is_some_and(|c| kept.get(c + 1..).unwrap_or_default().iter().any(|o| stream_tag(doc, o).is_some_and(|t| t != "Wrap")));
+        if !marks_on_top {
+            kept.retain(|o| !is_wrap(o));
+        }
+        if before != kept.len() {
+            doc.update_dict(page.obj, |d| d.set(b"Contents".to_vec(), Object::Array(kept)))?;
+        }
+    }
+    Ok(removed)
+}
+
+/// Whether any page has a Bates number PdfCraft added (for enabling Remove).
+pub fn bates_present(doc: &Document) -> bool {
+    let all = page_list(doc);
+    all.iter().any(|page| {
+        let d = doc.get(page.obj).as_dict().cloned().unwrap_or_default();
+        let list = match d.get(b"Contents") {
+            Some(Object::Array(a)) => a.clone(),
+            Some(o) => match &*doc.resolve(o) {
+                Object::Array(a) => a.clone(),
+                _ => vec![o.clone()],
+            },
+            None => Vec::new(),
+        };
+        list.iter().any(|o| is_bates(doc, o))
+    })
 }
 
 /// Which kinds of marks the document has (for enabling Update/Remove).

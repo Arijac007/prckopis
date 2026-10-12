@@ -2363,3 +2363,13 @@ animation effects	Off	Izklopljeni
 	User name	Uporabniško ime
 	Add server	Dodaj strežnik
 	At most 32 timestamp servers.	Največ 32 strežnikov za časovne žige.
+	Remove Bates numbering	Odstrani oštevilčenje Bates
+	Also number these files, continuing after this document	Oštevilči tudi te datoteke, v nadaljevanju tega dokumenta
+	Add Files…	Dodaj datoteke …
+	Save them in	Shrani jih v
+	Choose Folder…	Izberi mapo …
+	No folder chosen	Ni izbrane mape
+	Each is saved as a copy named <name>_bates.pdf; the originals are not changed.	Vsaka se shrani kot kopija <name>_bates.pdf; izvirniki ostanejo nespremenjeni.
+	No other files were numbered: {e}	Drugih datotek nisem oštevilčil: {e}
+	Numbered {n} more files, up to {last}, in {dir}.	Oštevilčenih je še {n} datotek, do {last}, v {dir}.
+	Not numbered: {e}	Ni oštevilčeno: {e}

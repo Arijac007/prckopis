@@ -2338,3 +2338,13 @@ animation effects	Off	Wyłączone
 	User name	Nazwa użytkownika
 	Add server	Dodaj serwer
 	At most 32 timestamp servers.	Najwyżej 32 serwery znaczników czasu.
+	Remove Bates numbering	Usuń numerację Bates
+	Also number these files, continuing after this document	Ponumeruj też te pliki, kontynuując po tym dokumencie
+	Add Files…	Dodaj pliki…
+	Save them in	Zapisz je w
+	Choose Folder…	Wybierz folder…
+	No folder chosen	Nie wybrano folderu
+	Each is saved as a copy named <name>_bates.pdf; the originals are not changed.	Każdy zostanie zapisany jako kopia <name>_bates.pdf; oryginały się nie zmieniają.
+	No other files were numbered: {e}	Nie ponumerowano innych plików: {e}
+	Numbered {n} more files, up to {last}, in {dir}.	Ponumerowano kolejne pliki ({n}) do {last} w {dir}.
+	Not numbered: {e}	Nie ponumerowano: {e}

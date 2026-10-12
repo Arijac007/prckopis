@@ -2271,3 +2271,13 @@ animation effects	Off	Выкл
 	User name	Имя пользователя
 	Add server	Добавить сервер
 	At most 32 timestamp servers.	Не более 32 серверов меток времени.
+	Remove Bates numbering	Удалить нумерацию Бейтса
+	Also number these files, continuing after this document	Пронумеровать также эти файлы, продолжая после этого документа
+	Add Files…	Добавить файлы…
+	Save them in	Сохранить в
+	Choose Folder…	Выбрать папку…
+	No folder chosen	Папка не выбрана
+	Each is saved as a copy named <name>_bates.pdf; the originals are not changed.	Каждый сохраняется как копия <name>_bates.pdf; исходные файлы не меняются.
+	No other files were numbered: {e}	Другие файлы не пронумерованы: {e}
+	Numbered {n} more files, up to {last}, in {dir}.	Пронумеровано ещё файлов: {n}, до {last}, в {dir}.
+	Not numbered: {e}	Не пронумерованы: {e}

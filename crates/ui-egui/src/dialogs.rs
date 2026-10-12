@@ -1278,7 +1278,15 @@ fn dialogs(app: &mut PdfCraftApp, ctx: &egui::Context) {
     if marks_now && let (Dialog::Marks(kind), Some((_, id))) = (dialog, app.active_ids()) {
         let count = app.session.get(id).map(|d| d.info.pages.len()).unwrap_or(0);
         let edit = crate::marks_ui::edit(&app.marks_draft, kind, count);
-        app.apply_edit(edit);
+        let numbered = app.marks_draft.range.pages(count).len();
+        if app.apply_edit(edit) && kind == pdfcraft_engine::MarkKind::HeaderFooter && app.marks_draft.bates {
+            #[cfg(not(target_arch = "wasm32"))]
+            if let Some(msg) = crate::marks_ui::number_more_files(&app.marks_draft, numbered) {
+                app.notify(msg);
+            }
+            #[cfg(target_arch = "wasm32")]
+            let _ = numbered;
+        }
     }
     if boxes_now && let Some((i, id)) = app.active_ids() {
         let count = app.session.get(id).map(|d| d.info.pages.len()).unwrap_or(0);

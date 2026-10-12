@@ -2358,3 +2358,13 @@ animation effects	Off	オフ
 	User name	ユーザー名
 	Add server	サーバーを追加
 	At most 32 timestamp servers.	タイムスタンプサーバーは最大 32 件です。
+	Remove Bates numbering	ベイツ番号を削除
+	Also number these files, continuing after this document	これらのファイルにも、この文書の続きから番号を付ける
+	Add Files…	ファイルを追加…
+	Save them in	保存先
+	Choose Folder…	フォルダーを選択…
+	No folder chosen	フォルダーが選択されていません
+	Each is saved as a copy named <name>_bates.pdf; the originals are not changed.	それぞれ <name>_bates.pdf という名前のコピーとして保存されます。元のファイルは変更されません。
+	No other files were numbered: {e}	他のファイルには番号を付けませんでした: {e}
+	Numbered {n} more files, up to {last}, in {dir}.	さらに {n} 個のファイルに {last} まで番号を付けて {dir} に保存しました。
+	Not numbered: {e}	番号を付けられませんでした: {e}

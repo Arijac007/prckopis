@@ -2271,3 +2271,13 @@ animation effects	Off	ఆఫ్
 	User name	వినియోగదారు పేరు
 	Add server	సర్వర్ జోడించు
 	At most 32 timestamp servers.	గరిష్ఠంగా 32 టైమ్‌స్టాంప్ సర్వర్లు.
+	Remove Bates numbering	బేట్స్ సంఖ్యలను తీసివేయి
+	Also number these files, continuing after this document	ఈ ఫైళ్లకు కూడా, ఈ పత్రం తర్వాత కొనసాగిస్తూ సంఖ్యలు వేయి
+	Add Files…	ఫైళ్లను జోడించు…
+	Save them in	వీటిని ఇక్కడ సేవ్ చేయి
+	Choose Folder…	ఫోల్డర్ ఎంచుకోండి…
+	No folder chosen	ఫోల్డర్ ఎంచుకోలేదు
+	Each is saved as a copy named <name>_bates.pdf; the originals are not changed.	ప్రతిదీ <name>_bates.pdf అనే కాపీగా సేవ్ అవుతుంది; అసలు ఫైళ్లు మారవు.
+	No other files were numbered: {e}	ఇతర ఫైళ్లకు సంఖ్యలు వేయలేదు: {e}
+	Numbered {n} more files, up to {last}, in {dir}.	మరో {n} ఫైళ్లకు {last} వరకు సంఖ్యలు వేసి {dir}లో ఉంచాము.
+	Not numbered: {e}	సంఖ్యలు వేయలేదు: {e}

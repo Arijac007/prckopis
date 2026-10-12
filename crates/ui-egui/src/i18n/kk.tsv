@@ -2356,3 +2356,13 @@ animation effects	Off	Өшірулі
 	User name	Пайдаланушы аты
 	Add server	Сервер қосу
 	At most 32 timestamp servers.	Ең көбі 32 уақыт белгісі сервері.
+	Remove Bates numbering	Bates нөмірлеуін алып тастау
+	Also number these files, continuing after this document	Осы файлдарды да осы құжаттан кейін жалғастыра нөмірлеу
+	Add Files…	Файлдар қосу…
+	Save them in	Сақтау орны
+	Choose Folder…	Буманы таңдау…
+	No folder chosen	Бума таңдалмаған
+	Each is saved as a copy named <name>_bates.pdf; the originals are not changed.	Әрқайсысы <name>_bates.pdf атты көшірме ретінде сақталады; түпнұсқалар өзгермейді.
+	No other files were numbered: {e}	Басқа файлдар нөмірленбеді: {e}
+	Numbered {n} more files, up to {last}, in {dir}.	Тағы {n} файл {last} дейін нөмірленді, орны: {dir}.
+	Not numbered: {e}	Нөмірленбеді: {e}

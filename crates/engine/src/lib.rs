@@ -13,6 +13,7 @@
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 
 pub mod actions;
+pub mod bates;
 pub mod camera;
 pub mod camera_clean;
 pub mod camera_edges;
@@ -223,7 +224,8 @@ fn scope_of(edit: &Edit) -> Scope {
         | Edit::AddHeaderFooter { .. }
         | Edit::AddWatermark { .. }
         | Edit::AddBackground { .. }
-        | Edit::RemoveMarks { .. } => Scope::Content,
+        | Edit::RemoveMarks { .. }
+        | Edit::RemoveBates => Scope::Content,
         Edit::Batch { edits, .. } => {
             let mut scopes = edits.iter().map(scope_of);
             let first = scopes.next().unwrap_or(Scope::Full);
@@ -1328,6 +1330,8 @@ pub enum Edit {
     RemoveMarks {
         kind: MarkKind,
     },
+    /// Bates numbering ▸ Remove: headers and footers with a Bates number, from every page.
+    RemoveBates,
     /// Edit a PDF ▸ Add content ▸ Text (`text.rect` in display space).
     AddText {
         page: usize,
@@ -1720,6 +1724,7 @@ impl Edit {
             Edit::RemoveMarks { kind: MarkKind::HeaderFooter } => Label::of("Remove header & footer"),
             Edit::RemoveMarks { kind: MarkKind::Watermark } => Label::of("Remove watermark"),
             Edit::RemoveMarks { kind: MarkKind::Background } => Label::of("Remove background"),
+            Edit::RemoveBates => Label::of("Remove Bates numbering"),
             Edit::AddText { .. } => Label::of("Add text"),
             Edit::AddImage { .. } => Label::of("Add image"),
             Edit::UpdateContent { .. } => Label::of("Edit content"),
@@ -1854,6 +1859,7 @@ fn check_permission(edit: &Edit, p: &pdfcraft_cos::Permissions) -> Result<(), Ed
         | Edit::AddWatermark { .. }
         | Edit::AddBackground { .. }
         | Edit::RemoveMarks { .. }
+        | Edit::RemoveBates
         | Edit::AddField { .. }
         | Edit::ApplyRedactions { .. }
         | Edit::AddText { .. }
@@ -2239,6 +2245,12 @@ fn run_edit(doc: &mut pdfcraft_cos::Document, edit: &Edit, cx: &mut EditCtx) -> 
             let n = pdfcraft_model::pages(doc).len();
             if pdfcraft_edit::remove_marks(doc, &(0..n).collect::<Vec<_>>(), *kind)? == 0 {
                 return Err(EditError::Edit(pdfcraft_edit::EditError::Invalid("there is nothing to remove".into())));
+            }
+        }
+        Edit::RemoveBates => {
+            let n = pdfcraft_model::pages(doc).len();
+            if pdfcraft_edit::remove_bates(doc, &(0..n).collect::<Vec<_>>())? == 0 {
+                return Err(EditError::Edit(pdfcraft_edit::EditError::Invalid("there are no Bates numbers to remove".into())));
             }
         }
         Edit::AddText { page, text } => {
@@ -3387,7 +3399,10 @@ impl Session {
             ) || matches!(e, Edit::MoveObjects { objects, .. } if objects.iter().any(|o| o.kind == ObjectKind::Added))
         });
         let touches_marks = edit.is_none_or(|e| {
-            matches!(e, Edit::AddHeaderFooter { .. } | Edit::AddWatermark { .. } | Edit::AddBackground { .. } | Edit::RemoveMarks { .. })
+            matches!(
+                e,
+                Edit::AddHeaderFooter { .. } | Edit::AddWatermark { .. } | Edit::AddBackground { .. } | Edit::RemoveMarks { .. } | Edit::RemoveBates
+            )
         });
         (touches_added, touches_marks)
     }

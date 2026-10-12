@@ -659,6 +659,8 @@ impl Automation {
             }
             "doc_export_images" | "doc_export_text" | "doc_export_all_images" => self.export(name, &a)?,
             "doc_header_footer" | "doc_watermark" | "doc_background" | "doc_remove_marks" => self.marks(name, &a)?,
+            "doc_remove_bates" => self.apply(&a, Edit::RemoveBates)?,
+            "doc_bates_files" => self.bates_files(&a)?,
             "doc_unprotect" => {
                 let mut out = self.apply(&a, Edit::RemoveProtection)?;
                 out["security"] = security(self.doc(&a)?);
@@ -1425,6 +1427,66 @@ impl Automation {
         });
         let bytes = self.session.combine_each(sources)?.ok_or_else(|| ToolError::InvalidArgs("paths must list at least one file".into()))?;
         self.deliver(a, "Combined", bytes)
+    }
+
+    /// Bates-number several files with one sequence; one `<stem>_bates.pdf` each in `out_dir`.
+    fn bates_files(&mut self, a: &Args) -> Result<Value> {
+        let paths = a.strs("paths")?;
+        if paths.is_empty() || paths.len() > pdfcraft_engine::bates::MAX_FILES {
+            return Err(ToolError::InvalidArgs(format!("paths must list 1 to {} files", pdfcraft_engine::bates::MAX_FILES)));
+        }
+        let dir = self.resolve(a.str("out_dir")?, true)?;
+        let digits = a.opt_int("digits")?.unwrap_or(6);
+        if !(1..=15).contains(&digits) {
+            return Err(ToolError::InvalidArgs("digits must be 1 to 15".into()));
+        }
+        let start = a.opt_int("start")?.unwrap_or(1);
+        let start = u64::try_from(start).map_err(|_| ToolError::InvalidArgs("start must not be negative".into()))?;
+        let (prefix, suffix) = (a.opt_str("prefix")?.unwrap_or_default(), a.opt_str("suffix")?.unwrap_or_default());
+        if [prefix, suffix].iter().any(|s| s.contains('#') || s.contains('>') || s.contains('<')) {
+            return Err(ToolError::InvalidArgs("prefix and suffix can't contain #, < or >".into()));
+        }
+        let slots = ["header_left", "header_center", "header_right", "footer_left", "footer_center", "footer_right"];
+        let position = a.opt_str("position")?.unwrap_or("footer_right");
+        let slot = slots.iter().position(|s| *s == position).ok_or_else(|| ToolError::InvalidArgs(format!("unknown position {position:?}")))?;
+        let mut hf = pdfcraft_engine::HeaderFooter::default();
+        if let Some(text) = hf.text.get_mut(slot) {
+            *text = format!("<<Bates Number#{digits}#{start}#{prefix}#{suffix}>>");
+        }
+        if let Some(s) = a.opt_num("font_size")? {
+            hf.font_size = s;
+        }
+        if let Some(c) = a.opt_str("color")? {
+            hf.color = comments::parse_color(c)?;
+        }
+        let mut inputs = Vec::new();
+        let mut read_errors = Vec::new();
+        for &p in &paths {
+            match self.resolve(p, false).map_err(|e| e.to_string()).and_then(|src| std::fs::read(&src).map_err(|e| format!("{}: {e}", src.display())))
+            {
+                Ok(bytes) => inputs.push((p.to_string(), Arc::new(bytes))),
+                Err(e) => read_errors.push(json!({ "path": p, "error": e })),
+            }
+        }
+        if !read_errors.is_empty() {
+            // Numbers must run in the order given: refuse rather than skip a file silently.
+            return Err(failed(format!("can't read every file: {}", Value::Array(read_errors))));
+        }
+        std::fs::create_dir_all(&dir).map_err(|e| failed(format!("{}: {e}", dir.display())))?;
+        let run = pdfcraft_engine::bates::number_files(inputs, &hf, start);
+        let mut files = Vec::new();
+        for (p, r) in paths.iter().zip(run.files) {
+            files.push(match r {
+                Ok(f) => {
+                    let stem = Path::new(p).file_stem().map(|s| s.to_string_lossy().into_owned()).unwrap_or_else(|| "document".into());
+                    let target = unused(&dir, &format!("{stem}_bates"));
+                    write_atomic(&target, &f.bytes)?;
+                    json!({ "path": p, "output": target.to_string_lossy(), "first": f.first, "last": f.last })
+                }
+                Err(e) => json!({ "path": p, "error": e }),
+            });
+        }
+        Ok(json!({ "files": files, "next": run.next }))
     }
 
     /// One PDF per file, written into `out_dir`; a file that fails doesn't stop the others.

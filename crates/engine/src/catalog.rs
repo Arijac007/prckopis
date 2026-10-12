@@ -132,6 +132,7 @@ pub static TOOL_GROUPS: &[ToolGroup] = &[
                     item("Watermark", "stamp", "edit.watermark", Ready),
                     item("Link", "link-2", "edit.link", Ready),
                     item("Bates numbering", "hash", "edit.bates", Ready),
+                    item("Remove Bates numbering", "hash", "edit.bates.remove", Ready),
                     item("Background", "palette", "edit.background", Ready),
                     item("Attach file", "paperclip", "edit.attach", Planned("M12")),
                 ],

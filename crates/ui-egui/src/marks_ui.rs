@@ -90,6 +90,11 @@ pub struct MarksDraft {
     pub use_file: bool,
     pub file: Option<(String, std::sync::Arc<Vec<u8>>)>,
     pub file_page: usize,
+    /// Opened as Bates numbering: more files can be numbered after this document.
+    pub bates: bool,
+    /// The files numbered after this document, in order, and the folder their copies go to.
+    pub more_files: Vec<std::path::PathBuf>,
+    pub out_dir: Option<std::path::PathBuf>,
 }
 
 impl Default for MarksDraft {
@@ -107,6 +112,9 @@ impl Default for MarksDraft {
             use_file: false,
             file: None,
             file_page: 1,
+            bates: false,
+            more_files: Vec::new(),
+            out_dir: None,
         }
     }
 }
@@ -384,20 +392,28 @@ pub(crate) fn body(ui: &mut egui::Ui, app: &mut PdfCraftApp, t: &Tokens, kind: M
             }
         });
     });
+    #[cfg_attr(target_arch = "wasm32", allow(unused_mut))]
+    let mut pick_more = None;
+    #[cfg(not(target_arch = "wasm32"))]
+    if kind == MarkKind::HeaderFooter && d.bates {
+        pick_more = more_files_ui(ui, d, t);
+    }
     ui.add_space(10.0);
     let (mut apply, mut cancel) = (false, false);
     ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-        let ready = match kind {
-            MarkKind::HeaderFooter => d.hf.text.iter().any(|x| !x.trim().is_empty()),
-            MarkKind::Watermark => {
-                if d.use_file {
-                    d.file.is_some()
-                } else {
-                    !d.wm.text.trim().is_empty()
+        let ready = (d.more_files.is_empty() || d.out_dir.is_some())
+            && match kind {
+                MarkKind::HeaderFooter => d.hf.text.iter().any(|x| !x.trim().is_empty()),
+                MarkKind::Watermark => {
+                    if d.use_file {
+                        d.file.is_some()
+                    } else {
+                        !d.wm.text.trim().is_empty()
+                    }
                 }
+                MarkKind::Background => !d.use_file || d.file.is_some(),
             }
-            MarkKind::Background => !d.use_file || d.file.is_some(),
-        } && !d.range.pages(count).is_empty();
+            && !d.range.pages(count).is_empty();
         if ui.add_enabled_ui(ready, |ui| widgets::pill_button(ui, tl!("OK"), true)).inner.clicked() {
             apply = true;
         }
@@ -422,7 +438,151 @@ pub(crate) fn body(ui: &mut egui::Ui, app: &mut PdfCraftApp, t: &Tokens, kind: M
     }
     #[cfg(target_arch = "wasm32")]
     let _ = browse;
+    #[cfg(not(target_arch = "wasm32"))]
+    match pick_more {
+        Some(MorePick::Files) => {
+            let dialog = rfd::AsyncFileDialog::new().add_filter("PDF", &["pdf"]);
+            let epoch = app.dialog_epoch();
+            app.ask(crate::pickers::Ask::Files(dialog), None, move |app, paths| {
+                if app.dialog_epoch() == epoch {
+                    let d = &mut app.marks_draft;
+                    for p in paths {
+                        if !d.more_files.contains(&p) && d.more_files.len() < pdfcraft_engine::bates::MAX_FILES {
+                            d.more_files.push(p);
+                        }
+                    }
+                }
+            });
+        }
+        Some(MorePick::Folder) => {
+            let epoch = app.dialog_epoch();
+            app.ask_one(crate::pickers::Ask::Folder(rfd::AsyncFileDialog::new()), None, move |app, p| {
+                if app.dialog_epoch() == epoch {
+                    app.marks_draft.out_dir = Some(p);
+                }
+            });
+        }
+        None => {}
+    }
     (apply, cancel)
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+enum MorePick {
+    Files,
+    Folder,
+}
+
+/// Bates numbering: the files numbered after this document and where their copies go. Returns
+/// the picker to show (once the draft is no longer borrowed).
+#[cfg(not(target_arch = "wasm32"))]
+fn more_files_ui(ui: &mut egui::Ui, d: &mut MarksDraft, t: &Tokens) -> Option<MorePick> {
+    let mut pick = None;
+    ui.add_space(10.0);
+    ui.label(egui::RichText::new(tl!("Also number these files, continuing after this document")).font(theme::semibold(14.0)));
+    ui.horizontal(|ui| {
+        if ui.button(tl!("Add Files…")).clicked() {
+            pick = Some(MorePick::Files);
+        }
+        if !d.more_files.is_empty() && ui.button(tl!("Clear")).clicked() {
+            d.more_files.clear();
+        }
+    });
+    let mut remove = None;
+    egui::ScrollArea::vertical().max_height(110.0).id_salt("bates-files").show(ui, |ui| {
+        for (k, p) in d.more_files.iter().enumerate() {
+            ui.horizontal(|ui| {
+                ui.label(format!("{}.", k + 2));
+                ui.label(p.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default()).on_hover_text(p.to_string_lossy());
+                if ui.small_button("✕").on_hover_text(tl!("Remove")).clicked() {
+                    remove = Some(k);
+                }
+            });
+        }
+    });
+    if let Some(k) = remove {
+        d.more_files.remove(k);
+    }
+    if !d.more_files.is_empty() {
+        ui.horizontal(|ui| {
+            ui.label(tl!("Save them in"));
+            if ui.button(tl!("Choose Folder…")).clicked() {
+                pick = Some(MorePick::Folder);
+            }
+            let folder = d.out_dir.as_ref().map(|p| p.to_string_lossy().into_owned()).unwrap_or_else(|| tl!("No folder chosen").to_string());
+            ui.label(egui::RichText::new(folder).color(t.text_muted));
+        });
+        ui.label(
+            egui::RichText::new(tl!("Each is saved as a copy named <name>_bates.pdf; the originals are not changed.")).small().color(t.text_faint),
+        );
+    }
+    pick
+}
+
+/// After Bates numbering this document: number the files listed after it, continuing the
+/// sequence, and save the copies. Returns the message for the user.
+#[cfg(not(target_arch = "wasm32"))]
+pub(crate) fn number_more_files(d: &MarksDraft, first_pages: usize) -> Option<String> {
+    if d.more_files.is_empty() {
+        return None;
+    }
+    let dir = d.out_dir.clone()?;
+    let start = d.hf.text.iter().find_map(|t| pdfcraft_edit_bates_start(t)).unwrap_or(1).saturating_add(first_pages as u64);
+    let mut inputs = Vec::new();
+    let mut failed = Vec::new();
+    for p in &d.more_files {
+        let name = p.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
+        match std::fs::read(p) {
+            Ok(b) => inputs.push((name, std::sync::Arc::new(b))),
+            Err(e) => failed.push(format!("{name}: {e}")),
+        }
+    }
+    if !failed.is_empty() {
+        // The numbers must run in the order listed: number nothing rather than skip a file.
+        return Some(crate::i18n::fmt(tl!("No other files were numbered: {e}"), &[("e", &failed.join("; "))]));
+    }
+    if let Err(e) = std::fs::create_dir_all(&dir) {
+        return Some(crate::i18n::fmt(tl!("No other files were numbered: {e}"), &[("e", &e.to_string())]));
+    }
+    let run = pdfcraft_engine::bates::number_files(inputs, &d.hf, start);
+    let mut done = 0;
+    for (p, r) in d.more_files.iter().zip(run.files) {
+        let saved = r.and_then(|f| {
+            let stem = p.file_stem().map(|s| s.to_string_lossy().into_owned()).unwrap_or_else(|| "document".into());
+            let target = unused_pdf(&dir, &format!("{stem}_bates"));
+            std::fs::write(&target, &*f.bytes).map_err(|e| format!("{}: {e}", target.display()))
+        });
+        match saved {
+            Ok(()) => done += 1,
+            Err(e) => failed.push(e),
+        }
+    }
+    let last = run.next.saturating_sub(1).to_string();
+    let mut msg = crate::i18n::fmt(
+        tl!("Numbered {n} more files, up to {last}, in {dir}."),
+        &[("n", &done.to_string()), ("last", &last), ("dir", &dir.to_string_lossy())],
+    );
+    if !failed.is_empty() {
+        msg.push(' ');
+        msg.push_str(&crate::i18n::fmt(tl!("Not numbered: {e}"), &[("e", &failed.join("; "))]));
+    }
+    Some(msg)
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn pdfcraft_edit_bates_start(t: &str) -> Option<u64> {
+    pdfcraft_engine::bates::start_of(t)
+}
+
+/// `<stem>.pdf` in `dir`, or `<stem> (2).pdf` and so on when that name is taken.
+#[cfg(not(target_arch = "wasm32"))]
+fn unused_pdf(dir: &std::path::Path, stem: &str) -> std::path::PathBuf {
+    let safe: String = stem.chars().map(|c| if matches!(c, '/' | '\\' | ':') || c.is_control() { '_' } else { c }).collect();
+    let first = dir.join(format!("{safe}.pdf"));
+    if !first.exists() {
+        return first;
+    }
+    (2..10_000u32).map(|n| dir.join(format!("{safe} ({n}).pdf"))).find(|p| !p.exists()).unwrap_or(first)
 }
 
 fn mark_file(d: &MarksDraft) -> Option<pdfcraft_engine::MarkFile> {

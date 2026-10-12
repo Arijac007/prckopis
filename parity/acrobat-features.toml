@@ -2493,11 +2493,11 @@ title = "Bates numbering"
 area = "C"
 tier = "P1"
 milestone = "M7"
-status = "partial"
+status = "shipped"
 commands = ["edit.bates", "edit.header_footer"]
-tools = ["doc_header_footer"]
-evidence = ["crates/edit/src/tests.rs::tokens_expand"]
-notes = "Bates ▸ Add opens Header & Footer with a Bates number; no multi-file batch yet"
+tools = ["doc_header_footer", "doc_bates_files"]
+evidence = ["crates/edit/src/tests.rs::tokens_expand", "crates/edit/src/tests.rs::bates_start_carries_over_and_only_bates_marks_are_removed", "crates/automation/tests/automation.rs::bates_numbering_runs_across_files_and_can_be_removed"]
+notes = "Bates numbering > Add opens Header & Footer with <<Bates Number#digits#start#prefix#suffix>> in a box (1-15 digits, prefix, suffix, any of the six positions, font size, colour). Not yet: Acrobat's separate Bates dialog (it is the Header & Footer dialog), Bates numbers on attachments or portfolio files."
 
 [[feature]]
 id = "edit.bates-multi-file"
@@ -2505,11 +2505,11 @@ title = "Bates numbering across multiple files"
 area = "C"
 tier = "P1"
 milestone = "M7"
-status = "planned"
-commands = []
-tools = []
-evidence = []
-notes = ""
+status = "shipped"
+commands = ["edit.bates"]
+tools = ["doc_bates_files"]
+evidence = ["crates/engine/src/bates.rs::numbers_carry_on_across_files_and_failures_use_none", "crates/automation/tests/automation.rs::bates_numbering_runs_across_files_and_can_be_removed", "crates/ui-egui/tests/bates.rs::bates_numbers_more_files_after_the_open_document_and_removes"]
+notes = "In the Bates dialog, Add Files lists more PDFs numbered after the open document, the sequence carrying on file to file; each is saved as <name>_bates.pdf in a chosen folder (originals unchanged; signed files updated incrementally). A file that fails keeps its error and uses no numbers; a file that can't be read stops the run before anything is numbered. Not yet: a file list without an open document, reordering the list, Word/image inputs, the run happens on the UI thread (no progress bar)."
 
 [[feature]]
 id = "edit.bates-remove"
@@ -2517,11 +2517,11 @@ title = "Remove Bates numbering"
 area = "C"
 tier = "P1"
 milestone = "M7"
-status = "planned"
-commands = []
-tools = []
-evidence = []
-notes = ""
+status = "shipped"
+commands = ["edit.bates.remove"]
+tools = ["doc_remove_bates"]
+evidence = ["crates/edit/src/tests.rs::bates_start_carries_over_and_only_bates_marks_are_removed", "crates/automation/tests/automation.rs::bates_numbering_runs_across_files_and_can_be_removed"]
+notes = "Bates numbering > Remove takes away headers and footers with a Bates number PdfCraft added (tagged /PCBates); other headers and footers stay. Not yet: Bates added by Acrobat or other tools, or by PdfCraft before this version (remove those with Remove header & footer)."
 
 [[feature]]
 id = "edit.spell-check"

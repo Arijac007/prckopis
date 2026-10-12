@@ -2321,3 +2321,13 @@ animation effects	Off	Изключени
 	User name	Потребителско име
 	Add server	Добавяне на сървър
 	At most 32 timestamp servers.	Най-много 32 сървъра за времеви печати.
+	Remove Bates numbering	Премахване на номерацията Бейтс
+	Also number these files, continuing after this document	Номериране и на тези файлове, продължавайки след този документ
+	Add Files…	Добавяне на файлове…
+	Save them in	Запис в
+	Choose Folder…	Избор на папка…
+	No folder chosen	Не е избрана папка
+	Each is saved as a copy named <name>_bates.pdf; the originals are not changed.	Всеки се записва като копие <name>_bates.pdf; оригиналите не се променят.
+	No other files were numbered: {e}	Не са номерирани други файлове: {e}
+	Numbered {n} more files, up to {last}, in {dir}.	Номерирани са още файлове: {n}, до {last}, в {dir}.
+	Not numbered: {e}	Не са номерирани: {e}

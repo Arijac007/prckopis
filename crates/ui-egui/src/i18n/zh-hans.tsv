@@ -2322,3 +2322,13 @@ animation effects	Off	关
 	User name	用户名
 	Add server	添加服务器
 	At most 32 timestamp servers.	最多 32 个时间戳服务器。
+	Remove Bates numbering	删除 Bates 编号
+	Also number these files, continuing after this document	同时为这些文件编号，接着此文档继续
+	Add Files…	添加文件…
+	Save them in	保存到
+	Choose Folder…	选择文件夹…
+	No folder chosen	未选择文件夹
+	Each is saved as a copy named <name>_bates.pdf; the originals are not changed.	每个文件都保存为名为 <name>_bates.pdf 的副本；原文件不会改变。
+	No other files were numbered: {e}	未为其他文件编号：{e}
+	Numbered {n} more files, up to {last}, in {dir}.	已为另外 {n} 个文件编号，直到 {last}，保存在 {dir}。
+	Not numbered: {e}	未编号：{e}

@@ -2379,3 +2379,13 @@ animation effects	Off	معطّلة
 	User name	اسم المستخدم
 	Add server	إضافة خادم
 	At most 32 timestamp servers.	32 خادم ختم زمني كحد أقصى.
+	Remove Bates numbering	إزالة ترقيم Bates
+	Also number these files, continuing after this document	ترقيم هذه الملفات أيضًا، استكمالًا بعد هذا المستند
+	Add Files…	إضافة ملفات…
+	Save them in	حفظها في
+	Choose Folder…	اختيار مجلد…
+	No folder chosen	لم يُختر مجلد
+	Each is saved as a copy named <name>_bates.pdf; the originals are not changed.	يُحفظ كل ملف كنسخة باسم <name>_bates.pdf؛ لا تتغير الملفات الأصلية.
+	No other files were numbered: {e}	لم تُرقَّم ملفات أخرى: {e}
+	Numbered {n} more files, up to {last}, in {dir}.	رُقّمت {n} ملفات أخرى حتى {last} في {dir}.
+	Not numbered: {e}	لم تُرقَّم: {e}

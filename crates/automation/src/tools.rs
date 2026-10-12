@@ -889,6 +889,30 @@ pub fn tools() -> Vec<ToolDef> {
                 json!({ "doc": doc(), "pages": pages("to fill (default: all)"), "color": { "type": "string" }, "file": { "type": "string" }, "file_page": { "type": "integer", "minimum": 1 }, "scale": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 }, "opacity": { "type": "number", "minimum": 0, "maximum": 1 }, "replace": { "type": "boolean" } }),
                 &["doc"],
             )),
+        t(
+            "doc_bates_files",
+            "Bates-number several files",
+            "Bates Numbering with a file list: number every page of each PDF in paths, in order, with one sequence that carries on from file to file (a file that fails keeps its error and uses no numbers). The number is <<Bates Number#digits#start#prefix#suffix>> in the chosen box (default footer_right). Writes <name>_bates.pdf for each into out_dir (signed files are updated incrementally). Returns each file's first and last number and next, the number the next file would get.",
+        )
+        .cmd("edit.bates")
+        .with(schema(
+            json!({
+                "paths": { "type": "array", "items": { "type": "string" }, "minItems": 1, "maxItems": 1000 },
+                "out_dir": { "type": "string" },
+                "start": { "type": "integer", "minimum": 0, "description": "Default 1." },
+                "digits": { "type": "integer", "minimum": 1, "maximum": 15, "description": "Default 6." },
+                "prefix": { "type": "string" },
+                "suffix": { "type": "string" },
+                "position": { "type": "string", "enum": ["header_left", "header_center", "header_right", "footer_left", "footer_center", "footer_right"] },
+                "font_size": { "type": "number", "exclusiveMinimum": 0 },
+                "color": { "type": "string", "description": "#RRGGBB or a colour name." },
+            }),
+            &["paths", "out_dir"],
+        )),
+        t("doc_remove_bates", "Remove Bates numbering", "Bates Numbering ▸ Remove: take away the headers and footers with a Bates number PdfCraft added; other headers and footers stay. Undoable.")
+            .cmd("edit.bates.remove")
+            .destructive()
+            .with(schema(json!({ "doc": doc() }), &["doc"])),
         t("doc_remove_marks", "Remove header & footer, watermark or background", "Remove every header and footer, watermark or background PdfCraft (or a compatible tool) added. Undoable.")
             .destructive()
             .with(schema(json!({ "doc": doc(), "kind": { "type": "string", "enum": ["header_footer", "watermark", "background"] } }), &["doc", "kind"])),

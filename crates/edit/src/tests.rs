@@ -3093,3 +3093,27 @@ fn marked_paragraph_boundaries_and_cross_stream_transforms_survive_rewrite() {
     }
     assert_eq!(after[1].text, "Changed row");
 }
+
+#[test]
+fn bates_start_carries_over_and_only_bates_marks_are_removed() {
+    assert_eq!(with_bates_start("A <<Bates Number#6#1#PRE-#-S>> B", 42), "A <<Bates Number#6#42#PRE-#-S>> B");
+    assert_eq!(with_bates_start("<<Bates Number>>", 7), "<<Bates Number#6#7>>");
+    assert_eq!(bates_start(&with_bates_start("<<Bates Number>>", 7)), Some(7));
+    assert_eq!(with_bates_start("no number here", 7), "no number here");
+    assert_eq!(with_bates_start("<<Bates Number", 7), "<<Bates Number", "an unclosed token is left alone");
+    let hf = |t: &str| HeaderFooter {
+        text: [t.into(), String::new(), String::new(), String::new(), String::new(), String::new()],
+        ..HeaderFooter::default()
+    };
+    let mut doc = fixture();
+    add_header_footer(&mut doc, &[0], &hf("Confidential"), false, &cx()).unwrap();
+    assert!(!bates_present(&doc));
+    add_header_footer(&mut doc, &[0], &hf("<<Bates Number#6#1#ACME-#>>"), false, &cx()).unwrap();
+    assert!(bates_present(&doc));
+    assert_eq!(remove_bates(&mut doc, &[0]).unwrap(), 1);
+    assert!(!bates_present(&doc));
+    assert_eq!(marks_present(&doc), [MarkKind::HeaderFooter], "the plain header stays");
+    assert_eq!(remove_bates(&mut doc, &[0]).unwrap(), 0);
+    // A start number with no room for the pages is refused, not wrapped around.
+    assert!(add_header_footer(&mut doc, &[0], &hf(&format!("<<Bates Number#6#{}##>>", u64::MAX)), false, &cx()).is_err());
+}

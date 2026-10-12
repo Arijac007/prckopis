@@ -5554,3 +5554,32 @@ fn timestamp_servers_stamp_signatures_and_documents() {
     }
     assert!(!dir.join("never.pdf").exists());
 }
+
+#[test]
+fn bates_numbering_runs_across_files_and_can_be_removed() {
+    let dir = workdir("bates");
+    let mut a = auto(&dir);
+    let r = ok(
+        &mut a,
+        "doc_bates_files",
+        json!({ "paths": ["a.pdf", "b.pdf"], "out_dir": "numbered", "start": 7, "digits": 4, "prefix": "ACME-", "position": "footer_center" }),
+    );
+    assert_eq!(r["files"][0]["first"], 7);
+    assert_eq!(r["files"][0]["last"], 9);
+    assert_eq!(r["files"][1]["first"], 10);
+    assert_eq!(r["files"][1]["last"], 11);
+    assert_eq!(r["next"], 12);
+    assert!(dir.join("numbered").join("b_bates.pdf").exists());
+    let doc = ok(&mut a, "doc_open", json!({ "path": "numbered/b_bates.pdf" }))["doc"].as_u64().unwrap();
+    let texts = page_text(&mut a, doc);
+    assert!(texts[0].contains("ACME-0010") && texts[1].contains("ACME-0011"), "{texts:?}");
+    ok(&mut a, "doc_header_footer", json!({ "doc": doc, "header_center": "Confidential" }));
+    ok(&mut a, "doc_remove_bates", json!({ "doc": doc }));
+    let texts = page_text(&mut a, doc);
+    assert!(!texts[0].contains("ACME") && texts[0].contains("Confidential"), "only the Bates number goes: {texts:?}");
+    assert!(matches!(a.call("doc_remove_bates", &json!({ "doc": doc })), Err(ToolError::Failed(_))));
+    // A file that can't be read stops the run before numbering anything.
+    assert!(a.call("doc_bates_files", &json!({ "paths": ["a.pdf", "missing.pdf"], "out_dir": "x" })).is_err());
+    assert!(!dir.join("x").exists());
+    assert!(matches!(a.call("doc_bates_files", &json!({ "paths": ["a.pdf"], "out_dir": "x", "prefix": "a#b" })), Err(ToolError::InvalidArgs(_))));
+}

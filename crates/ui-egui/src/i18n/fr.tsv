@@ -2358,3 +2358,13 @@ animation effects	Off	Désactivés
 	User name	Nom d’utilisateur
 	Add server	Ajouter un serveur
 	At most 32 timestamp servers.	32 serveurs d’horodatage au maximum.
+	Remove Bates numbering	Supprimer la numérotation Bates
+	Also number these files, continuing after this document	Numéroter aussi ces fichiers, à la suite de ce document
+	Add Files…	Ajouter des fichiers…
+	Save them in	Les enregistrer dans
+	Choose Folder…	Choisir un dossier…
+	No folder chosen	Aucun dossier choisi
+	Each is saved as a copy named <name>_bates.pdf; the originals are not changed.	Chacun est enregistré en copie nommée <name>_bates.pdf ; les originaux ne sont pas modifiés.
+	No other files were numbered: {e}	Aucun autre fichier n’a été numéroté : {e}
+	Numbered {n} more files, up to {last}, in {dir}.	{n} fichiers de plus numérotés, jusqu’à {last}, dans {dir}.
+	Not numbered: {e}	Non numérotés : {e}

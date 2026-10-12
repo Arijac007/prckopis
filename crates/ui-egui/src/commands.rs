@@ -346,6 +346,7 @@ impl PdfCraftApp {
                     K::Background
                 };
                 self.marks_draft.replace = id.ends_with(".update");
+                self.marks_draft.bates = false;
                 self.dialog = Some(Dialog::Marks(kind));
             }
             "edit.bates" => {
@@ -356,7 +357,11 @@ impl PdfCraftApp {
                     self.marks_draft.hf.text[5] = "<<Bates Number#6#1##>>".into();
                 }
                 self.marks_draft.focused_box = 5;
+                self.marks_draft.bates = true;
                 self.dialog = Some(Dialog::Marks(pdfcraft_engine::MarkKind::HeaderFooter));
+            }
+            "edit.bates.remove" => {
+                self.apply_edit(Edit::RemoveBates);
             }
             "edit.header_footer.remove" | "edit.watermark.remove" | "edit.background.remove" => {
                 use pdfcraft_engine::MarkKind as K;

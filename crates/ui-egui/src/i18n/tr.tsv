@@ -2354,3 +2354,13 @@ animation effects	Off	Kapalı
 	User name	Kullanıcı adı
 	Add server	Sunucu ekle
 	At most 32 timestamp servers.	En fazla 32 zaman damgası sunucusu.
+	Remove Bates numbering	Bates numaralandırmasını kaldır
+	Also number these files, continuing after this document	Bu dosyaları da bu belgeden sonra devam ederek numaralandır
+	Add Files…	Dosya ekle…
+	Save them in	Şuraya kaydet
+	Choose Folder…	Klasör seç…
+	No folder chosen	Klasör seçilmedi
+	Each is saved as a copy named <name>_bates.pdf; the originals are not changed.	Her biri <name>_bates.pdf adlı bir kopya olarak kaydedilir; özgün dosyalar değişmez.
+	No other files were numbered: {e}	Başka dosya numaralandırılmadı: {e}
+	Numbered {n} more files, up to {last}, in {dir}.	{n} dosya daha {last} numarasına kadar numaralandırıldı, konum: {dir}.
+	Not numbered: {e}	Numaralandırılmadı: {e}

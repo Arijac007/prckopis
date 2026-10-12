@@ -2432,3 +2432,13 @@ animation effects	Off	Vypnuto
 	User name	Uživatelské jméno
 	Add server	Přidat server
 	At most 32 timestamp servers.	Nejvýše 32 serverů časových razítek.
+	Remove Bates numbering	Odebrat číslování Bates
+	Also number these files, continuing after this document	Očíslovat také tyto soubory, v návaznosti na tento dokument
+	Add Files…	Přidat soubory…
+	Save them in	Uložit do
+	Choose Folder…	Vybrat složku…
+	No folder chosen	Není vybrána složka
+	Each is saved as a copy named <name>_bates.pdf; the originals are not changed.	Každý se uloží jako kopie <name>_bates.pdf; originály se nemění.
+	No other files were numbered: {e}	Žádné další soubory nebyly očíslovány: {e}
+	Numbered {n} more files, up to {last}, in {dir}.	Očíslováno dalších {n} souborů až po {last} ve složce {dir}.
+	Not numbered: {e}	Neočíslováno: {e}
