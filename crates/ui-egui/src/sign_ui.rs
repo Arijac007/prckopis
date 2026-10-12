@@ -2,17 +2,17 @@
 //! click an empty signature field), the Sign with a Digital ID / Configure New Digital ID /
 //! Sign as dialogs, the Signatures panel, and the signature message bar.
 
-use pdfcraft_platform::tsa::TimestampServer;
+use prckopis_platform::tsa::TimestampServer;
 use std::path::PathBuf;
 
 use egui::{Align, Color32, CornerRadius, Layout, Pos2, Rect, Stroke, vec2};
-use pdfcraft_engine::sign::{self, Appearance, Certificate, DigitalId, Modification, Name, PrivateKey};
-use pdfcraft_engine::{SignOptions, SignatureImage, SignatureInfo, SignatureStatus};
+use prckopis_engine::sign::{self, Appearance, Certificate, DigitalId, Modification, Name, PrivateKey};
+use prckopis_engine::{SignOptions, SignatureImage, SignatureInfo, SignatureStatus};
 
 use crate::canvas::{DocView, PageXform};
 use crate::fill_sign::SavedSig;
 use crate::theme::{self, Tokens};
-use crate::{PdfCraftApp, icons, widgets};
+use crate::{PrckopisApp, icons, widgets};
 
 /// A digital ID the app knows about (Acrobat: Digital ID files). The file stays where it is;
 /// its password is asked for at each signing.
@@ -23,7 +23,7 @@ pub struct DigitalIdEntry {
     pub issuer: String,
     pub email: String,
     pub expires: String,
-    /// Why the ID can't sign (a Windows store certificate whose key PdfCraft can't use): shown
+    /// Why the ID can't sign (a Windows store certificate whose key Prckopis can't use): shown
     /// greyed with the reason, and never selectable.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub unusable: Option<String>,
@@ -152,7 +152,7 @@ pub struct SignView {
 }
 
 /// Drag a signature rectangle on one page (Digitally sign, Certify (visible signature)).
-pub(crate) fn page_input(ui: &egui::Ui, resp: &egui::Response, xf: &PageXform, page: usize, info: &pdfcraft_render::DocInfo, view: &mut DocView) {
+pub(crate) fn page_input(ui: &egui::Ui, resp: &egui::Response, xf: &PageXform, page: usize, info: &prckopis_render::DocInfo, view: &mut DocView) {
     let pointer = ui.input(|i| i.pointer.hover_pos());
     let origin = ui.input(|i| i.pointer.press_origin());
     if pointer.is_some_and(|p| xf.rect.contains(p)) {
@@ -186,8 +186,8 @@ pub(crate) fn page_input(ui: &egui::Ui, resp: &egui::Response, xf: &PageXform, p
     }
 }
 
-/// Where new digital IDs are saved: next to the recovery folder (`…/PdfCraft/Digital IDs`, or
-/// `PdfCraftData/Digital IDs` in portable mode).
+/// Where new digital IDs are saved: next to the recovery folder (`…/Prckopis/Digital IDs`, or
+/// `PrckopisData/Digital IDs` in portable mode).
 fn id_dir() -> Option<PathBuf> {
     crate::recovery::RecoveryStore::default_dir().and_then(|d| d.parent().map(|p| p.join("Digital IDs")))
 }
@@ -266,7 +266,7 @@ fn entry_unusable(u: &sign::windows::Unusable) -> DigitalIdEntry {
     }
 }
 
-impl PdfCraftApp {
+impl PrckopisApp {
     /// Start signing: the rectangle (or field) is known; show Sign with a Digital ID.
     pub fn start_signing(&mut self, page: usize, rect: Option<[f64; 4]>, field: Option<String>, certify: Option<u8>) {
         self.refresh_os_key_store_ids();
@@ -487,7 +487,7 @@ impl PdfCraftApp {
             }
             // Scanned paper becomes transparent, as for Fill & Sign image signatures.
             let image = std::fs::File::open(path)
-                .map_err(pdfcraft_engine::signature_image::SignatureImageError::from)
+                .map_err(prckopis_engine::signature_image::SignatureImageError::from)
                 .and_then(SignatureImage::read)
                 .and_then(|image| image.remove_white_background(245, 35));
             match (image, app.sign_draft.as_mut()) {
@@ -546,7 +546,7 @@ impl PdfCraftApp {
 }
 
 /// Draw the signing dialogs; returns `true` when the dialog should close.
-pub(crate) fn dialog(ui: &mut egui::Ui, app: &mut PdfCraftApp, t: &Tokens) -> bool {
+pub(crate) fn dialog(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> bool {
     let Some(step) = app.sign_draft.as_ref().map(|d| d.step) else { return true };
     match step {
         SignStep::Choose => choose(ui, app, t),
@@ -569,7 +569,7 @@ fn error(ui: &mut egui::Ui, err: &Option<String>) {
     }
 }
 
-fn choose(ui: &mut egui::Ui, app: &mut PdfCraftApp, t: &Tokens) -> bool {
+fn choose(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> bool {
     title(ui, "Sign with a Digital ID");
     ui.label(tl!("Choose the digital ID that you want to use for signing:"));
     ui.add_space(6.0);
@@ -657,7 +657,7 @@ fn choose(ui: &mut egui::Ui, app: &mut PdfCraftApp, t: &Tokens) -> bool {
     close
 }
 
-fn configure(ui: &mut egui::Ui, app: &mut PdfCraftApp, t: &Tokens) -> bool {
+fn configure(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> bool {
     title(ui, "Configure a Digital ID for Signing");
     let Some(d) = app.sign_draft.as_mut() else { return true };
     let mut close = false;
@@ -819,7 +819,7 @@ fn preview(
     ui.painter().galley(egui::pos2(x, inner.center().y - galley.size().y / 2.0), galley, Color32::BLACK);
 }
 
-fn sign_as(ui: &mut egui::Ui, app: &mut PdfCraftApp, t: &Tokens) -> bool {
+fn sign_as(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> bool {
     let ids = app.digital_ids.clone();
     let default_server = app.timestamp_servers.first().map(|s| s.name.clone());
     let Some(d) = app.sign_draft.as_mut() else { return true };
@@ -909,9 +909,9 @@ fn sign_as(ui: &mut egui::Ui, app: &mut PdfCraftApp, t: &Tokens) -> bool {
             ui.label("");
             ui.label(
                 egui::RichText::new(if entry.path.starts_with("windows:") {
-                    tl!("The key is in the Windows certificate store, which may ask to allow PdfCraft to use it.")
+                    tl!("The key is in the Windows certificate store, which may ask to allow Prckopis to use it.")
                 } else {
-                    tl!("The key is in the macOS Keychain, which may ask to allow PdfCraft to use it.")
+                    tl!("The key is in the macOS Keychain, which may ask to allow Prckopis to use it.")
                 })
                 .small()
                 .color(t.text_muted),
@@ -1313,7 +1313,7 @@ pub(crate) struct HttpTsa(pub(crate) TimestampServer);
 
 impl sign::TimestampAuthority for HttpTsa {
     fn timestamp(&self, request: &[u8]) -> Result<Vec<u8>, sign::SignError> {
-        pdfcraft_platform::tsa::post_query(&self.0, request, pdfcraft_platform::tsa::DEFAULT_TIMEOUT).map_err(sign::SignError::Crypto)
+        prckopis_platform::tsa::post_query(&self.0, request, prckopis_platform::tsa::DEFAULT_TIMEOUT).map_err(sign::SignError::Crypto)
     }
 }
 
@@ -1339,7 +1339,7 @@ pub(crate) fn servers_from_json(v: &serde_json::Value) -> Vec<TimestampServer> {
         .collect()
 }
 
-impl PdfCraftApp {
+impl PrckopisApp {
     /// Use a certificate > Timestamp: a document timestamp from the default server, saved as
     /// a copy as Acrobat does. With no server configured, Preferences open at that section.
     pub fn timestamp_document(&mut self) {
@@ -1388,10 +1388,10 @@ impl PdfCraftApp {
 }
 
 /// Preferences > Timestamp servers: the list (the first is the default), and a row to add one.
-pub(crate) fn timestamp_servers_section(ui: &mut egui::Ui, app: &mut PdfCraftApp, t: &Tokens) {
+pub(crate) fn timestamp_servers_section(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) {
     ui.label(egui::RichText::new(tl!("Timestamp servers")).font(theme::semibold(13.0)));
     ui.label(
-        egui::RichText::new(tl!("Signatures and document timestamps get their time from the first server. Only http:// addresses; timestamp replies are signed, so that is safe. Passwords are kept until PdfCraft closes."))
+        egui::RichText::new(tl!("Signatures and document timestamps get their time from the first server. Only http:// addresses; timestamp replies are signed, so that is safe. Passwords are kept until Prckopis closes."))
             .small()
             .color(t.text_muted),
     );
@@ -1470,7 +1470,7 @@ mod tests {
     fn scratch() -> PathBuf {
         static N: std::sync::atomic::AtomicU32 = std::sync::atomic::AtomicU32::new(0);
         let n = N.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-        let d = std::env::temp_dir().join(format!("pdfcraft-sign-ui-{}-{n}", std::process::id()));
+        let d = std::env::temp_dir().join(format!("prckopis-sign-ui-{}-{n}", std::process::id()));
         let _ = std::fs::remove_dir_all(&d);
         std::fs::create_dir_all(&d).unwrap();
         d
@@ -1479,7 +1479,7 @@ mod tests {
     /// Create a digital ID named "Grace Hopper" in `dir`, as Configure New Digital ID ▸ Create
     /// does. Returns where it was saved.
     fn create_in(dir: &std::path::Path) -> Result<PathBuf, String> {
-        let mut app = PdfCraftApp::new();
+        let mut app = PrckopisApp::new();
         app.export_dir_override = Some(dir.to_string_lossy().into_owned());
         let mut draft = SignDraft::new(0, None, None, None, &[]);
         // P-256 keeps the test fast.

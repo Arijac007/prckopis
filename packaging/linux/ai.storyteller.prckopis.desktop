@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Name=Prckopis
+GenericName=PDF Editor
+Comment=Read, organize, combine, split and secure PDFs
+Exec=prckopis %U
+TryExec=prckopis
+Icon=ai.storyteller.prckopis
+Terminal=false
+StartupNotify=true
+StartupWMClass=ai.storyteller.prckopis
+Categories=Office;Viewer;
+Keywords=pdf;viewer;editor;annotate;sign;forms;merge;split;
+MimeType=application/pdf;

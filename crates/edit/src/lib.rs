@@ -1,4 +1,4 @@
-//! pdfcraft-edit — page content editing (L4). Today: page marks, Acrobat's Header & footer,
+//! prckopis-edit — page content editing (L4). Today: page marks, Acrobat's Header & footer,
 //! Watermark, Background and Bates numbering (execution plan M7.6).
 //!
 //! **How marks are stored.** Each mark is one content stream appended to (or, for content behind
@@ -14,8 +14,8 @@
 
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 
-use pdfcraft_cos::{Dict, Document, Object, Stream};
-use pdfcraft_fonts::{helvetica_width, literal, win_ansi};
+use prckopis_cos::{Dict, Document, Object, Stream};
+use prckopis_fonts::{helvetica_width, literal, win_ansi};
 
 #[derive(Debug, thiserror::Error, PartialEq)]
 pub enum EditError {
@@ -24,7 +24,7 @@ pub enum EditError {
     #[error("{0}")]
     Invalid(String),
     #[error("{0}")]
-    Cos(#[from] pdfcraft_cos::CosError),
+    Cos(#[from] prckopis_cos::CosError),
 }
 
 /// The kinds of page marks.
@@ -76,7 +76,7 @@ impl Default for HeaderFooter {
 /// the document, an image (drawn into a unit square) or a form (a page of a PDF).
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct MarkSource {
-    pub xobject: pdfcraft_cos::ObjRef,
+    pub xobject: prckopis_cos::ObjRef,
     /// Its natural size in points.
     pub size: (f64, f64),
     /// An image XObject (unit square); otherwise a form whose `/Matrix` maps it to `size`.
@@ -154,7 +154,7 @@ fn picture(src: &MarkSource, page: (f64, f64), scale: f64, rotation: f64, offset
 }
 
 /// Register a mark picture in the page's own resources (`/PCPic<num>`).
-fn add_picture_resource(doc: &mut Document, page: &pdfcraft_model::Page, src: &MarkSource) -> Result<(), EditError> {
+fn add_picture_resource(doc: &mut Document, page: &prckopis_model::Page, src: &MarkSource) -> Result<(), EditError> {
     let p = doc.get(page.obj).as_dict().cloned().unwrap_or_default();
     let mut res = p.get(b"Resources").map(|r| doc.resolve(r)).and_then(|r| r.as_dict().cloned()).unwrap_or_default();
     let mut xo = res.get(b"XObject").map(|x| doc.resolve(x)).and_then(|x| x.as_dict().cloned()).unwrap_or_default();
@@ -265,8 +265,8 @@ pub fn bates_start(template: &str) -> Option<u64> {
     t.split('#').nth(2).and_then(|s| s.parse().ok()).or(Some(1))
 }
 
-fn page_list(doc: &Document) -> Vec<pdfcraft_model::Page> {
-    pdfcraft_model::pages(doc)
+fn page_list(doc: &Document) -> Vec<prckopis_model::Page> {
+    prckopis_model::pages(doc)
 }
 
 fn check(pages: &[usize], count: usize) -> Result<(), EditError> {
@@ -277,7 +277,7 @@ fn check(pages: &[usize], count: usize) -> Result<(), EditError> {
 }
 
 /// The page's `/Contents` as a list of stream references (inline content is promoted).
-fn contents(doc: &mut Document, page: &pdfcraft_model::Page) -> Result<Vec<Object>, EditError> {
+fn contents(doc: &mut Document, page: &prckopis_model::Page) -> Result<Vec<Object>, EditError> {
     let obj = doc.get(page.obj);
     let d = obj.as_dict().cloned().unwrap_or_default();
     Ok(match d.get(b"Contents").cloned() {
@@ -292,7 +292,7 @@ fn contents(doc: &mut Document, page: &pdfcraft_model::Page) -> Result<Vec<Objec
 }
 
 /// Add the font (and an opacity state) to the page's own resources.
-fn add_resources(doc: &mut Document, page: &pdfcraft_model::Page, opacity: Option<f64>, content: Option<&[u8]>) -> Result<(), EditError> {
+fn add_resources(doc: &mut Document, page: &prckopis_model::Page, opacity: Option<f64>, content: Option<&[u8]>) -> Result<(), EditError> {
     let mut res = page.dict.get(b"Resources").map(|r| doc.resolve(r)).and_then(|r| r.as_dict().cloned()).unwrap_or_default();
     let mut fonts = res.get(b"Font").map(|f| doc.resolve(f)).and_then(|f| f.as_dict().cloned()).unwrap_or_default();
     for (name, base) in [(&b"PCHelv"[..], "Helvetica"), (b"PCTimes", "Times-Roman"), (b"PCCour", "Courier")] {
@@ -323,8 +323,8 @@ fn add_resources(doc: &mut Document, page: &pdfcraft_model::Page, opacity: Optio
     Ok(())
 }
 
-const WRAP_OPEN: &[u8] = b"q %PdfCraft\n";
-const WRAP_CLOSE: &[u8] = b"Q %PdfCraft\n";
+const WRAP_OPEN: &[u8] = b"q %Prckopis\n";
+const WRAP_CLOSE: &[u8] = b"Q %Prckopis\n";
 
 #[cfg(test)]
 fn stream_bytes(doc: &Document, o: &Object) -> Option<Vec<u8>> {
@@ -349,17 +349,17 @@ fn tagged(tag: &str) -> Dict {
 
 /// Put a mark's content on a page: behind (prepended) or on top (appended, after wrapping the
 /// original content in q/Q).
-fn place(doc: &mut Document, page: &pdfcraft_model::Page, kind: MarkKind, content: Vec<u8>, behind: bool) -> Result<(), EditError> {
+fn place(doc: &mut Document, page: &prckopis_model::Page, kind: MarkKind, content: Vec<u8>, behind: bool) -> Result<(), EditError> {
     place_tagged(doc, page, kind.tag(), content, behind)
 }
 
 /// Put content on a page, tagged `tag` (see [`place`]).
-fn place_tagged(doc: &mut Document, page: &pdfcraft_model::Page, tag: &str, content: Vec<u8>, behind: bool) -> Result<(), EditError> {
+fn place_tagged(doc: &mut Document, page: &prckopis_model::Page, tag: &str, content: Vec<u8>, behind: bool) -> Result<(), EditError> {
     place_dict(doc, page, tagged(tag), content, behind)
 }
 
 /// [`place_tagged`] with the whole stream dictionary given (it carries `/PCMark`).
-fn place_dict(doc: &mut Document, page: &pdfcraft_model::Page, dict: Dict, content: Vec<u8>, behind: bool) -> Result<(), EditError> {
+fn place_dict(doc: &mut Document, page: &prckopis_model::Page, dict: Dict, content: Vec<u8>, behind: bool) -> Result<(), EditError> {
     let mut list = contents(doc, page)?;
     let mark = Object::Ref(doc.add(Object::Stream(Stream::flate(dict, &content))));
     if behind {
@@ -411,7 +411,7 @@ const END: &str = "EMC\nQ\n";
 /// such character would become a `?` on the page (#125). `lines` must split the text the way the
 /// caller draws it, so a `\r` that would be drawn is refused too.
 pub(crate) fn drawable<'a>(lines: impl IntoIterator<Item = &'a str>) -> Result<(), EditError> {
-    match lines.into_iter().find_map(pdfcraft_fonts::first_non_win_ansi) {
+    match lines.into_iter().find_map(prckopis_fonts::first_non_win_ansi) {
         Some(c) => Err(undrawable(c)),
         None => Ok(()),
     }
@@ -684,7 +684,7 @@ pub fn remove_bates(doc: &mut Document, pages: &[usize]) -> Result<usize, EditEr
     Ok(removed)
 }
 
-/// Whether any page has a Bates number PdfCraft added (for enabling Remove).
+/// Whether any page has a Bates number Prckopis added (for enabling Remove).
 pub fn bates_present(doc: &Document) -> bool {
     let all = page_list(doc);
     all.iter().any(|page| {

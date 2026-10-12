@@ -3,7 +3,7 @@
 
 use std::sync::Arc;
 
-use pdfcraft_cos::{Dict, Document, ObjRef, Object, SaveOptions, Stream, write_full, write_incremental};
+use prckopis_cos::{Dict, Document, ObjRef, Object, SaveOptions, Stream, write_full, write_incremental};
 
 /// Four pages, a shared font, document info with a non-ASCII title.
 fn fixture() -> Vec<u8> {
@@ -71,7 +71,7 @@ fn incremental_saves_stack_on_an_xref_stream_file() {
     let mut doc = Document::open(packed.clone()).unwrap();
     // Edit an object that lives in an object stream.
     let info = doc.trailer().reference(b"Info").unwrap();
-    doc.update_dict(info, |d: &mut Dict| d.set(b"Title".to_vec(), Object::String(pdfcraft_cos::PdfString { bytes: b"Second".to_vec(), hex: false })))
+    doc.update_dict(info, |d: &mut Dict| d.set(b"Title".to_vec(), Object::String(prckopis_cos::PdfString { bytes: b"Second".to_vec(), hex: false })))
         .unwrap();
     let added = doc.add(Object::Int(42));
     let updated = write_incremental(&doc, &SaveOptions::default()).unwrap();
@@ -144,7 +144,7 @@ fn qpdf_accepts_object_stream_output() {
     assert!(out.status.success());
     let doc = Document::open(Arc::new(fixture())).unwrap();
     let packed = write_full(&doc, &SaveOptions::default()).unwrap();
-    let path = std::env::temp_dir().join(format!("pdfcraft-objstm-{}.pdf", std::process::id()));
+    let path = std::env::temp_dir().join(format!("prckopis-objstm-{}.pdf", std::process::id()));
     std::fs::write(&path, &packed).unwrap();
     let check = std::process::Command::new("qpdf").arg("--check").arg(&path).output().unwrap();
     let _ = std::fs::remove_file(&path);
@@ -165,8 +165,8 @@ fn the_catalog_of_an_encrypted_document_stays_outside_object_streams() {
     let plain = Document::open(Arc::new(fixture())).unwrap();
     assert!(root_is_packed(&write_full(&plain, &SaveOptions::default()).unwrap(), None), "unencrypted: catalog in an object stream");
     let mut enc = plain.clone();
-    enc.set_encryption(&pdfcraft_cos::NewEncryption {
-        algorithm: pdfcraft_cos::Algorithm::Aes256,
+    enc.set_encryption(&prckopis_cos::NewEncryption {
+        algorithm: prckopis_cos::Algorithm::Aes256,
         user_password: "user",
         owner_password: "owner",
         permissions: -4,
@@ -187,8 +187,8 @@ fn objects_referenced_by_the_encrypt_dictionary_stay_outside_object_streams() {
     // do (pdf.js issue7665). A full save must keep them readable before decryption.
     let doc = Document::open(Arc::new(fixture())).unwrap();
     let mut enc = doc.clone();
-    enc.set_encryption(&pdfcraft_cos::NewEncryption {
-        algorithm: pdfcraft_cos::Algorithm::Aes256,
+    enc.set_encryption(&prckopis_cos::NewEncryption {
+        algorithm: prckopis_cos::Algorithm::Aes256,
         user_password: "",
         owner_password: "owner",
         permissions: -4,

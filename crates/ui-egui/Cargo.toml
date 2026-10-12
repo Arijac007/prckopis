@@ -1,6 +1,6 @@
 [package]
-name = "pdfcraft-ui-egui"
-description = "The egui shell of PdfCraft"
+name = "prckopis-ui-egui"
+description = "The egui shell of Prckopis"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -11,12 +11,12 @@ workspace = true
 
 [dependencies]
 craft-ui = { workspace = true }
-pdfcraft-fonts = { workspace = true }
-pdfcraft-engine = { workspace = true }
-pdfcraft-cos = { workspace = true }
-pdfcraft-render = { workspace = true }
-pdfcraft-model = { workspace = true }
-pdfcraft-platform = { workspace = true }
+prckopis-fonts = { workspace = true }
+prckopis-engine = { workspace = true }
+prckopis-cos = { workspace = true }
+prckopis-render = { workspace = true }
+prckopis-model = { workspace = true }
+prckopis-platform = { workspace = true }
 egui = { workspace = true, features = ["bytemuck"] }
 egui_extras = { workspace = true }
 eframe = { workspace = true, features = ["default_fonts", "wgpu", "accesskit", "persistence", "links"] }
@@ -63,10 +63,10 @@ js-sys = "0.3"
 web-sys = { version = "0.3", features = ["Window", "Document", "Element", "HtmlElement", "HtmlAnchorElement", "Blob", "BlobPropertyBag", "Url", "HtmlIFrameElement", "HtmlImageElement", "HtmlCollection", "Node", "EventTarget"] }
 
 [dev-dependencies]
-pdfcraft-xfa = { workspace = true }
+prckopis-xfa = { workspace = true }
 egui_kittest = { workspace = true, features = ["eframe", "wgpu"] }
 image = { version = "0.25", default-features = false, features = ["png"] }
-# Glyph-coverage test of the interface fonts; the same skrifa pdfcraft-fonts already uses.
+# Glyph-coverage test of the interface fonts; the same skrifa prckopis-fonts already uses.
 skrifa = "0.44"
 
 [build-dependencies]

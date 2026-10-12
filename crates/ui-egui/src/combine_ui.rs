@@ -11,10 +11,10 @@ use std::time::SystemTime;
 
 use egui::{Align, Color32, CornerRadius, Layout, Modifiers, Rect, Sense, Stroke, vec2};
 use egui_extras::{Column, TableBuilder};
-use pdfcraft_engine::SourceProblem;
+use prckopis_engine::SourceProblem;
 
 use crate::theme::{self, Tokens};
-use crate::{PdfCraftApp, icons, widgets};
+use crate::{PrckopisApp, icons, widgets};
 
 /// Same reds and ambers as the signature status (`sign_ui`).
 pub(crate) const ERROR: Color32 = Color32::from_rgb(0xD7, 0x37, 0x3F);
@@ -265,13 +265,13 @@ impl ConflictPreview {
     /// changed. A file split into parts is combined as one file, once — each group's first
     /// entry stands for it, as the combine does — and every part shows the file's preview.
     /// A file that cannot be opened previews as nothing (its row says why).
-    fn refresh(&mut self, session: &pdfcraft_engine::Session, files: &[CombineFile]) {
+    fn refresh(&mut self, session: &prckopis_engine::Session, files: &[CombineFile]) {
         let key = (files.iter().map(|f| f.id).collect(), files.iter().map(|f| f.password.is_some()).collect());
         if self.key == key && self.per_file.len() == files.len() {
             return;
         }
         let mut groups: Vec<u64> = Vec::new();
-        let mut sources: Vec<pdfcraft_engine::CombineSource> = Vec::new();
+        let mut sources: Vec<prckopis_engine::CombineSource> = Vec::new();
         let mut passwords: Vec<Option<&str>> = Vec::new();
         for f in files {
             if groups.contains(&f.group) {
@@ -321,18 +321,18 @@ enum AssessError {
 fn assess(bytes: &Arc<Vec<u8>>, password: Option<&str>) -> Result<Assessed, AssessError> {
     // The engine that combines decides whether the password works; the inspector (which may
     // not accept every password the engine does, e.g. an RC4 owner password) adds the details.
-    let check = pdfcraft_engine::combine_source_check(bytes, password);
+    let check = prckopis_engine::combine_source_check(bytes, password);
     if check == Err(SourceProblem::WrongPassword) {
         return Err(AssessError::WrongPassword);
     }
-    let info = pdfcraft_render::inspect(bytes.clone(), password);
+    let info = prckopis_render::inspect(bytes.clone(), password);
     if let (Err(SourceProblem::Unreadable(e)), Err(_)) = (&check, &info) {
         return Err(AssessError::Unreadable(e.clone()));
     }
     let info = info.ok();
     let pages = match &info {
         Some(i) => i.pages.len(),
-        None => pdfcraft_engine::source_page_count(bytes, password).unwrap_or(0),
+        None => prckopis_engine::source_page_count(bytes, password).unwrap_or(0),
     };
     let sizes: Arc<[(f32, f32)]> = match &info {
         Some(i) => i.pages.iter().map(|p| (p.width, p.height)).collect(),
@@ -472,7 +472,7 @@ impl CombineFile {
         if self.range.trim().is_empty() {
             return Ok((0..self.pages).collect());
         }
-        match pdfcraft_engine::print::select_pages(self.pages, Some(&self.range), &[], pdfcraft_engine::print::Subset::All, false) {
+        match prckopis_engine::print::select_pages(self.pages, Some(&self.range), &[], prckopis_engine::print::Subset::All, false) {
             Ok(p) if p.is_empty() => Err(tl!("No pages selected").to_string()),
             Ok(p) => Ok(p),
             Err(e) => Err(e.to_string()),
@@ -490,7 +490,7 @@ impl CombineFile {
             // checks the first page against the page count.)
             Ok((self.pages, 0))
         } else {
-            match pdfcraft_engine::print::select_pages(self.pages, Some(&self.range), &[], pdfcraft_engine::print::Subset::All, false) {
+            match prckopis_engine::print::select_pages(self.pages, Some(&self.range), &[], prckopis_engine::print::Subset::All, false) {
                 Ok(p) => match p.first() {
                     Some(first) => Ok((p.len(), *first)),
                     None => Err(tl!("No pages selected").to_string()),
@@ -582,7 +582,7 @@ struct TableEvents {
 }
 
 /// The Combine files page.
-pub(crate) fn page(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
+pub(crate) fn page(app: &mut PrckopisApp, ui: &mut egui::Ui) {
     let t = Tokens::get(ui.ctx());
     let files_hovering = ui.ctx().input(|i| !i.raw.hovered_files.is_empty());
     // Ranges are checked before anything below reads them.
@@ -857,7 +857,7 @@ pub(crate) fn page(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
 const SKIP_PROMPT_NAMES: usize = 8;
 
 /// "Leave out files that can't be read?": names them and why, then combines the others, or not.
-fn skip_prompt(app: &mut PdfCraftApp, ctx: &egui::Context) {
+fn skip_prompt(app: &mut PrckopisApp, ctx: &egui::Context) {
     if !app.combine_tab.confirm_skip {
         return;
     }
@@ -910,7 +910,7 @@ fn skip_prompt(app: &mut PdfCraftApp, ctx: &egui::Context) {
 
 /// Unlock…'s password box, floating below what opened it. Enter unlocks, Escape or a click
 /// elsewhere closes it.
-fn unlock_prompt(app: &mut PdfCraftApp, ctx: &egui::Context) {
+fn unlock_prompt(app: &mut PrckopisApp, ctx: &egui::Context) {
     let Some(mut prompt) = app.combine_tab.unlock.take() else { return };
     let t = Tokens::get(ctx);
     let files: Vec<&CombineFile> = app.combine_draft.iter().filter(|f| prompt.rows.contains(&f.id)).collect();
@@ -1117,7 +1117,7 @@ fn zoom_keys(ui: &egui::Ui, zoom: f32) -> Option<f32> {
 
 /// The grid's card size, at the right of the toolbar (right to left: larger, the percentage, the
 /// slider, smaller), as the page grid's.
-fn zoom_controls(app: &mut PdfCraftApp, ui: &mut egui::Ui, t: &Tokens, edge: f32) {
+fn zoom_controls(app: &mut PrckopisApp, ui: &mut egui::Ui, t: &Tokens, edge: f32) {
     use crate::combine_grid::{ZOOM_RANGE, zoom_step};
     let zoom = app.combine_zoom;
     // Two buttons, the percentage, the slider and the spaces between: on a line of their own when
@@ -1156,7 +1156,7 @@ fn zoom_controls(app: &mut PdfCraftApp, ui: &mut egui::Ui, t: &Tokens, edge: f32
     });
 }
 
-fn empty_state(app: &mut PdfCraftApp, ui: &mut egui::Ui, t: &Tokens, files_hovering: bool) {
+fn empty_state(app: &mut PrckopisApp, ui: &mut egui::Ui, t: &Tokens, files_hovering: bool) {
     ui.vertical_centered(|ui| {
         ui.add_space((ui.available_height() / 2.0 - 70.0).max(16.0));
         ui.add(icons::image("files", 40.0, if files_hovering { t.accent } else { t.text_faint }));
@@ -1184,7 +1184,7 @@ fn empty_state(app: &mut PdfCraftApp, ui: &mut egui::Ui, t: &Tokens, files_hover
 }
 
 /// "Add files…" with a menu of the other ways to add: folders (desktop).
-fn add_menu(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
+fn add_menu(app: &mut PrckopisApp, ui: &mut egui::Ui) {
     if !cfg!(not(target_arch = "wasm32")) {
         if widgets::icon_pill(ui, "plus", tl!("Add files…"), false).clicked() {
             app.combine_dialog();
@@ -1220,7 +1220,7 @@ fn add_menu(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
 
 /// The file table.
 fn table(
-    app: &mut PdfCraftApp,
+    app: &mut PrckopisApp,
     ui: &mut egui::Ui,
     t: &Tokens,
     checks: &[Result<usize, String>],
@@ -1350,7 +1350,7 @@ fn heading(ui: &mut egui::Ui, t: &Tokens, key: SortKey, sort: Option<(SortKey, b
 
 #[allow(clippy::too_many_arguments)]
 fn table_body(
-    app: &mut PdfCraftApp,
+    app: &mut PrckopisApp,
     ui: &mut egui::Ui,
     t: &Tokens,
     rows: &Rows,
@@ -1582,7 +1582,7 @@ fn combinable_in(dir: &std::path::Path, recursive: bool) -> (Vec<std::path::Path
 /// Whether a file with extension `ext` can join the list: a PDF, or an image or text file that
 /// becomes one.
 fn combinable(ext: &str) -> bool {
-    std::iter::once("pdf").chain(pdfcraft_engine::CONVERTIBLE).any(|c| ext.eq_ignore_ascii_case(c))
+    std::iter::once("pdf").chain(prckopis_engine::CONVERTIBLE).any(|c| ext.eq_ignore_ascii_case(c))
 }
 
 /// A file's bookmark in the combined PDF: its name without ".pdf", or without the extension of
@@ -1832,7 +1832,7 @@ fn utc_stamp(time: SystemTime) -> String {
     format!("{y:04}-{m:02}-{d:02} {:02}:{:02} UTC", rem / 3600, rem % 3600 / 60)
 }
 
-impl PdfCraftApp {
+impl PrckopisApp {
     /// Show the Combine files tab (File ▸ Combine files…), opening it if needed.
     pub fn open_combine_tab(&mut self) {
         self.combine_tab.open = true;
@@ -2368,7 +2368,7 @@ impl PdfCraftApp {
                 Err(e) => {
                     // (The engine's message names the file, which the row already shows.)
                     let e = match e {
-                        pdfcraft_engine::EditError::Source(m) => m,
+                        prckopis_engine::EditError::Source(m) => m,
                         other => other.to_string(),
                     };
                     let why = e.strip_prefix(&format!("{name}: ")).unwrap_or(&e).to_string();
@@ -2560,9 +2560,9 @@ mod tests {
             out.extend_from_slice(format!("{o:010} 00000 n \n").as_bytes());
         }
         out.extend_from_slice(format!("trailer\n<< /Size {} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n", objs.len() + 1).as_bytes());
-        let mut doc = pdfcraft_cos::Document::open(Arc::new(out)).unwrap();
-        doc.set_encryption(&pdfcraft_cos::NewEncryption {
-            algorithm: pdfcraft_cos::Algorithm::Aes256,
+        let mut doc = prckopis_cos::Document::open(Arc::new(out)).unwrap();
+        doc.set_encryption(&prckopis_cos::NewEncryption {
+            algorithm: prckopis_cos::Algorithm::Aes256,
             user_password: "pw",
             owner_password: "owner",
             permissions: -1,
@@ -2570,14 +2570,14 @@ mod tests {
             seed: [4; 32],
         })
         .unwrap();
-        pdfcraft_cos::write_full(&doc, &Default::default()).unwrap()
+        prckopis_cos::write_full(&doc, &Default::default()).unwrap()
     }
 
     #[test]
     fn every_read_of_a_file_is_new_even_after_undo() {
         // Regression: the read counter lived in the undo history, so unlock → undo → unlock (with
         // another password) could repeat a value and keep a thumbnail of the other read.
-        let mut app = PdfCraftApp::new();
+        let mut app = PrckopisApp::new();
         app.stage_combine(vec![("secret.pdf".into(), locked())]);
         let added = app.combine_draft[0].auth;
         assert!(app.combine_unlock_rows(&[0], "pw"));
@@ -2591,7 +2591,7 @@ mod tests {
 
     #[test]
     fn moves_by_rank_never_lose_or_repeat_a_file() {
-        let mut app = PdfCraftApp::new();
+        let mut app = PrckopisApp::new();
         app.stage_combine((0..6).map(|i| (format!("f{i}.pdf"), locked())).collect());
         let mut ids: Vec<u64> = app.combine_draft.iter().map(|f| f.id).collect();
         for (moving, gap) in [(vec![0usize, 2, 4], 6), (vec![5], 0), (vec![1, 3], 3)] {
@@ -2626,7 +2626,7 @@ mod tests {
         // Whatever comes out reads back as the same pages.
         for pages in [vec![0, 1, 2, 5, 4, 3, 3, 7], vec![9, 0, 9, 1], vec![2, 1, 0, 1, 2]] {
             let range = range_of(&pages, 10);
-            let back = pdfcraft_engine::print::select_pages(10, Some(&range), &[], pdfcraft_engine::print::Subset::All, false).unwrap();
+            let back = prckopis_engine::print::select_pages(10, Some(&range), &[], prckopis_engine::print::Subset::All, false).unwrap();
             assert_eq!(back, pages, "{range}");
         }
     }

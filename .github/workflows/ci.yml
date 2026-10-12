@@ -54,7 +54,7 @@ jobs:
 
       - name: Require Windows executable resources
         if: runner.os == 'Windows'
-        run: Add-Content -Path $env:GITHUB_ENV -Value 'PDFCRAFT_REQUIRE_WINRES=1'
+        run: Add-Content -Path $env:GITHUB_ENV -Value 'PRCKOPIS_REQUIRE_WINRES=1'
         shell: pwsh
 
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
@@ -86,7 +86,7 @@ jobs:
 
       - name: CLI without the MCP server still builds
         if: runner.os == 'Linux'
-        run: cargo check -p pdfcraft-cli --no-default-features
+        run: cargo check -p prckopis-cli --no-default-features
 
   wasm:
     name: wasm32 check

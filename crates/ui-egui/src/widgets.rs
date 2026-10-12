@@ -3,7 +3,7 @@
 use egui::{Align2, Color32, CornerRadius, Rect, Response, Sense, Stroke, vec2};
 
 use crate::theme::{self, Tokens};
-use crate::{PdfCraftApp, icons};
+use crate::{PrckopisApp, icons};
 
 /// Horizontal and vertical inset of a single-line field.
 const FIELD_MARGIN: egui::Margin = egui::Margin::symmetric(10, 6);
@@ -339,7 +339,7 @@ fn wrapped_lines(ui: &egui::Ui, text: &str, font: &egui::FontId, width: f32, tru
     let mut hasher = std::collections::hash_map::DefaultHasher::new();
     (text, font, width.to_bits(), ui.ctx().pixels_per_point().to_bits(), truncate).hash(&mut hasher);
     let key = hasher.finish();
-    let cache_id = egui::Id::new("pdfcraft-rtl-wrap-cache");
+    let cache_id = egui::Id::new("prckopis-rtl-wrap-cache");
     if let Some(hit) = ui.ctx().data_mut(|d| d.get_temp_mut_or_default::<WrapCache>(cache_id).lines.get(&key).cloned()) {
         return hit;
     }
@@ -376,7 +376,7 @@ fn wrapped_lines(ui: &egui::Ui, text: &str, font: &egui::FontId, width: f32, tru
 }
 
 /// Transient message at the bottom centre.
-pub fn toast(app: &mut PdfCraftApp, ctx: &egui::Context) {
+pub fn toast(app: &mut PrckopisApp, ctx: &egui::Context) {
     let Some((msg, start)) = app.toast.clone() else { return };
     let now = ctx.input(|i| i.time);
     let start = if start == 0.0 { now } else { start };
@@ -428,10 +428,10 @@ pub struct ProgressNotice {
 /// Where the progress notice keeps its height this frame, for placing the toast above it.
 const PROGRESS_HEIGHT: &str = "progress-notice-height";
 
-/// Draw [`PdfCraftApp::progress_notice`]: the label, a bar that eases towards the fraction with
+/// Draw [`PrckopisApp::progress_notice`]: the label, a bar that eases towards the fraction with
 /// a light sweeping across it, the percentage and Cancel. Returns true when Cancel was clicked.
 /// With animation effects off ([`crate::motion`]) the bar steps to the fraction and has no sweep.
-pub fn progress_notice(app: &PdfCraftApp, ctx: &egui::Context) -> bool {
+pub fn progress_notice(app: &PrckopisApp, ctx: &egui::Context) -> bool {
     let Some(p) = &app.progress_notice else { return false };
     let t = Tokens::get(ctx);
     let screen = ctx.content_rect();
@@ -519,13 +519,13 @@ pub fn artcraft_mark(ui: &mut egui::Ui, size: f32) -> Response {
     )
 }
 
-/// Buttons for the PdfCraft links (`pdfcraft_engine::links`).
+/// Buttons for the Prckopis links (`prckopis_engine::links`).
 /// Returns the registry command of the one clicked.
 pub fn community_links(ui: &mut egui::Ui) -> Option<&'static str> {
     let mut clicked = None;
     ui.horizontal_wrapped(|ui| {
         ui.spacing_mut().item_spacing = vec2(8.0, 8.0);
-        for l in pdfcraft_engine::links::LINKS {
+        for l in prckopis_engine::links::LINKS {
             if icon_pill(ui, l.icon, tl!(l.label), false).on_hover_text(l.url).clicked() {
                 clicked = Some(l.command);
             }
@@ -686,7 +686,7 @@ mod tests {
         output.drop_without_applying_deltas();
     }
 
-    fn toast_rect(app: &mut PdfCraftApp, ctx: &egui::Context, width: f32, now: &mut f64) -> Rect {
+    fn toast_rect(app: &mut PrckopisApp, ctx: &egui::Context, width: f32, now: &mut f64) -> Rect {
         // Let the Area settle after a notice/viewport change, without advancing to
         // expiry. No native rendering or renderer worker is needed for this layout.
         for _ in 0..3 {
@@ -703,7 +703,7 @@ mod tests {
     #[test]
     fn toast_width_adapts_to_long_notices_and_narrow_viewports() {
         let ctx = egui::Context::default();
-        let mut app = PdfCraftApp::new();
+        let mut app = PrckopisApp::new();
         let mut now = 1.0;
         app.notify("Saved");
         let short = toast_rect(&mut app, &ctx, 1280.0, &mut now);
@@ -748,7 +748,7 @@ mod tests {
         let ctx = egui::Context::default();
         ctx.set_fonts(theme::font_definitions());
         let cache_len =
-            |ctx: &egui::Context| ctx.data_mut(|d| d.get_temp_mut_or_default::<WrapCache>(egui::Id::new("pdfcraft-rtl-wrap-cache")).lines.len());
+            |ctx: &egui::Context| ctx.data_mut(|d| d.get_temp_mut_or_default::<WrapCache>(egui::Id::new("prckopis-rtl-wrap-cache")).lines.len());
         let persian = "این یک نظر طولانی به زبان فارسی است که باید در چند خط شکسته شود";
         let long = persian.repeat(2_000);
         let mut first = None;

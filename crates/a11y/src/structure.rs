@@ -13,8 +13,8 @@ use std::cmp::Ordering;
 use std::collections::{BTreeMap, BTreeSet, BinaryHeap, HashMap, HashSet};
 use std::sync::Arc;
 
-use pdfcraft_cos::{Dict, Document, ObjRef, Object};
-use pdfcraft_model::Page;
+use prckopis_cos::{Dict, Document, ObjRef, Object};
+use prckopis_model::Page;
 
 use crate::{Finding, MAX_FINDINGS, Rule};
 

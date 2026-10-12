@@ -10,7 +10,7 @@ pub const MAX_FILES: usize = 1000;
 
 /// The Bates start number in a header or footer template, if it has one.
 pub fn start_of(template: &str) -> Option<u64> {
-    pdfcraft_edit::bates_start(template)
+    prckopis_edit::bates_start(template)
 }
 
 /// One numbered file.
@@ -35,7 +35,7 @@ pub struct Run {
 /// `<<Bates Number…>>` token), counting from `start`.
 pub fn number_files(files: Vec<(String, Arc<Vec<u8>>)>, settings: &HeaderFooter, start: u64) -> Run {
     let mut run = Run { files: Vec::new(), next: start };
-    if !settings.text.iter().any(|t| pdfcraft_edit::has_bates(t)) {
+    if !settings.text.iter().any(|t| prckopis_edit::has_bates(t)) {
         run.files = files.into_iter().map(|(name, _)| Err(format!("{name}: the header and footer have no Bates number"))).collect();
         return run;
     }
@@ -66,7 +66,7 @@ fn number_one(name: &str, bytes: Arc<Vec<u8>>, settings: &HeaderFooter, start: u
     }
     let mut hf = settings.clone();
     for t in &mut hf.text {
-        *t = pdfcraft_edit::with_bates_start(t, start);
+        *t = prckopis_edit::with_bates_start(t, start);
     }
     s.apply(id, Edit::AddHeaderFooter { pages: (0..pages).collect(), settings: hf, replace: false }).map_err(|e| e.to_string())?;
     let d = s.get(id).ok_or("the document was lost")?;

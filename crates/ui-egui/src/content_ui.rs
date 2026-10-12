@@ -4,8 +4,8 @@
 //! Delete to remove it. Each change is one undoable engine edit.
 
 use egui::{Color32, CornerRadius, Pos2, Rect, Stroke};
-use pdfcraft_engine::{Added, AddedContent, AddedText, Edit, FontFamily, TextAlign};
-use pdfcraft_render::DocInfo;
+use prckopis_engine::{Added, AddedContent, AddedText, Edit, FontFamily, TextAlign};
+use prckopis_render::DocInfo;
 
 use crate::canvas::{DocView, PageXform};
 use crate::theme::Tokens;
@@ -24,7 +24,7 @@ pub(crate) fn undrawable(d: &TextDraft, memo: &UndrawableMemo) -> Option<char> {
     {
         return *c;
     }
-    let c = pdfcraft_engine::first_undrawable(&t);
+    let c = prckopis_engine::first_undrawable(&t);
     *memo.borrow_mut() = Some((t, c));
     c
 }
@@ -42,15 +42,15 @@ pub(crate) fn undrawable_message(c: char) -> String {
     )
 }
 
-/// The warning after an edit that saved text its font can't draw: PdfCraft drew `?` for it (a form
+/// The warning after an edit that saved text its font can't draw: Prckopis drew `?` for it (a form
 /// field, which other viewers redraw from its value, or a comment, where the `?` shows everywhere).
-pub(crate) fn undrawn_message(n: &pdfcraft_engine::TextNotice) -> String {
+pub(crate) fn undrawn_message(n: &prckopis_engine::TextNotice) -> String {
     let template = if n.redrawn_elsewhere {
         tl!(
-            "This field's font can't draw “{c}” ({code}), so PdfCraft shows ? in its place. The value is saved, and other PDF viewers redraw the field from it."
+            "This field's font can't draw “{c}” ({code}), so Prckopis shows ? in its place. The value is saved, and other PDF viewers redraw the field from it."
         )
     } else {
-        tl!("The fonts PdfCraft writes with can't draw “{c}” ({code}), so it shows as ? in every PDF viewer. The text is saved.")
+        tl!("The fonts Prckopis writes with can't draw “{c}” ({code}), so it shows as ? in every PDF viewer. The text is saved.")
     };
     crate::i18n::fmt(template, &[("c", &n.ch.to_string()), ("code", &format!("U+{:04X}", u32::from(n.ch)))])
 }
@@ -482,7 +482,7 @@ pub(crate) fn hint(ui: &mut egui::Ui, t: &Tokens) {
     ui.add_space(4.0);
 }
 
-impl crate::PdfCraftApp {
+impl crate::PrckopisApp {
     /// Pick an image file for the active document, read it, and call `then` with its name and
     /// bytes: now when `save_override` answers (tests and automation never see a native dialog),
     /// otherwise on a later frame, and only if that document is still the active one.
@@ -523,7 +523,7 @@ impl crate::PdfCraftApp {
             app.apply_edit(Edit::EditPageImage {
                 page,
                 index,
-                change: pdfcraft_engine::ImageEdit::Replace { name, bytes: std::sync::Arc::new(bytes) },
+                change: prckopis_engine::ImageEdit::Replace { name, bytes: std::sync::Arc::new(bytes) },
             });
         });
         #[cfg(target_arch = "wasm32")]
@@ -590,18 +590,18 @@ impl crate::PdfCraftApp {
 
 /// What the image tools ask for.
 pub(crate) enum ImageAction {
-    Update(pdfcraft_engine::AddedContent),
+    Update(prckopis_engine::AddedContent),
     Replace,
 }
 
 /// Edit image: rotate, flip, crop, replace (shown while an added image is selected).
-pub(crate) fn image_panel(ui: &mut egui::Ui, t: &Tokens, img: &pdfcraft_engine::AddedImage) -> Option<ImageAction> {
+pub(crate) fn image_panel(ui: &mut egui::Ui, t: &Tokens, img: &prckopis_engine::AddedImage) -> Option<ImageAction> {
     let mut out = None;
     widgets::section_title(ui, tl!("Edit image"));
     ui.horizontal(|ui| {
         let mut i = img.clone();
         let r = i.rect;
-        let turn = |i: &mut pdfcraft_engine::AddedImage, k: u8| {
+        let turn = |i: &mut prckopis_engine::AddedImage, k: u8| {
             i.rotation = (i.rotation + k) % 4;
             // The box turns with the picture, around its centre.
             let (cx, cy, w, h) = ((r[0] + r[2]) / 2.0, (r[1] + r[3]) / 2.0, r[2] - r[0], r[3] - r[1]);

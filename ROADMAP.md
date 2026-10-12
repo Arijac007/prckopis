@@ -1,4 +1,4 @@
-# PdfCraft roadmap
+# Prckopis roadmap
 
 **Stage: alpha** · next: beta, ~26% (ready for real work 49% → 75%) and ~400–700 h away
 
@@ -11,9 +11,9 @@
 > **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-11 · **Change:** minor (architectural paper controls from #599; localized shortcut labels, #496; readiness table with hours per audience; full number as weighted sum 49%; earlier: second look: ready 40% → 47%, mainstream 55% added; core-workflow gate applied → alpha) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
 > **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-11 · **Change:** minor (closed issues synced: #774, #756 and the #799–#821 batch; earlier: localized shortcut labels, #496; readiness table with hours per audience; full number as weighted sum 49%; earlier: second look: ready 40% → 47%, mainstream 55% added; core-workflow gate applied → alpha) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
 
-PdfCraft's one-page summary: how close it is to Adobe Acrobat Pro's offline feature set, and what
+Prckopis's one-page summary: how close it is to Adobe Acrobat Pro's offline feature set, and what
 comes next. Adobe's cloud services (Document Cloud, Acrobat Sign requests, shared review, the AI
-Assistant) are out of scope; PdfCraft's alternatives are local-first plus opt-in providers.
+Assistant) are out of scope; Prckopis's alternatives are local-first plus opt-in providers.
 
 | Document | Holds |
 |---|---|
@@ -25,7 +25,7 @@ Assistant) are out of scope; PdfCraft's alternatives are local-first plus opt-in
 | [docs/ui-parity.md](docs/ui-parity.md) | Tools, handles, shortcuts, panels, preferences |
 | [docs/hardware-parity.md](docs/hardware-parity.md) | GPU, printers, scanners, smart cards, pen, platforms |
 | [docs/localization-parity.md](docs/localization-parity.md) | Per-language status |
-| [docs/architecture.md](docs/architecture.md) | How PdfCraft is built |
+| [docs/architecture.md](docs/architecture.md) | How Prckopis is built |
 | `parity/acrobat-features.toml` | The machine-checked checklist (`cargo xtask parity`) |
 
 **Keep it current:** every session, update the milestone row in [docs/roadmap.md](docs/roadmap.md)
@@ -140,6 +140,7 @@ Ranked; detail and the full milestone table in [docs/roadmap.md](docs/roadmap.md
 
 ## Progress log
 
+- **2026-10-12 (rename):** PdfCraft is renamed Prckopis: crates and binaries `prckopis*`, bundle id `ai.storyteller.prckopis`, environment variables `PRCKOPIS_*`, the MCP resource scheme `prckopis://`, packaging, icon file names and the macOS DMG title. The repo and web page keep their addresses (`storytold/pdfcraft`, getartcraft.com/apps/pdfcraft). On first launch the app moves the PdfCraft (or older PrintCraft) settings and crash-recovery folders to the new name and reads settings saved under the old keys; a portable copy takes over `PdfCraftData` and still accepts the `PdfCraft.portable` marker, so upgrades keep recent files, preferences and unsaved work. No feature change; estimates unchanged.
 - **2026-10-12 (M12, side-by-side compare):** Compare has Side by side: the older file on the left (read only, its side of each change shaded), the newer one on the right (still editable), each labelled, scrolling together page for page. The two are aligned on unchanged text, so a page inserted or deleted in the new version doesn't throw them out of step; selecting a change flashes it on both sides. `doc_compare` returns the alignment (`pages`: the old page shown beside each new page). Tested in the compare crate (alignment across an inserted and a deleted page, edges), an automation e2e test and a kittest UI test (scrolling the new side to its last page brings the old side to its matching page). Still open: filters by change type, page ranges, separate zoom per side (gap 21, now 6–12 h). Area N 30.0% → 31.3%.
 - **2026-10-12 (M10, direct network printing):** Print sends the print-ready PDF straight to network printers that have no system queue: IPP over HTTP (Print-Job with copies, collation, sides, colour mode, held jobs, release PIN, accounting code and finishings; printer state, toner and formats; list, release and cancel jobs), LPD and raw port 9100 with a PJL header, plus multicast-DNS discovery. The Print dialog gets Add network printer… (address or Find on network), Hold, Release PIN, Account code, Staple and Printer status; automation adds `net_printers`, `net_printer_status`, `net_jobs`, `net_job_cancel`, `net_job_release` and `doc_print` with `uri`. Tested against fake printers on loopback (print crate, automation e2e, kittest dialog test); ipps/TLS, HTTP sign-in, raster-only printers and physical hardware are still open. Estimates unchanged.
 - **2026-10-12 (M12, XFA scripts turned off):** When a runaway script turns an XFA form's scripts off, the app now says so: a toast as it happens (at open or after a click), and the notice bar from then on, ahead of its other notices, with a JavaScript Console button. Before, the error was only in the console, so calculations and buttons just stopped. A notice bar the user had closed comes back for it; closed again, it stays closed. The engine reports the state (`Document::xfa_scripts_off`, and `xfa_scripts_off` in `doc_info`) instead of the UI reading error text. Two kittest UI tests (a runaway at open; a runaway click after the bar was closed), engine assertions and a `doc_info` tool test. Overall unchanged.
@@ -363,7 +364,7 @@ Newest first: the date, what moved, and the new overall estimate.
   - Parity checklist: 826 Acrobat Pro features tracked in `parity/acrobat-features.toml`; `cargo xtask parity` checks every claim against code and tests. 11.8% shipped overall, 31.6% of P0.
   - Overall ≈ 9.5%.
 - **2026-09-30 (session 5, after a machine crash; no work lost):**
-  - Agent control: new `pdfcraft-automation` crate with 20 JSON-Schema tools, an opt-in MCP server (`pdfcraft-cli mcp`, stdio only, can be compiled out), and `pdfcraft-cli run`/`tools`.
+  - Agent control: new `prckopis-automation` crate with 20 JSON-Schema tools, an opt-in MCP server (`prckopis-cli mcp`, stdio only, can be compiled out), and `prckopis-cli run`/`tools`.
   - Text on rotated pages now reads along its lines; the pdf.js oracle is unchanged at median 0.980.
   - Finding text in 520 pages: 17.9 s → 3.7 s (parallel), about 20 ms when repeated (cached).
   - CI: dependency licence audit (`deny.toml`, `xtask deny`) and a GitHub workflow for macOS, Windows, Linux and wasm.

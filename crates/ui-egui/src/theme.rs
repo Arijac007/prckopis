@@ -24,7 +24,7 @@ pub enum ThemePreference {
 
 impl ThemePreference {
     /// The colours to draw. `system` is what the operating system says, `None` when it says
-    /// nothing; `fallback` is supplied by the caller. PdfCraft uses Light for an unknown desktop.
+    /// nothing; `fallback` is supplied by the caller. Prckopis uses Light for an unknown desktop.
     pub fn resolve(self, system: Option<bool>, fallback: ThemeKind) -> ThemeKind {
         match self {
             Self::Light => ThemeKind::Light,
@@ -122,7 +122,7 @@ impl Tokens {
     }
 
     pub fn get(ctx: &egui::Context) -> Self {
-        ctx.data(|d| d.get_temp::<Tokens>(egui::Id::new("pdfcraft-theme"))).unwrap_or_else(|| Self::for_kind(ThemeKind::Light))
+        ctx.data(|d| d.get_temp::<Tokens>(egui::Id::new("prckopis-theme"))).unwrap_or_else(|| Self::for_kind(ThemeKind::Light))
     }
 
     pub fn dark(&self) -> bool {
@@ -233,7 +233,7 @@ pub const SYSTEM_DEVANAGARI_FALLBACK: &str = "system-devanagari-fallback";
 /// An installed Devanagari face, when there is one, ends every family just before that one, so
 /// Hindi text draws in a build without a Devanagari face.
 ///
-/// `PDFCRAFT_SYSTEM_FONTS=0` leaves them out.
+/// `PRCKOPIS_SYSTEM_FONTS=0` leaves them out.
 pub fn installed_font_definitions(cjk: CjkPreference) -> FontDefinitions {
     #[cfg_attr(target_arch = "wasm32", expect(unused_mut))]
     let mut fonts = font_definitions_for(cjk == CjkPreference::SimplifiedChinese);
@@ -248,14 +248,14 @@ pub fn installed_font_definitions(cjk: CjkPreference) -> FontDefinitions {
             }
         }
         let need = match cjk {
-            _ if !pdfcraft_fonts::ui_chinese_fonts().is_empty() => Need::Other,
+            _ if !prckopis_fonts::ui_chinese_fonts().is_empty() => Need::Other,
             CjkPreference::SimplifiedChinese => Need::Hans,
             CjkPreference::TraditionalChinese => Need::Hant,
             CjkPreference::Default => Need::Other,
         };
         if let Some(data) = fallback(need) {
             fonts.font_data.insert(SYSTEM_FALLBACK.to_owned(), data);
-            let japanese: Vec<String> = pdfcraft_fonts::ui_japanese_fonts().iter().map(|f| f.name()).collect();
+            let japanese: Vec<String> = prckopis_fonts::ui_japanese_fonts().iter().map(|f| f.name()).collect();
             for stack in fonts.families.values_mut() {
                 let at = match need {
                     Need::Other => None,
@@ -314,14 +314,14 @@ fn font_definitions_for_platform(prefer_hans: bool, platform: FontPolicyPlatform
         fonts.font_data.insert(name.to_owned(), Arc::new(data));
     };
     // Shared with typed signatures' fallback glyphs, so the font is embedded once.
-    add(&mut fonts, "Inter", pdfcraft_fonts::INTER_REGULAR);
+    add(&mut fonts, "Inter", prckopis_fonts::INTER_REGULAR);
     add(&mut fonts, "Inter-Medium", include_bytes!("../../../assets/fonts/Inter-Medium.ttf"));
     add(&mut fonts, "Inter-SemiBold", include_bytes!("../../../assets/fonts/Inter-SemiBold.ttf"));
     add(&mut fonts, "JetBrainsMono", include_bytes!("../../../assets/fonts/JetBrainsMono-Regular.ttf"));
     fonts.families.entry(FontFamily::Proportional).or_default().insert(0, "Inter".to_owned());
     fonts.families.entry(FontFamily::Monospace).or_default().insert(0, "JetBrainsMono".to_owned());
-    // The same static bytes pdfcraft-fonts uses for Japanese/Chinese text in PDFs: one copy, not two.
-    for face in pdfcraft_fonts::ui_cjk_fonts(prefer_hans) {
+    // The same static bytes prckopis-fonts uses for Japanese/Chinese text in PDFs: one copy, not two.
+    for face in prckopis_fonts::ui_cjk_fonts(prefer_hans) {
         let name = face.name();
         // Japanese and Chinese faces have distinct family names, so no collision here.
         if !fonts.font_data.contains_key(&name) {
@@ -334,11 +334,11 @@ fn font_definitions_for_platform(prefer_hans: bool, platform: FontPolicyPlatform
     // Arabic-script faces (file names, document titles), Telugu faces (the Telugu interface,
     // file names), Hebrew faces (file names, text being edited) and Thai faces after the CJK ones; the
     // ranges don't overlap.
-    for face in pdfcraft_fonts::ui_arabic_fonts()
+    for face in prckopis_fonts::ui_arabic_fonts()
         .into_iter()
-        .chain(pdfcraft_fonts::ui_telugu_fonts())
-        .chain(pdfcraft_fonts::ui_hebrew_fonts())
-        .chain(pdfcraft_fonts::ui_thai_fonts())
+        .chain(prckopis_fonts::ui_telugu_fonts())
+        .chain(prckopis_fonts::ui_hebrew_fonts())
+        .chain(prckopis_fonts::ui_thai_fonts())
     {
         let name = face.name();
         if !fonts.font_data.contains_key(&name) {
@@ -376,7 +376,7 @@ pub fn apply(ctx: &egui::Context, kind: ThemeKind) {
     // Our saved choice owns the palette; both egui branches receive it below.
     ctx.set_theme(egui::ThemePreference::System);
     let t = Tokens::for_kind(kind);
-    ctx.data_mut(|d| d.insert_temp(egui::Id::new("pdfcraft-theme"), t));
+    ctx.data_mut(|d| d.insert_temp(egui::Id::new("prckopis-theme"), t));
     let mut v = if t.dark() { Visuals::dark() } else { Visuals::light() };
     v.panel_fill = t.panel;
     v.window_fill = t.card;

@@ -1,5 +1,5 @@
-PdfCraft
-Copyright (c) 2026 ArtCraft Team and the PdfCraft contributors.
+Prckopis
+Copyright (c) 2026 ArtCraft Team and the Prckopis contributors.
 Licensed under the MIT License or the Apache License, Version 2.0, at your option
 (LICENSE-MIT, LICENSE-APACHE).
 
@@ -13,7 +13,7 @@ This product bundles third-party material under its own licenses, listed below. 
 list (author, source, license) is in ATTRIBUTION.md.
 
 - Lucide icons (assets/icons/*.svg) — ISC License. See assets/icons/LICENSE-lucide.txt.
-  The Windows PDF file icon (assets/app-icon/pdfcraft-document.svg and .ico) adapts Lucide's
+  The Windows PDF file icon (assets/app-icon/prckopis-document.svg and .ico) adapts Lucide's
   file-text outline and combines it with contributor-original artwork. See
   assets/app-icon/LICENSE-document.txt (ISC AND (MIT OR Apache-2.0)), packaged as
   LICENSE-document.txt beside the Windows executables.

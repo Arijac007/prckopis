@@ -5,8 +5,8 @@ use std::sync::{Arc, Mutex};
 
 use egui_kittest::Harness;
 use egui_kittest::kittest::{NodeT, Queryable};
-use pdfcraft_ui_egui::PdfCraftApp;
-use pdfcraft_ui_egui::control::{ControlClient, Reply};
+use prckopis_ui_egui::PrckopisApp;
+use prckopis_ui_egui::control::{ControlClient, Reply};
 use serde_json::{Value, json};
 
 fn fixture(n: usize) -> Vec<u8> {
@@ -34,19 +34,19 @@ fn fixture(n: usize) -> Vec<u8> {
     out
 }
 
-fn harness() -> (Harness<'static, PdfCraftApp>, ControlClient) {
+fn harness() -> (Harness<'static, PrckopisApp>, ControlClient) {
     harness_pages(5)
 }
 
-fn harness_pages(pages: usize) -> (Harness<'static, PdfCraftApp>, ControlClient) {
+fn harness_pages(pages: usize) -> (Harness<'static, PrckopisApp>, ControlClient) {
     harness_pages_at(pages, 1400.0, 1.0)
 }
 
-fn harness_pages_at(pages: usize, width: f32, scale: f32) -> (Harness<'static, PdfCraftApp>, ControlClient) {
+fn harness_pages_at(pages: usize, width: f32, scale: f32) -> (Harness<'static, PrckopisApp>, ControlClient) {
     let slot: Arc<Mutex<Option<ControlClient>>> = Arc::default();
     let s = slot.clone();
     let mut h = Harness::builder().with_size(egui::vec2(width, 900.0)).with_pixels_per_point(scale).build_eframe(move |cc| {
-        let mut app = PdfCraftApp::new();
+        let mut app = PrckopisApp::new();
         app.set_option("language", "en").unwrap();
         *s.lock().unwrap() = Some(app.attach_control(&cc.egui_ctx));
         app.open_bytes("doc.pdf", None, fixture(pages)).unwrap();
@@ -58,7 +58,7 @@ fn harness_pages_at(pages: usize, width: f32, scale: f32) -> (Harness<'static, P
 }
 
 /// Send a request and run frames until it is answered.
-fn call(h: &mut Harness<'static, PdfCraftApp>, c: &ControlClient, method: &str, params: Value) -> Reply {
+fn call(h: &mut Harness<'static, PrckopisApp>, c: &ControlClient, method: &str, params: Value) -> Reply {
     let rx = c.send(method, params);
     for _ in 0..30 {
         h.step();
@@ -69,7 +69,7 @@ fn call(h: &mut Harness<'static, PdfCraftApp>, c: &ControlClient, method: &str, 
     panic!("{method}: no reply after 30 frames");
 }
 
-fn ok(h: &mut Harness<'static, PdfCraftApp>, c: &ControlClient, method: &str, params: Value) -> Value {
+fn ok(h: &mut Harness<'static, PrckopisApp>, c: &ControlClient, method: &str, params: Value) -> Value {
     call(h, c, method, params).unwrap_or_else(|e| panic!("{method}: {e}"))
 }
 
@@ -141,7 +141,7 @@ fn control_button_focus_preserves_document_undo_redo_shortcuts() {
 #[test]
 fn control_text_focus_retains_text_undo_ownership() {
     let (mut h, c) = harness_pages(2);
-    h.state_mut().apply_edit(pdfcraft_engine::Edit::AddBookmark { parent: vec![], index: 0, title: "Target".into(), page: 0 });
+    h.state_mut().apply_edit(prckopis_engine::Edit::AddBookmark { parent: vec![], index: 0, title: "Target".into(), page: 0 });
     ok(&mut h, &c, "ui.command", json!({"id": "page.insert_blank"}));
     ok(&mut h, &c, "ui.set", json!({"key": "panel", "value": "bookmarks"}));
     let widgets = ok(&mut h, &c, "ui.inspect", json!({"query": "Search", "role": "TextInput"}));
@@ -184,7 +184,7 @@ fn control_focus_rejects_missing_ambiguous_disabled_and_nonfocusable_targets() {
     assert!(call(&mut h, &c, "ui.focus", json!({"id": disabled["id"]})).is_err());
 }
 
-fn close_requested(h: &Harness<'static, PdfCraftApp>) -> bool {
+fn close_requested(h: &Harness<'static, PrckopisApp>) -> bool {
     h.output().viewport_output.values().any(|v| v.commands.iter().any(|c| matches!(c, egui::ViewportCommand::Close)))
 }
 
@@ -226,7 +226,7 @@ fn control_quit_clean_document_requests_normal_window_close() {
 fn bookmark_titles_can_be_searched_over_control() {
     let (mut h, c) = harness();
     for (index, title, page) in [(0, "Background", 0), (1, "Target chapter", 3)] {
-        h.state_mut().apply_edit(pdfcraft_engine::Edit::AddBookmark { parent: vec![], index, title: title.into(), page });
+        h.state_mut().apply_edit(prckopis_engine::Edit::AddBookmark { parent: vec![], index, title: title.into(), page });
     }
     ok(&mut h, &c, "ui.set", json!({ "key": "panel", "value": "bookmarks" }));
     h.run_steps(3);
@@ -240,13 +240,13 @@ fn bookmark_titles_can_be_searched_over_control() {
     assert!(h.query_by_label("Background").is_none());
     ok(&mut h, &c, "ui.click", json!({ "label": "Target chapter" }));
     assert_eq!(h.state().views[0].current, 3);
-    if let Ok(dir) = std::env::var("PDFCRAFT_BOOKMARK_SHOTS") {
+    if let Ok(dir) = std::env::var("PRCKOPIS_BOOKMARK_SHOTS") {
         h.render().unwrap().save(format!("{dir}/control-filtered-bookmarks.png")).unwrap();
     }
     ok(&mut h, &c, "ui.click", json!({ "label": "Clear" }));
     h.get_by_label("Background");
     h.get_by_label("Target chapter");
-    if let Ok(dir) = std::env::var("PDFCRAFT_BOOKMARK_SHOTS") {
+    if let Ok(dir) = std::env::var("PRCKOPIS_BOOKMARK_SHOTS") {
         h.render().unwrap().save(format!("{dir}/control-cleared-bookmarks.png")).unwrap();
     }
 }
@@ -278,10 +278,10 @@ fn theme_commands_and_options_report_preference_and_effective_colours() {
 /// command ids agents drive stay exactly the same.
 #[test]
 fn language_switch_preserves_document_and_command_ids() {
-    use pdfcraft_ui_egui::i18n;
+    use prckopis_ui_egui::i18n;
     let (mut h, c) = harness();
     let doc = h.state().views[0].id;
-    h.state_mut().session.apply(doc, pdfcraft_engine::Edit::RotatePages { pages: vec![0], degrees: 90 }).unwrap();
+    h.state_mut().session.apply(doc, prckopis_engine::Edit::RotatePages { pages: vec![0], degrees: 90 }).unwrap();
     let documents = ok(&mut h, &c, "ui.state", json!({}))["documents"].clone();
     assert_eq!(documents[0]["dirty"], true);
     let commands = ok(&mut h, &c, "ui.commands", json!({}));
@@ -309,7 +309,7 @@ fn language_switch_preserves_document_and_command_ids() {
 }
 
 #[cfg(target_os = "linux")]
-fn start_autoscroll(h: &mut Harness<'static, PdfCraftApp>, c: &ControlClient) -> egui::Pos2 {
+fn start_autoscroll(h: &mut Harness<'static, PrckopisApp>, c: &ControlClient) -> egui::Pos2 {
     let p = h.state().views[0].viewport_rect().center();
     ok(h, c, "ui.click", json!({ "x": p.x, "y": p.y, "button": "middle" }));
     assert!(h.state().views[0].auto_scrolling());
@@ -327,7 +327,7 @@ struct CanvasPosition {
 
 #[cfg(target_os = "linux")]
 impl CanvasPosition {
-    fn new(h: &Harness<'static, PdfCraftApp>) -> Self {
+    fn new(h: &Harness<'static, PrckopisApp>) -> Self {
         let grid = h.state().views[0].organize.then(|| {
             let first = h.get_by_label("Page 1").rect().top();
             let (page, next_row) = Self::grid_cells(h).into_iter().find(|(_, top)| *top > first + 1.0).expect("a second grid row");
@@ -336,7 +336,7 @@ impl CanvasPosition {
         Self { grid }
     }
 
-    fn grid_cells(h: &Harness<'static, PdfCraftApp>) -> Vec<(usize, f32)> {
+    fn grid_cells(h: &Harness<'static, PrckopisApp>) -> Vec<(usize, f32)> {
         use egui_kittest::kittest::NodeT;
         let mut cells: Vec<_> = h
             .query_all_by_label_contains("Page ")
@@ -349,7 +349,7 @@ impl CanvasPosition {
         cells
     }
 
-    fn top(&self, h: &Harness<'static, PdfCraftApp>) -> f32 {
+    fn top(&self, h: &Harness<'static, PrckopisApp>) -> f32 {
         match self.grid {
             Some((columns, row_pitch)) => {
                 let (page, top) = Self::grid_cells(h).into_iter().next().expect("a rendered grid cell");
@@ -405,7 +405,7 @@ fn moving_before_middle_button_release_keeps_scrolling_without_starting_page_too
     h.state_mut().views[0].go_to_page(0);
     h.run_steps(2);
     // A middle drag must not also draw with a selected tool (egui accepts any drag button).
-    h.state_mut().quick_tool = pdfcraft_ui_egui::QuickTool::Crop;
+    h.state_mut().quick_tool = prckopis_ui_egui::QuickTool::Crop;
     let p = h.state().views[0].viewport_rect().center();
     let top = h.state().views[0].page_screen_rect(0).unwrap().top();
     ok(&mut h, &c, "ui.drag", json!({ "from": [p.x, p.y], "to": [p.x, p.y + 60.0], "steps": 12, "button": "middle" }));
@@ -447,7 +447,7 @@ fn farther_from_the_click_scrolls_faster_in_the_viewer_and_page_grid() {
         h.state_mut().views[0].organize = organize;
         h.run_steps(3);
         let position = CanvasPosition::new(&h);
-        let top = |h: &Harness<'static, PdfCraftApp>| position.top(h);
+        let top = |h: &Harness<'static, PrckopisApp>| position.top(h);
         let p = start_autoscroll(&mut h, &c);
         ok(&mut h, &c, "ui.move", json!({ "x": p.x, "y": p.y + 30.0 }));
         let before_near = top(&h);
@@ -480,8 +480,8 @@ fn autoscroll_uses_elapsed_frame_time_and_preserves_fractional_motion_in_both_vi
             h.run_steps(3);
             assert_eq!(h.ctx.pixels_per_point(), scale);
             let position = CanvasPosition::new(&h);
-            let top = |h: &Harness<'static, PdfCraftApp>| position.top(h);
-            let step = |h: &mut Harness<'static, PdfCraftApp>| {
+            let top = |h: &Harness<'static, PrckopisApp>| position.top(h);
+            let step = |h: &mut Harness<'static, PrckopisApp>| {
                 // Deliberately differ from the harness's predicted frame interval: scrolling
                 // must follow the elapsed time rather than the display's predicted rate.
                 h.input_mut().time = Some(h.ctx.input(|i| i.time) + 1.0 / f64::from(frames));
@@ -584,7 +584,7 @@ fn autoscroll_is_scoped_to_the_active_view_and_cannot_start_under_a_dialog() {
     h.run_steps(2);
     assert!(!h.state().views[0].auto_scrolling(), "returning to the tab must not resume");
     start_autoscroll(&mut h, &c);
-    h.state_mut().dialog = Some(pdfcraft_ui_egui::Dialog::About);
+    h.state_mut().dialog = Some(prckopis_ui_egui::Dialog::About);
     h.run_steps(2);
     assert!(!h.state().views[0].auto_scrolling());
     ok(&mut h, &c, "ui.click", json!({ "x": p.x, "y": p.y, "button": "middle" }));
@@ -657,7 +657,7 @@ fn middle_button_pans_while_held_outside_linux() {
     h.run_steps(3);
     h.state_mut().views[0].go_to_page(1);
     h.run_steps(2);
-    h.state_mut().quick_tool = pdfcraft_ui_egui::QuickTool::Crop;
+    h.state_mut().quick_tool = prckopis_ui_egui::QuickTool::Crop;
     let p = h.state().views[0].viewport_rect().center();
     let top = h.state().views[0].page_screen_rect(1).unwrap().top();
     ok(&mut h, &c, "ui.drag", json!({ "from": [p.x, p.y], "to": [p.x, p.y - 60.0], "steps": 12, "button": "middle" }));
@@ -769,7 +769,7 @@ fn ukrainian_preferences_and_search_keep_command_ids() {
         assert!(found["count"].as_u64().unwrap() > 0, "{dialog}: {found}");
     }
     ok(&mut h, &c, "ui.set", json!({ "key": "dialog", "value": "none" }));
-    assert!(!h.state_mut().apply_edit(pdfcraft_engine::Edit::DeletePages { pages: vec![0, 1, 2, 3, 4] }));
+    assert!(!h.state_mut().apply_edit(prckopis_engine::Edit::DeletePages { pages: vec![0, 1, 2, 3, 4] }));
     let state = ok(&mut h, &c, "ui.state", json!({}));
     assert_eq!(state["language"], "uk");
     assert_eq!(state["notice"], "Помилка «Видалити сторінки»: a document must keep at least one page");
@@ -831,13 +831,13 @@ fn japanese_dialogs_errors_and_custom_action_names() {
         assert!(found["count"].as_u64().unwrap() > 0, "{dialog}: {found}");
     }
     ok(&mut h, &c, "ui.set", json!({"key": "dialog", "value": "none"}));
-    assert!(!h.state_mut().apply_edit(pdfcraft_engine::Edit::DeletePages { pages: vec![0, 1, 2, 3, 4] }));
+    assert!(!h.state_mut().apply_edit(prckopis_engine::Edit::DeletePages { pages: vec![0, 1, 2, 3, 4] }));
     let state = ok(&mut h, &c, "ui.state", json!({}));
     // The frame is translated; the engine's own error text is shown as it is.
     assert_eq!(state["notice"], "操作「ページを削除」に失敗しました: a document must keep at least one page");
     assert_eq!(ok(&mut h, &c, "ui.state", json!({}))["documents"][0]["name"], "doc.pdf");
 
-    h.state_mut().custom_actions.push(pdfcraft_engine::actions::Action {
+    h.state_mut().custom_actions.push(prckopis_engine::actions::Action {
         name: "Save".to_string(),
         description: "Print".to_string(),
         steps: Vec::new(),
@@ -900,7 +900,7 @@ fn simplified_chinese_signature_prompts_and_errors_keep_document_state() {
     let drawn = ok(&mut h, &c, "ui.inspect", json!({"query": "请在下方绘制您的签名。"}));
     assert!(drawn["count"].as_u64().unwrap() > 0, "{drawn}");
     ok(&mut h, &c, "ui.click", json!({"label": "取消"}));
-    assert!(!h.state_mut().apply_edit(pdfcraft_engine::Edit::DeletePages { pages: vec![0, 1, 2, 3, 4] }));
+    assert!(!h.state_mut().apply_edit(prckopis_engine::Edit::DeletePages { pages: vec![0, 1, 2, 3, 4] }));
     let state = ok(&mut h, &c, "ui.state", json!({}));
     assert_eq!(state["notice"], "删除页面失败：a document must keep at least one page");
     assert_eq!(state["documents"], documents, "a language change and failed edit must preserve the document");
@@ -1017,7 +1017,7 @@ fn organize_overview_is_reachable_through_the_control_channel() {
 #[test]
 fn saved_signature_can_be_changed_through_the_control_channel() {
     let (mut h, c) = harness();
-    h.state_mut().signature = Some(pdfcraft_ui_egui::fill_sign::SavedSig::Typed("Ada Lovelace".into()));
+    h.state_mut().signature = Some(prckopis_ui_egui::fill_sign::SavedSig::Typed("Ada Lovelace".into()));
     ok(&mut h, &c, "ui.command", json!({ "id": "sign.fill.signature.change" }));
     h.run_steps(3);
     assert_eq!(h.state().signature_draft.text, "Ada Lovelace");
@@ -1029,11 +1029,11 @@ fn saved_signature_can_be_changed_through_the_control_channel() {
     ok(&mut h, &c, "ui.key", json!({ "key": "A", "modifiers": ["command"] }));
     ok(&mut h, &c, "ui.type", json!({ "text": "Grace Hopper" }));
     ok(&mut h, &c, "ui.click", json!({ "label": "Apply" }));
-    assert_eq!(h.state().signature, Some(pdfcraft_ui_egui::fill_sign::SavedSig::Typed("Grace Hopper".into())));
+    assert_eq!(h.state().signature, Some(prckopis_ui_egui::fill_sign::SavedSig::Typed("Grace Hopper".into())));
     assert_eq!(ok(&mut h, &c, "ui.state", json!({}))["quick_tool"], "fill-signature");
     ok(&mut h, &c, "ui.command", json!({ "id": "sign.fill.signature.remove" }));
     assert_eq!(h.state().signature, None);
-    h.state_mut().initials = Some(pdfcraft_ui_egui::fill_sign::SavedSig::Typed("GH".into()));
+    h.state_mut().initials = Some(prckopis_ui_egui::fill_sign::SavedSig::Typed("GH".into()));
     ok(&mut h, &c, "ui.command", json!({ "id": "sign.fill.initials.remove" }));
     assert_eq!(h.state().initials, None);
 }
@@ -1077,7 +1077,7 @@ fn screenshots_of_window_and_region() {
 fn loopback_transport_requires_the_token() {
     use std::io::{BufRead, BufReader, Write};
     let (mut h, c) = harness();
-    let ep = pdfcraft_ui_egui::control::serve(c).unwrap();
+    let ep = prckopis_ui_egui::control::serve(c).unwrap();
     let talk = |lines: Vec<Value>| {
         let port = ep.port;
         std::thread::spawn(move || {
@@ -1098,7 +1098,7 @@ fn loopback_transport_requires_the_token() {
             out
         })
     };
-    let pump = |h: &mut Harness<'static, PdfCraftApp>, t: std::thread::JoinHandle<Vec<Value>>| {
+    let pump = |h: &mut Harness<'static, PrckopisApp>, t: std::thread::JoinHandle<Vec<Value>>| {
         while !t.is_finished() {
             h.step();
         }
@@ -1159,7 +1159,7 @@ fn measurement_tools_draw_live_calibrate_save_and_export() {
     h.run_steps(3);
     let scale = h.state().session.get(doc).unwrap().measurement_scale(0, [20.0, 20.0]).unwrap();
     assert!((scale.x - 0.1).abs() < 1e-10);
-    let click = |h: &mut Harness<'static, PdfCraftApp>, c: &ControlClient, x: f32, y: f32| {
+    let click = |h: &mut Harness<'static, PrckopisApp>, c: &ControlClient, x: f32, y: f32| {
         let r = h.state().views[0].page_screen_rect(0).unwrap();
         ok(h, c, "ui.click", json!({"x":r.left()+x*r.width()/200.0,"y":r.top()+y*r.height()/300.0}));
         h.run_steps(2);
@@ -1188,7 +1188,7 @@ fn measurement_tools_draw_live_calibrate_save_and_export() {
     assert_eq!(h.state().session.get(doc).unwrap().measurements().unwrap().measurements.len(), 2);
     ok(&mut h, &c, "ui.command", json!({"id":"edit.redo"}));
     h.run_steps(2);
-    let dir = std::env::temp_dir().join(format!("pdfcraft-measure-ui-{}", std::process::id()));
+    let dir = std::env::temp_dir().join(format!("prckopis-measure-ui-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
     h.state_mut().export_dir_override = Some(dir.to_string_lossy().into());
     ok(&mut h, &c, "ui.command", json!({"id":"measure.export"}));
@@ -1203,7 +1203,7 @@ fn measurement_tools_draw_live_calibrate_save_and_export() {
 
 #[test]
 fn docking_pointer_group_float_close_restore_and_document_commands() {
-    use pdfcraft_ui_egui::docking::Panel;
+    use prckopis_ui_egui::docking::Panel;
     let (mut h, c) = harness();
     ok(&mut h, &c, "ui.set", json!({"key":"panel", "value":"bookmarks"}));
     h.run_steps(4);
@@ -1273,8 +1273,8 @@ fn docking_renders_real_pdf_default_floating_and_redocked() {
             let (mut h, c) = harness_pages_at(5, width, scale);
             ok(&mut h, &c, "ui.resize", json!({"width":width,"height":900}));
             ok(&mut h, &c, "ui.set", json!({"key":"panel","value":"bookmarks"}));
-            h.state_mut().apply_edit(pdfcraft_engine::Edit::AddBookmark { parent: vec![], index: 0, title: "Overview".into(), page: 0 });
-            h.state_mut().apply_edit(pdfcraft_engine::Edit::AddBookmark { parent: vec![], index: 1, title: "Details".into(), page: 2 });
+            h.state_mut().apply_edit(prckopis_engine::Edit::AddBookmark { parent: vec![], index: 0, title: "Overview".into(), page: 0 });
+            h.state_mut().apply_edit(prckopis_engine::Edit::AddBookmark { parent: vec![], index: 1, title: "Details".into(), page: 2 });
             for state in ["default", "floating", "redocked"] {
                 if state == "floating" {
                     ok(&mut h, &c, "ui.dock", json!({"operation":"float", "panel":"inspector", "rect":[160,100,330,480]}));
@@ -1315,7 +1315,7 @@ fn explicit_panel_requests_reveal_inactive_group_members() {
 
 #[test]
 fn home_and_combine_suppress_inspector_without_forgetting_layout_or_choice() {
-    use pdfcraft_ui_egui::docking::Panel;
+    use prckopis_ui_egui::docking::Panel;
     let (mut h, c) = harness();
     ok(&mut h, &c, "ui.set", json!({"key":"panel", "value":"bookmarks"}));
     ok(&mut h, &c, "ui.dock", json!({"operation":"float", "panel":"inspector", "rect":[170,120,330,470]}));
@@ -1334,7 +1334,7 @@ fn home_and_combine_suppress_inspector_without_forgetting_layout_or_choice() {
             h.render().unwrap().save(format!("{directory}/availability-{state}.png")).unwrap();
         }
         assert!(h.state().docking.layout.contains(&Panel::Inspector));
-        assert_eq!(h.state().right, Some(pdfcraft_ui_egui::RightPanel::Bookmarks));
+        assert_eq!(h.state().right, Some(prckopis_ui_egui::RightPanel::Bookmarks));
         assert_eq!(serde_json::to_value(&h.state().docking).unwrap(), before);
         h.state_mut().active = Some(0);
         h.state_mut().combine_tab.focused = false;
@@ -1349,9 +1349,9 @@ fn home_and_combine_suppress_inspector_without_forgetting_layout_or_choice() {
 
 #[test]
 fn malformed_docking_settings_preserve_other_preferences() {
-    let mut app = PdfCraftApp::new();
+    let mut app = PrckopisApp::new();
     app.restore(r#"{"docking":{"layout":{"root":null,"floating":[]},"hidden":[]},"default_mode":"edit","flatten_fill_sign":true}"#);
-    assert_eq!(app.default_mode, pdfcraft_ui_egui::Mode::Edit);
+    assert_eq!(app.default_mode, prckopis_ui_egui::Mode::Edit);
     app.docking.validate().unwrap();
     let saved: Value = serde_json::from_str(&app.persist()).unwrap();
     assert_eq!(saved["default_mode"], "edit");
@@ -1360,7 +1360,7 @@ fn malformed_docking_settings_preserve_other_preferences() {
 
 #[test]
 fn rail_reveals_its_remembered_inactive_inspector_then_closes_the_visible_panel() {
-    use pdfcraft_ui_egui::docking::Panel;
+    use prckopis_ui_egui::docking::Panel;
     let (mut h, c) = harness();
     ok(&mut h, &c, "ui.set", json!({"key":"panel", "value":"bookmarks"}));
     ok(&mut h, &c, "ui.dock", json!({"operation":"move", "panel":"inspector", "target":"tools", "zone":"center"}));
@@ -1389,7 +1389,7 @@ fn rail_reveals_its_remembered_inactive_inspector_then_closes_the_visible_panel(
 fn control_quit_retains_inactive_fill_sign_typing_after_cancel() {
     let (mut h, c) = harness();
     h.state_mut().views[0].fill_text =
-        Some(pdfcraft_ui_egui::fill_sign::TypeBox { page: 0, at: [40.0, 200.0], text: "Unsaved signature note".into(), focus: false });
+        Some(prckopis_ui_egui::fill_sign::TypeBox { page: 0, at: [40.0, 200.0], text: "Unsaved signature note".into(), focus: false });
     h.state_mut().active = None;
     assert!(!h.state().session.get(h.state().views[0].id).unwrap().dirty);
     assert_eq!(ok(&mut h, &c, "ui.quit", json!({})), json!({"quitting":false,"needs_confirmation":true}));
@@ -1427,19 +1427,19 @@ fn read_mode_retains_existing_rail_click_to_close_policy() {
     ok(&mut h, &c, "ui.set", json!({"key":"panel", "value":"bookmarks"}));
     ok(&mut h, &c, "ui.set", json!({"key":"mode", "value":"read"}));
     h.run_steps(3);
-    assert_eq!(h.state().right, Some(pdfcraft_ui_egui::RightPanel::Bookmarks));
+    assert_eq!(h.state().right, Some(prckopis_ui_egui::RightPanel::Bookmarks));
     h.get_by_role_and_label(egui::accesskit::Role::Button, "Bookmarks").click();
     h.run_steps(3);
     assert_eq!(h.state().right, None);
-    assert_eq!(h.state().mode, pdfcraft_ui_egui::Mode::Read);
+    assert_eq!(h.state().mode, prckopis_ui_egui::Mode::Read);
 }
 
-fn navigation_frame(h: &mut Harness<'static, PdfCraftApp>, events: Vec<egui::Event>) {
+fn navigation_frame(h: &mut Harness<'static, PrckopisApp>, events: Vec<egui::Event>) {
     h.input_mut().events.extend(events);
     h.step();
 }
 
-fn navigation_wheel(h: &mut Harness<'static, PdfCraftApp>, pos: egui::Pos2, delta: f32, ctrl: bool) {
+fn navigation_wheel(h: &mut Harness<'static, PrckopisApp>, pos: egui::Pos2, delta: f32, ctrl: bool) {
     let modifiers = egui::Modifiers { ctrl, command: ctrl, ..egui::Modifiers::NONE };
     navigation_frame(
         h,
@@ -1505,7 +1505,7 @@ fn wheel_zoom_is_scoped_to_the_viewport_and_respects_existing_limits() {
 fn initial_zoom_option_is_applied_before_the_first_viewport_layout() {
     for percent in [50, 100, 200, 400] {
         let h = Harness::builder().with_size(egui::vec2(1400.0, 900.0)).build_eframe(move |_cc| {
-            let mut app = PdfCraftApp::new();
+            let mut app = PrckopisApp::new();
             app.open_bytes("initial-zoom.pdf", None, fixture(3)).unwrap();
             app.set_option("zoom", &percent.to_string()).unwrap();
             assert_eq!(app.views[0].zoom, percent as f32 / 100.0, "initial options must work before the viewport exists");

@@ -3569,474 +3569,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pdfcraft"
-version = "0.6.0"
-dependencies = [
- "eframe",
- "egui",
- "fmv-macos-events",
- "log",
- "pdfcraft-ui-egui",
- "pollster 1.0.1",
- "rustls-native-certs",
- "serde_json",
- "uds_windows",
- "ureq",
- "wayland-client",
- "wayland-protocols",
- "windows",
- "winresource",
- "winsafe",
-]
-
-[[package]]
-name = "pdfcraft-a11y"
-version = "0.6.0"
-dependencies = [
- "pdfcraft-content",
- "pdfcraft-cos",
- "pdfcraft-fonts",
- "pdfcraft-model",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "pdfcraft-annot"
-version = "0.6.0"
-dependencies = [
- "hayro-syntax",
- "pdfcraft-cos",
- "pdfcraft-fonts",
- "pdfcraft-model",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "pdfcraft-audit"
-version = "0.6.0"
-dependencies = [
- "pdfcraft-content",
- "pdfcraft-cos",
- "pdfcraft-edit",
- "pdfcraft-model",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "pdfcraft-automation"
-version = "0.6.0"
-dependencies = [
- "base64 0.22.1",
- "flate2",
- "image",
- "pdfcraft-cos",
- "pdfcraft-engine",
- "pdfcraft-fonts",
- "pdfcraft-model",
- "pdfcraft-organize",
- "pdfcraft-platform",
- "pdfcraft-render",
- "pdfcraft-xfa",
- "png 0.18.1",
- "serde_json",
- "sha2",
-]
-
-[[package]]
-name = "pdfcraft-cli"
-version = "0.6.0"
-dependencies = [
- "base64 0.22.1",
- "pdfcraft-audit",
- "pdfcraft-automation",
- "pdfcraft-cos",
- "pdfcraft-engine",
- "pdfcraft-render",
- "rustix 1.1.5",
- "serde_json",
- "winresource",
-]
-
-[[package]]
-name = "pdfcraft-compare"
-version = "0.6.0"
-
-[[package]]
-name = "pdfcraft-content"
-version = "0.6.0"
-dependencies = [
- "pdfcraft-cos",
-]
-
-[[package]]
-name = "pdfcraft-cos"
-version = "0.6.0"
-dependencies = [
- "hayro-syntax",
- "pdfcraft-crypt",
- "pdfcraft-filters",
- "proptest",
- "serde_json",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "pdfcraft-create"
-version = "0.6.0"
-dependencies = [
- "encoding_rs",
- "hayro-syntax",
- "image",
- "pdfcraft-cos",
- "pdfcraft-fonts",
- "pdfcraft-model",
- "png 0.18.1",
- "thiserror 2.0.21",
- "tiff",
-]
-
-[[package]]
-name = "pdfcraft-crypt"
-version = "0.6.0"
-dependencies = [
- "aes",
- "md-5",
- "proptest",
- "sha2",
- "stringprep",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "pdfcraft-edit"
-version = "0.6.0"
-dependencies = [
- "hayro-syntax",
- "kurbo 0.13.1",
- "pdfcraft-annot",
- "pdfcraft-content",
- "pdfcraft-cos",
- "pdfcraft-fonts",
- "pdfcraft-model",
- "thiserror 2.0.21",
- "unicode-bidi",
-]
-
-[[package]]
-name = "pdfcraft-engine"
-version = "0.6.0"
-dependencies = [
- "chrono",
- "icu_properties",
- "idna",
- "image",
- "pdfcraft-a11y",
- "pdfcraft-annot",
- "pdfcraft-audit",
- "pdfcraft-compare",
- "pdfcraft-cos",
- "pdfcraft-create",
- "pdfcraft-edit",
- "pdfcraft-export",
- "pdfcraft-fonts",
- "pdfcraft-forms",
- "pdfcraft-geom",
- "pdfcraft-js",
- "pdfcraft-measure",
- "pdfcraft-model",
- "pdfcraft-ocr",
- "pdfcraft-optimize",
- "pdfcraft-organize",
- "pdfcraft-preflight",
- "pdfcraft-print",
- "pdfcraft-redact",
- "pdfcraft-render",
- "pdfcraft-sign",
- "pdfcraft-xfa",
- "pdfcraft-xfdf",
- "png 0.18.1",
- "thiserror 2.0.21",
- "url",
-]
-
-[[package]]
-name = "pdfcraft-export"
-version = "0.6.0"
-dependencies = [
- "flate2",
-]
-
-[[package]]
-name = "pdfcraft-filters"
-version = "0.6.0"
-dependencies = [
- "flate2",
- "proptest",
- "thiserror 2.0.21",
- "weezl 0.2.1",
-]
-
-[[package]]
-name = "pdfcraft-fonts"
-version = "0.6.0"
-dependencies = [
- "harfrust",
- "pdfcraft-cos",
- "skrifa 0.44.0",
- "unicode-bidi",
-]
-
-[[package]]
-name = "pdfcraft-forms"
-version = "0.6.0"
-dependencies = [
- "hayro-syntax",
- "pdfcraft-content",
- "pdfcraft-cos",
- "pdfcraft-fonts",
- "pdfcraft-model",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "pdfcraft-geom"
-version = "0.6.0"
-
-[[package]]
-name = "pdfcraft-js"
-version = "0.6.0"
-dependencies = [
- "boa_engine",
-]
-
-[[package]]
-name = "pdfcraft-measure"
-version = "0.6.0"
-dependencies = [
- "pdfcraft-annot",
- "pdfcraft-content",
- "pdfcraft-cos",
- "pdfcraft-model",
- "serde",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "pdfcraft-model"
-version = "0.6.0"
-dependencies = [
- "pdfcraft-cos",
-]
-
-[[package]]
-name = "pdfcraft-ocr"
-version = "0.6.0"
-dependencies = [
- "ocrs",
- "pdfcraft-fonts",
- "rten",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "pdfcraft-optimize"
-version = "0.6.0"
-dependencies = [
- "image",
- "pdfcraft-annot",
- "pdfcraft-content",
- "pdfcraft-cos",
- "pdfcraft-model",
- "pdfcraft-render",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "pdfcraft-organize"
-version = "0.6.0"
-dependencies = [
- "hayro-syntax",
- "pdfcraft-content",
- "pdfcraft-cos",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "pdfcraft-platform"
-version = "0.6.0"
-dependencies = [
- "async-channel",
- "futures-lite",
- "zbus",
-]
-
-[[package]]
-name = "pdfcraft-preflight"
-version = "0.6.0"
-dependencies = [
- "pdfcraft-cos",
- "pdfcraft-model",
-]
-
-[[package]]
-name = "pdfcraft-print"
-version = "0.6.0"
-dependencies = [
- "craft-print",
- "if-addrs",
- "pdfcraft-content",
- "pdfcraft-cos",
- "pdfcraft-model",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "pdfcraft-redact"
-version = "0.6.0"
-dependencies = [
- "pdfcraft-annot",
- "pdfcraft-content",
- "pdfcraft-cos",
- "pdfcraft-edit",
- "pdfcraft-fonts",
- "pdfcraft-forms",
- "pdfcraft-model",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "pdfcraft-render"
-version = "0.6.0"
-dependencies = [
- "bytemuck",
- "flate2",
- "getrandom 0.4.3",
- "hayro",
- "hayro-syntax",
- "kurbo 0.13.1",
- "log",
- "lopdf",
- "pdfcraft-cos",
- "pdfcraft-fonts",
- "serde",
- "skrifa 0.44.0",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "pdfcraft-sign"
-version = "0.6.0"
-dependencies = [
- "aes",
- "aws-lc-rs",
- "base64 0.22.1",
- "bp256",
- "bp384",
- "cbc",
- "crypto-bigint",
- "des",
- "ecdsa",
- "ed25519-dalek",
- "getrandom 0.4.3",
- "hmac",
- "p256",
- "p384",
- "p521",
- "pbkdf2",
- "pdfcraft-annot",
- "pdfcraft-cos",
- "pdfcraft-fonts",
- "rc2",
- "ripemd",
- "rsa",
- "rustls-cng",
- "security-framework",
- "sha1",
- "sha2",
- "sha3",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "pdfcraft-ui-egui"
-version = "0.6.0"
-dependencies = [
- "arboard",
- "base64 0.22.1",
- "bytemuck",
- "craft-ui",
- "eframe",
- "egui",
- "egui_extras",
- "egui_kittest",
- "getrandom 0.4.3",
- "image",
- "js-sys",
- "log",
- "objc2 0.6.4",
- "objc2-app-kit 0.3.2",
- "objc2-foundation 0.3.2",
- "pdfcraft-cos",
- "pdfcraft-engine",
- "pdfcraft-fonts",
- "pdfcraft-model",
- "pdfcraft-platform",
- "pdfcraft-render",
- "pdfcraft-xfa",
- "png 0.18.1",
- "pollster 1.0.1",
- "rfd",
- "serde",
- "serde_json",
- "skrifa 0.44.0",
- "sys-locale",
- "toml",
- "unicode-bidi",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "web-sys",
- "winsafe",
-]
-
-[[package]]
-name = "pdfcraft-web"
-version = "0.6.0"
-dependencies = [
- "eframe",
- "egui",
- "js-sys",
- "pdfcraft-ui-egui",
- "wasm-bindgen-futures",
- "web-sys",
-]
-
-[[package]]
-name = "pdfcraft-xfa"
-version = "0.6.0"
-dependencies = [
- "base64 0.22.1",
- "image",
- "pdfcraft-cos",
- "pdfcraft-fonts",
- "png 0.18.1",
- "roxmltree",
- "sha2",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "pdfcraft-xfdf"
-version = "0.6.0"
-dependencies = [
- "pdfcraft-annot",
- "pdfcraft-cos",
- "pdfcraft-forms",
- "pdfcraft-model",
- "roxmltree",
- "thiserror 2.0.21",
-]
-
-[[package]]
 name = "pem-rfc7468"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4332,6 +3864,474 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "85eae3c4ed2f50dcfe72643da4befc30deadb458a9b590d720cde2f2b1e97da9"
 dependencies = [
  "zerocopy",
+]
+
+[[package]]
+name = "prckopis"
+version = "0.6.0"
+dependencies = [
+ "eframe",
+ "egui",
+ "fmv-macos-events",
+ "log",
+ "pollster 1.0.1",
+ "prckopis-ui-egui",
+ "rustls-native-certs",
+ "serde_json",
+ "uds_windows",
+ "ureq",
+ "wayland-client",
+ "wayland-protocols",
+ "windows",
+ "winresource",
+ "winsafe",
+]
+
+[[package]]
+name = "prckopis-a11y"
+version = "0.6.0"
+dependencies = [
+ "prckopis-content",
+ "prckopis-cos",
+ "prckopis-fonts",
+ "prckopis-model",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "prckopis-annot"
+version = "0.6.0"
+dependencies = [
+ "hayro-syntax",
+ "prckopis-cos",
+ "prckopis-fonts",
+ "prckopis-model",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "prckopis-audit"
+version = "0.6.0"
+dependencies = [
+ "prckopis-content",
+ "prckopis-cos",
+ "prckopis-edit",
+ "prckopis-model",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "prckopis-automation"
+version = "0.6.0"
+dependencies = [
+ "base64 0.22.1",
+ "flate2",
+ "image",
+ "png 0.18.1",
+ "prckopis-cos",
+ "prckopis-engine",
+ "prckopis-fonts",
+ "prckopis-model",
+ "prckopis-organize",
+ "prckopis-platform",
+ "prckopis-render",
+ "prckopis-xfa",
+ "serde_json",
+ "sha2",
+]
+
+[[package]]
+name = "prckopis-cli"
+version = "0.6.0"
+dependencies = [
+ "base64 0.22.1",
+ "prckopis-audit",
+ "prckopis-automation",
+ "prckopis-cos",
+ "prckopis-engine",
+ "prckopis-render",
+ "rustix 1.1.5",
+ "serde_json",
+ "winresource",
+]
+
+[[package]]
+name = "prckopis-compare"
+version = "0.6.0"
+
+[[package]]
+name = "prckopis-content"
+version = "0.6.0"
+dependencies = [
+ "prckopis-cos",
+]
+
+[[package]]
+name = "prckopis-cos"
+version = "0.6.0"
+dependencies = [
+ "hayro-syntax",
+ "prckopis-crypt",
+ "prckopis-filters",
+ "proptest",
+ "serde_json",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "prckopis-create"
+version = "0.6.0"
+dependencies = [
+ "encoding_rs",
+ "hayro-syntax",
+ "image",
+ "png 0.18.1",
+ "prckopis-cos",
+ "prckopis-fonts",
+ "prckopis-model",
+ "thiserror 2.0.21",
+ "tiff",
+]
+
+[[package]]
+name = "prckopis-crypt"
+version = "0.6.0"
+dependencies = [
+ "aes",
+ "md-5",
+ "proptest",
+ "sha2",
+ "stringprep",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "prckopis-edit"
+version = "0.6.0"
+dependencies = [
+ "hayro-syntax",
+ "kurbo 0.13.1",
+ "prckopis-annot",
+ "prckopis-content",
+ "prckopis-cos",
+ "prckopis-fonts",
+ "prckopis-model",
+ "thiserror 2.0.21",
+ "unicode-bidi",
+]
+
+[[package]]
+name = "prckopis-engine"
+version = "0.6.0"
+dependencies = [
+ "chrono",
+ "icu_properties",
+ "idna",
+ "image",
+ "png 0.18.1",
+ "prckopis-a11y",
+ "prckopis-annot",
+ "prckopis-audit",
+ "prckopis-compare",
+ "prckopis-cos",
+ "prckopis-create",
+ "prckopis-edit",
+ "prckopis-export",
+ "prckopis-fonts",
+ "prckopis-forms",
+ "prckopis-geom",
+ "prckopis-js",
+ "prckopis-measure",
+ "prckopis-model",
+ "prckopis-ocr",
+ "prckopis-optimize",
+ "prckopis-organize",
+ "prckopis-preflight",
+ "prckopis-print",
+ "prckopis-redact",
+ "prckopis-render",
+ "prckopis-sign",
+ "prckopis-xfa",
+ "prckopis-xfdf",
+ "thiserror 2.0.21",
+ "url",
+]
+
+[[package]]
+name = "prckopis-export"
+version = "0.6.0"
+dependencies = [
+ "flate2",
+]
+
+[[package]]
+name = "prckopis-filters"
+version = "0.6.0"
+dependencies = [
+ "flate2",
+ "proptest",
+ "thiserror 2.0.21",
+ "weezl 0.2.1",
+]
+
+[[package]]
+name = "prckopis-fonts"
+version = "0.6.0"
+dependencies = [
+ "harfrust",
+ "prckopis-cos",
+ "skrifa 0.44.0",
+ "unicode-bidi",
+]
+
+[[package]]
+name = "prckopis-forms"
+version = "0.6.0"
+dependencies = [
+ "hayro-syntax",
+ "prckopis-content",
+ "prckopis-cos",
+ "prckopis-fonts",
+ "prckopis-model",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "prckopis-geom"
+version = "0.6.0"
+
+[[package]]
+name = "prckopis-js"
+version = "0.6.0"
+dependencies = [
+ "boa_engine",
+]
+
+[[package]]
+name = "prckopis-measure"
+version = "0.6.0"
+dependencies = [
+ "prckopis-annot",
+ "prckopis-content",
+ "prckopis-cos",
+ "prckopis-model",
+ "serde",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "prckopis-model"
+version = "0.6.0"
+dependencies = [
+ "prckopis-cos",
+]
+
+[[package]]
+name = "prckopis-ocr"
+version = "0.6.0"
+dependencies = [
+ "ocrs",
+ "prckopis-fonts",
+ "rten",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "prckopis-optimize"
+version = "0.6.0"
+dependencies = [
+ "image",
+ "prckopis-annot",
+ "prckopis-content",
+ "prckopis-cos",
+ "prckopis-model",
+ "prckopis-render",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "prckopis-organize"
+version = "0.6.0"
+dependencies = [
+ "hayro-syntax",
+ "prckopis-content",
+ "prckopis-cos",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "prckopis-platform"
+version = "0.6.0"
+dependencies = [
+ "async-channel",
+ "futures-lite",
+ "zbus",
+]
+
+[[package]]
+name = "prckopis-preflight"
+version = "0.6.0"
+dependencies = [
+ "prckopis-cos",
+ "prckopis-model",
+]
+
+[[package]]
+name = "prckopis-print"
+version = "0.6.0"
+dependencies = [
+ "craft-print",
+ "if-addrs",
+ "prckopis-content",
+ "prckopis-cos",
+ "prckopis-model",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "prckopis-redact"
+version = "0.6.0"
+dependencies = [
+ "prckopis-annot",
+ "prckopis-content",
+ "prckopis-cos",
+ "prckopis-edit",
+ "prckopis-fonts",
+ "prckopis-forms",
+ "prckopis-model",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "prckopis-render"
+version = "0.6.0"
+dependencies = [
+ "bytemuck",
+ "flate2",
+ "getrandom 0.4.3",
+ "hayro",
+ "hayro-syntax",
+ "kurbo 0.13.1",
+ "log",
+ "lopdf",
+ "prckopis-cos",
+ "prckopis-fonts",
+ "serde",
+ "skrifa 0.44.0",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "prckopis-sign"
+version = "0.6.0"
+dependencies = [
+ "aes",
+ "aws-lc-rs",
+ "base64 0.22.1",
+ "bp256",
+ "bp384",
+ "cbc",
+ "crypto-bigint",
+ "des",
+ "ecdsa",
+ "ed25519-dalek",
+ "getrandom 0.4.3",
+ "hmac",
+ "p256",
+ "p384",
+ "p521",
+ "pbkdf2",
+ "prckopis-annot",
+ "prckopis-cos",
+ "prckopis-fonts",
+ "rc2",
+ "ripemd",
+ "rsa",
+ "rustls-cng",
+ "security-framework",
+ "sha1",
+ "sha2",
+ "sha3",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "prckopis-ui-egui"
+version = "0.6.0"
+dependencies = [
+ "arboard",
+ "base64 0.22.1",
+ "bytemuck",
+ "craft-ui",
+ "eframe",
+ "egui",
+ "egui_extras",
+ "egui_kittest",
+ "getrandom 0.4.3",
+ "image",
+ "js-sys",
+ "log",
+ "objc2 0.6.4",
+ "objc2-app-kit 0.3.2",
+ "objc2-foundation 0.3.2",
+ "png 0.18.1",
+ "pollster 1.0.1",
+ "prckopis-cos",
+ "prckopis-engine",
+ "prckopis-fonts",
+ "prckopis-model",
+ "prckopis-platform",
+ "prckopis-render",
+ "prckopis-xfa",
+ "rfd",
+ "serde",
+ "serde_json",
+ "skrifa 0.44.0",
+ "sys-locale",
+ "toml",
+ "unicode-bidi",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
+ "winsafe",
+]
+
+[[package]]
+name = "prckopis-web"
+version = "0.6.0"
+dependencies = [
+ "eframe",
+ "egui",
+ "js-sys",
+ "prckopis-ui-egui",
+ "wasm-bindgen-futures",
+ "web-sys",
+]
+
+[[package]]
+name = "prckopis-xfa"
+version = "0.6.0"
+dependencies = [
+ "base64 0.22.1",
+ "image",
+ "png 0.18.1",
+ "prckopis-cos",
+ "prckopis-fonts",
+ "roxmltree",
+ "sha2",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "prckopis-xfdf"
+version = "0.6.0"
+dependencies = [
+ "prckopis-annot",
+ "prckopis-cos",
+ "prckopis-forms",
+ "prckopis-model",
+ "roxmltree",
+ "thiserror 2.0.21",
 ]
 
 [[package]]

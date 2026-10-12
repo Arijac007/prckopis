@@ -4,8 +4,8 @@
 use egui::accesskit::Role;
 use egui_kittest::Harness;
 use egui_kittest::kittest::Queryable;
-use pdfcraft_engine::a11y::{Rule, Status};
-use pdfcraft_ui_egui::{Dialog, PdfCraftApp, RightPanel};
+use prckopis_engine::a11y::{Rule, Status};
+use prckopis_ui_egui::{Dialog, PrckopisApp, RightPanel};
 
 const FIXTURE: &[u8] = b"%PDF-1.7
 1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj
@@ -18,11 +18,11 @@ endstream endobj
 trailer << /Root 1 0 R >>
 %%EOF";
 
-fn status(h: &Harness<'static, PdfCraftApp>, rule: Rule) -> Status {
+fn status(h: &Harness<'static, PrckopisApp>, rule: Rule) -> Status {
     h.state().a11y.report.as_ref().unwrap().1.result(rule).unwrap().status
 }
 
-fn right_click(h: &mut Harness<'static, PdfCraftApp>, label: &str) {
+fn right_click(h: &mut Harness<'static, PrckopisApp>, label: &str) {
     let at = h.get_by_label(label).rect().center();
     h.hover_at(at);
     h.run_steps(1);
@@ -33,12 +33,12 @@ fn right_click(h: &mut Harness<'static, PdfCraftApp>, label: &str) {
 
 #[test]
 fn checking_fixing_skipping_and_reporting() {
-    let dir = std::env::temp_dir().join(format!("pdfcraft-a11y-ui-{}", std::process::id()));
+    let dir = std::env::temp_dir().join(format!("prckopis-a11y-ui-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).unwrap();
     let d = dir.clone();
     let mut h = Harness::builder().with_size(egui::vec2(1400.0, 900.0)).build_eframe(move |_cc| {
-        let mut app = PdfCraftApp::new();
+        let mut app = PrckopisApp::new();
         app.set_option("language", "en").unwrap();
         app.open_bytes("notes.pdf", None, FIXTURE.to_vec()).unwrap();
         app.export_dir_override = Some(d.to_string_lossy().into_owned());
@@ -64,7 +64,7 @@ fn checking_fixing_skipping_and_reporting() {
     assert_eq!(status(&h, Rule::Title), Status::Passed);
     assert_eq!(h.state().a11y.previous.as_ref().unwrap().1.result(Rule::Title).unwrap().status, Status::Failed);
     assert!(matches!(h.state().dialog, Some(Dialog::Properties(_))));
-    assert_eq!(h.state().window_title, "notes — PdfCraft");
+    assert_eq!(h.state().window_title, "notes — Prckopis");
     h.state_mut().dialog = None;
     h.run_steps(2);
     h.get_by_label("Compare");
@@ -95,7 +95,7 @@ fn checking_fixing_skipping_and_reporting() {
 #[test]
 fn checker_summary_does_not_hide_manual_review() {
     let mut h = Harness::builder().with_size(egui::vec2(1400.0, 900.0)).build_eframe(move |_cc| {
-        let mut app = PdfCraftApp::new();
+        let mut app = PrckopisApp::new();
         app.set_option("language", "en").unwrap();
         app.open_bytes("notes.pdf", None, FIXTURE.to_vec()).unwrap();
         app
@@ -139,7 +139,7 @@ trailer << /Root 1 0 R >>
 #[test]
 fn checker_shows_a_figure_finding_on_its_page() {
     let mut h = Harness::builder().with_size(egui::vec2(1400.0, 900.0)).build_eframe(move |_cc| {
-        let mut app = PdfCraftApp::new();
+        let mut app = PrckopisApp::new();
         app.set_option("language", "en").unwrap();
         app.open_bytes("figures.pdf", None, FIGURES.to_vec()).unwrap();
         app
@@ -158,7 +158,7 @@ fn checker_shows_a_figure_finding_on_its_page() {
 #[test]
 fn setting_alternate_text_figure_by_figure() {
     let mut h = Harness::builder().with_size(egui::vec2(1400.0, 900.0)).build_eframe(move |_cc| {
-        let mut app = PdfCraftApp::new();
+        let mut app = PrckopisApp::new();
         app.set_option("language", "en").unwrap();
         app.open_bytes("figures.pdf", None, FIGURES.to_vec()).unwrap();
         app
@@ -188,7 +188,7 @@ fn setting_alternate_text_figure_by_figure() {
 #[test]
 fn tags_panel_edits_a_tag_property_and_undoes_it() {
     let mut h = Harness::builder().with_size(egui::vec2(1400.0, 900.0)).build_eframe(move |_cc| {
-        let mut app = PdfCraftApp::new();
+        let mut app = PrckopisApp::new();
         app.set_option("language", "en").unwrap();
         app.open_bytes("figures.pdf", None, FIGURES.to_vec()).unwrap();
         app
@@ -226,7 +226,7 @@ fn tags_panel_edits_a_tag_property_and_undoes_it() {
 #[test]
 fn checker_finding_opens_its_structure_tag() {
     let mut h = Harness::builder().with_size(egui::vec2(1400.0, 900.0)).build_eframe(move |_cc| {
-        let mut app = PdfCraftApp::new();
+        let mut app = PrckopisApp::new();
         app.set_option("language", "en").unwrap();
         app.open_bytes("figures.pdf", None, FIGURES.to_vec()).unwrap();
         app

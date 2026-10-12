@@ -1,5 +1,5 @@
 [package]
-name = "pdfcraft-print"
+name = "prckopis-print"
 description = "Printing: page selection, sizing (fit, actual, shrink, custom), multiple pages per sheet, booklets, posters, comments & forms; print-ready PDF and the system spooler"
 version.workspace = true
 edition.workspace = true
@@ -10,9 +10,9 @@ workspace = true
 
 [dependencies]
 craft-print = { workspace = true }
-pdfcraft-cos = { workspace = true }
-pdfcraft-content = { workspace = true }
-pdfcraft-model = { workspace = true }
+prckopis-cos = { workspace = true }
+prckopis-content = { workspace = true }
+prckopis-model = { workspace = true }
 thiserror = { workspace = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]

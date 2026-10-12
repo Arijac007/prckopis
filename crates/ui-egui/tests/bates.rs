@@ -6,7 +6,7 @@ use std::sync::Arc;
 
 use egui_kittest::Harness;
 use egui_kittest::kittest::Queryable;
-use pdfcraft_ui_egui::PdfCraftApp;
+use prckopis_ui_egui::PrckopisApp;
 
 /// A PDF with `pages` empty pages.
 fn pdf(pages: usize) -> Vec<u8> {
@@ -31,14 +31,14 @@ fn pdf(pages: usize) -> Vec<u8> {
 }
 
 fn temp(name: &str) -> PathBuf {
-    let dir = std::env::temp_dir().join(format!("pdfcraft-bates-{name}-{}", std::process::id()));
+    let dir = std::env::temp_dir().join(format!("prckopis-bates-{name}-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).unwrap();
     dir
 }
 
 fn page_text(bytes: Vec<u8>, page: usize) -> String {
-    let mut s = pdfcraft_engine::Session::new();
+    let mut s = prckopis_engine::Session::new();
     let id = s.open("x.pdf", None, Arc::new(bytes), None).unwrap();
     s.get(id).unwrap().text_lines(page).into_iter().map(|l| l.text).collect()
 }
@@ -50,7 +50,7 @@ fn bates_numbers_more_files_after_the_open_document_and_removes() {
     std::fs::write(&other, pdf(2)).unwrap();
     let out = dir.join("numbered");
     let mut h = Harness::builder().with_size(egui::vec2(1400.0, 1000.0)).build_eframe(|_cc| {
-        let mut app = PdfCraftApp::new();
+        let mut app = PrckopisApp::new();
         app.set_option("language", "en").unwrap();
         app.open_bytes("main.pdf", None, pdf(3)).unwrap();
         app

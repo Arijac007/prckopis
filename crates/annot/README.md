@@ -1,6 +1,6 @@
-# pdfcraft-annot
+# prckopis-annot
 
-Comments (annotations), ISO 32000-2 §12.5. Layer L3, depends on `pdfcraft-cos`, `pdfcraft-fonts` and `pdfcraft-model`.
+Comments (annotations), ISO 32000-2 §12.5. Layer L3, depends on `prckopis-cos`, `prckopis-fonts` and `prckopis-model`.
 
 ## What it does
 
@@ -9,11 +9,11 @@ Comments (annotations), ISO 32000-2 §12.5. Layer L3, depends on `pdfcraft-cos`,
   line and arrow (`Line` with `/LE`), freehand drawing (`Ink`) and text box (`FreeText`).
 - **Appearance streams** (`appearance::build`) generated from the annotation dictionary, so new
   and restyled comments look the same in every viewer. Highlights multiply (`/BM /Multiply`).
-  Note icons are PdfCraft's own drawings. Text boxes use standard Helvetica (WinAnsi), with
+  Note icons are Prckopis's own drawings. Text boxes use standard Helvetica (WinAnsi), with
   line breaking by approximate Helvetica proportions (no font program is bundled). Text it can't
   draw (in a text box, callout, Fill & Sign text, measurement label or dynamic stamp's by-line;
   `appearance::undrawable_text`) is kept as typed and drawn as `?`, and the comment is marked with
-  the first such character (`pdfcraft_fonts::UNDRAWN_MARK`) so the engine reports the edit and
+  the first such character (`prckopis_fonts::UNDRAWN_MARK`) so the engine reports the edit and
   flattening refuses to make it permanent. Two refusals (`AnnotError::Undrawable`): a redaction
   mark's overlay text, which becomes page content when applied; and a restyle or resize of a
   comment another program drew with a font that has those characters, whose appearance is kept
@@ -34,7 +34,7 @@ signature_image(&doc, page, index)?; // embedded image XObject of Fill & Sign si
 ```
 
 A comment is addressed by `(page, index in /Annots)`, the same pair
-`pdfcraft_render::Annotation` reports. `Meta` carries the date and the `/NM` id so edits stay
+`prckopis_render::Annotation` reports. `Meta` carries the date and the `/NM` id so edits stay
 deterministic; the engine supplies them.
 
 ## Fidelity rules

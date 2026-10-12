@@ -3,7 +3,7 @@
 
 use egui_kittest::Harness;
 use egui_kittest::kittest::Queryable;
-use pdfcraft_ui_egui::{Dialog, PdfCraftApp};
+use prckopis_ui_egui::{Dialog, PrckopisApp};
 
 /// `n` pages of 200×300; page i says "Page i+1" plus "page" and "Pages" for find tests.
 fn fixture(n: usize) -> Vec<u8> {
@@ -31,9 +31,9 @@ fn fixture(n: usize) -> Vec<u8> {
     out
 }
 
-fn harness() -> Harness<'static, PdfCraftApp> {
+fn harness() -> Harness<'static, PrckopisApp> {
     let mut h = Harness::builder().with_size(egui::vec2(1400.0, 900.0)).build_eframe(|_cc| {
-        let mut app = PdfCraftApp::new();
+        let mut app = PrckopisApp::new();
         app.set_option("language", "en").unwrap();
         app.open_bytes("a.pdf", None, fixture(5)).unwrap();
         app.open_bytes("b.pdf", None, fixture(2)).unwrap();
@@ -53,18 +53,18 @@ fn harness() -> Harness<'static, PdfCraftApp> {
 fn close_all_asks_only_for_changed_documents() {
     let mut h = harness();
     // Change the active document (b.pdf).
-    h.state_mut().apply_edit(pdfcraft_engine::Edit::RotatePages { pages: vec![0], degrees: 90 });
+    h.state_mut().apply_edit(prckopis_engine::Edit::RotatePages { pages: vec![0], degrees: 90 });
     h.state_mut().execute("file.close_all");
     h.run_steps(2);
     assert_eq!(h.state().views.len(), 1, "the clean document closed at once");
-    assert_eq!(h.state().close_request, Some(pdfcraft_ui_egui::CloseRequest::All), "b.pdf asks to be saved");
+    assert_eq!(h.state().close_request, Some(prckopis_ui_egui::CloseRequest::All), "b.pdf asks to be saved");
     h.get_by_label_contains("Save changes");
 }
 
 #[test]
 fn revert_after_confirming() {
     let mut h = harness();
-    h.state_mut().apply_edit(pdfcraft_engine::Edit::DeletePages { pages: vec![0] });
+    h.state_mut().apply_edit(prckopis_engine::Edit::DeletePages { pages: vec![0] });
     assert!(h.state_mut().execute("file.revert"));
     h.run_steps(2);
     assert_eq!(h.state().dialog, Some(Dialog::Revert));
@@ -193,10 +193,10 @@ fn marking_while_searching_does_not_jitter_or_reset_search_state() {
     assert!(h.state().views[0].goto.is_none());
 
     // User draws or marks an annotation on page 0
-    let shape = pdfcraft_engine::Shape::Ink { strokes: vec![vec![[10.0, 10.0], [20.0, 20.0]]] };
-    let stroke = pdfcraft_engine::Edit::AddAnnotation(pdfcraft_engine::NewAnnotation {
+    let shape = prckopis_engine::Shape::Ink { strokes: vec![vec![[10.0, 10.0], [20.0, 20.0]]] };
+    let stroke = prckopis_engine::Edit::AddAnnotation(prckopis_engine::NewAnnotation {
         page: 0,
-        style: pdfcraft_engine::Style::default_for(&shape),
+        style: prckopis_engine::Style::default_for(&shape),
         shape,
         contents: String::new(),
         author: "tester".into(),
@@ -222,7 +222,7 @@ fn marking_while_searching_does_not_jitter_or_reset_search_state() {
 
 #[test]
 fn layouts_fit_height_labels_and_system_theme() {
-    use pdfcraft_ui_egui::canvas::{Fit, PageLayout};
+    use prckopis_ui_egui::canvas::{Fit, PageLayout};
     let mut h = harness();
     h.state_mut().active = Some(0);
     // Fit height: the page's height fills the view (less the margins).
@@ -247,10 +247,10 @@ fn layouts_fit_height_labels_and_system_theme() {
     assert!(a.left() > vp.center().x - 1.0, "the cover sits on the right");
     assert!(b.top() > a.bottom() && (b.top() - c.top()).abs() < 1.0, "then pairs 2–3");
     // Page labels in the page box.
-    h.state_mut().apply_edit(pdfcraft_engine::Edit::NumberPages {
+    h.state_mut().apply_edit(prckopis_engine::Edit::NumberPages {
         from: 0,
         to: 1,
-        style: pdfcraft_engine::LabelStyle::LowerRoman,
+        style: prckopis_engine::LabelStyle::LowerRoman,
         prefix: String::new(),
         first: 1,
     });
@@ -265,20 +265,20 @@ fn layouts_fit_height_labels_and_system_theme() {
     assert!(!h.state_mut().views[0].go_to_typed("xx", &labels));
     // Follow the system theme.
     h.state_mut().set_option("theme", "system").unwrap();
-    assert_eq!(h.state().theme_preference, pdfcraft_ui_egui::theme::ThemePreference::System);
+    assert_eq!(h.state().theme_preference, prckopis_ui_egui::theme::ThemePreference::System);
 }
 
 #[test]
 fn two_page_view_steps_a_spread_at_a_time() {
     // #70: ⌘→ went to the right-hand page of the same spread, so the view never moved.
     use egui::{Key, Modifiers};
-    use pdfcraft_ui_egui::canvas::{Fit, PageLayout};
+    use prckopis_ui_egui::canvas::{Fit, PageLayout};
     let mut h = harness();
     h.state_mut().active = Some(0);
     h.state_mut().views[0].fit = Fit::Width;
     h.state_mut().views[0].layout = PageLayout::TwoUp;
     h.run_steps(4);
-    let step = |h: &mut Harness<'static, PdfCraftApp>, key| {
+    let step = |h: &mut Harness<'static, PrckopisApp>, key| {
         h.key_press_modifiers(Modifiers::COMMAND, key);
         h.run_steps(4);
         h.state().views[0].current
@@ -303,7 +303,7 @@ trailer << /Root 1 0 R >>
 %%EOF"
         .to_vec();
     let mut h = Harness::builder().with_size(egui::vec2(1200.0, 800.0)).build_eframe(move |_cc| {
-        let mut app = PdfCraftApp::new();
+        let mut app = PrckopisApp::new();
         app.set_option("language", "en").unwrap();
         app.open_bytes("damaged.pdf", None, damaged.clone()).unwrap();
         app
@@ -312,15 +312,15 @@ trailer << /Root 1 0 R >>
     h.get_by_label_contains("This file was damaged and has been repaired.");
     h.get_by_label("Details").click();
     h.run_steps(3);
-    assert_eq!(h.state().dialog, Some(Dialog::Properties(pdfcraft_ui_egui::PropsTab::Advanced)));
+    assert_eq!(h.state().dialog, Some(Dialog::Properties(prckopis_ui_egui::PropsTab::Advanced)));
     h.get_by_label("Repair log");
 }
 
 #[test]
 fn initial_view_is_edited_and_honoured_on_open() {
-    use pdfcraft_engine::{InitialLayout, Magnification, Navigation};
+    use prckopis_engine::{InitialLayout, Magnification, Navigation};
     let mut h = harness();
-    h.state_mut().dialog = Some(Dialog::Properties(pdfcraft_ui_egui::PropsTab::InitialView));
+    h.state_mut().dialog = Some(Dialog::Properties(prckopis_ui_egui::PropsTab::InitialView));
     h.run_steps(2);
     h.get_by_label("Open to page");
     {
@@ -343,14 +343,14 @@ fn initial_view_is_edited_and_honoured_on_open() {
     assert_eq!(s.session.get(id).unwrap().can_undo(), Some("Change document properties"));
     // Opening the saved file follows it.
     let bytes = s.session.save_bytes(id).unwrap();
-    let mut app = PdfCraftApp::new();
+    let mut app = PrckopisApp::new();
     app.set_option("language", "en").unwrap();
     app.open_bytes("again.pdf", None, bytes.to_vec()).unwrap();
     let view = &app.views[0];
-    assert_eq!((view.current, view.cover, app.right), (1, true, Some(pdfcraft_ui_egui::RightPanel::Bookmarks)));
+    assert_eq!((view.current, view.cover, app.right), (1, true, Some(prckopis_ui_egui::RightPanel::Bookmarks)));
 }
 
-fn drag(h: &mut Harness<'static, PdfCraftApp>, a: egui::Pos2, b: egui::Pos2) {
+fn drag(h: &mut Harness<'static, PrckopisApp>, a: egui::Pos2, b: egui::Pos2) {
     h.hover_at(a);
     h.run_steps(1);
     h.drag_at(a);
@@ -406,10 +406,10 @@ fn fit_visible_zooms_to_the_content_width() {
 
 #[test]
 fn tab_and_window_show_the_document_title_when_asked() {
-    use pdfcraft_engine::Edit;
+    use prckopis_engine::Edit;
     let mut h = harness();
     h.run_steps(2);
-    assert_eq!(h.state().window_title, "b.pdf — PdfCraft");
+    assert_eq!(h.state().window_title, "b.pdf — Prckopis");
     {
         let s = h.state_mut();
         let id = s.views[s.active.unwrap()].id;
@@ -419,7 +419,7 @@ fn tab_and_window_show_the_document_title_when_asked() {
         s.session.apply(id, Edit::SetInitialView(Box::new(v))).unwrap();
     }
     h.run_steps(2);
-    assert_eq!(h.state().window_title, "Quarterly report — PdfCraft");
+    assert_eq!(h.state().window_title, "Quarterly report — Prckopis");
     h.get_by_label_contains("Quarterly report");
 }
 
@@ -427,7 +427,7 @@ fn tab_and_window_show_the_document_title_when_asked() {
 fn a_placeholder_title_leaves_the_file_name_on_the_tab_and_window() {
     // A browser's "Save as PDF" of a blank page or pop-up titles the document "about:blank"
     // and asks viewers to show the title: the file name says more.
-    use pdfcraft_engine::Edit;
+    use prckopis_engine::Edit;
     let mut h = harness();
     {
         let s = h.state_mut();
@@ -438,13 +438,13 @@ fn a_placeholder_title_leaves_the_file_name_on_the_tab_and_window() {
         s.session.apply(id, Edit::SetInitialView(Box::new(v))).unwrap();
     }
     h.run_steps(2);
-    assert_eq!(h.state().window_title, "b.pdf — PdfCraft");
+    assert_eq!(h.state().window_title, "b.pdf — Prckopis");
     assert!(h.query_by_label_contains("about:blank").is_none());
 }
 
 #[test]
 fn an_earlier_revision_opens_from_document_properties() {
-    use pdfcraft_engine::Edit;
+    use prckopis_engine::Edit;
     let mut h = harness();
     {
         let s = h.state_mut();
@@ -454,7 +454,7 @@ fn an_earlier_revision_opens_from_document_properties() {
         s.open_bytes("updated.pdf", None, bytes.to_vec()).unwrap();
     }
     h.run_steps(2);
-    h.state_mut().dialog = Some(Dialog::Properties(pdfcraft_ui_egui::PropsTab::Advanced));
+    h.state_mut().dialog = Some(Dialog::Properties(prckopis_ui_egui::PropsTab::Advanced));
     h.run_steps(2);
     h.run_steps(2);
     // Let the dialog finish centering before the revision button is clicked.
@@ -516,12 +516,12 @@ fn optimizer_audits_space_usage() {
 fn each_document_keeps_its_own_scroll_position() {
     // #189: every document's page view shared one scroll position, so switching tabs showed a
     // document at wherever the other one had been scrolled to (usually back at the top).
-    use pdfcraft_ui_egui::canvas::Fit;
+    use prckopis_ui_egui::canvas::Fit;
     let mut h = harness();
     for v in &mut h.state_mut().views {
         v.fit = Fit::Width;
     }
-    let show = |h: &mut Harness<'static, PdfCraftApp>, i: usize| {
+    let show = |h: &mut Harness<'static, PrckopisApp>, i: usize| {
         h.state_mut().active = Some(i);
         h.run_steps(4);
         h.state().views[i].current
@@ -545,7 +545,7 @@ fn a_new_document_opens_at_the_top_after_a_relaunch() {
     // eframe saves egui's memory, scroll offsets included, with the settings and restores it at
     // the next launch, where document ids start again at 1: the first document opened then
     // started at the offset the previous session's first document was left at.
-    use pdfcraft_ui_egui::canvas::Fit;
+    use prckopis_ui_egui::canvas::Fit;
     let mut h = harness();
     for v in &mut h.state_mut().views {
         v.fit = Fit::Width;
@@ -576,14 +576,14 @@ fn a_new_document_opens_at_the_top_after_a_relaunch() {
     // Next launch: a document never seen before, which gets a.pdf's old id.
     let mut h = Harness::builder().with_size(egui::vec2(1400.0, 900.0)).build_eframe(|cc| {
         cc.egui_ctx.memory_mut(|m| *m = memory);
-        let mut app = PdfCraftApp::new();
+        let mut app = PrckopisApp::new();
         app.set_option("language", "en").unwrap();
         app.open_bytes("c.pdf", None, fixture(5)).unwrap();
         app.views[0].fit = Fit::Width;
         app
     });
     h.run_steps(4);
-    assert_eq!(h.state().views[0].id, pdfcraft_engine::DocId(1));
+    assert_eq!(h.state().views[0].id, prckopis_engine::DocId(1));
     assert_eq!(h.state().views[0].current, 0, "c.pdf opens on page 1");
     // It is still a scroll position of its own from then on.
     h.state_mut().views[0].goto = Some((2, 0.0));
@@ -598,14 +598,14 @@ fn arrow_and_page_keys_move_through_a_scrolling_document() {
     // #185: in the continuous (default) and two-page views the arrow keys and Page Down / Up did
     // nothing without ⌘.
     use egui::Key;
-    use pdfcraft_ui_egui::canvas::{Fit, PageLayout};
+    use prckopis_ui_egui::canvas::{Fit, PageLayout};
     let mut h = harness();
     h.state_mut().active = Some(0);
     h.state_mut().views[0].fit = Fit::Width;
     h.run_steps(4);
     assert_eq!(h.state().views[0].layout, PageLayout::Single);
     assert!(h.state().views[0].continuous(), "the default view scrolls continuously");
-    let press = |h: &mut Harness<'static, PdfCraftApp>, key, times: usize| {
+    let press = |h: &mut Harness<'static, PrckopisApp>, key, times: usize| {
         for _ in 0..times {
             h.key_press(key);
             h.run_steps(2);
@@ -618,7 +618,7 @@ fn arrow_and_page_keys_move_through_a_scrolling_document() {
     assert_eq!(press(&mut h, Key::ArrowLeft, 1), 1);
     assert_eq!(press(&mut h, Key::ArrowLeft, 1), 0);
     // ↓ scrolls a line at a time, Page Down a screen: count the presses that reach page 2
-    let presses = |h: &mut Harness<'static, PdfCraftApp>, key| {
+    let presses = |h: &mut Harness<'static, PrckopisApp>, key| {
         let mut n = 0;
         while h.state().views[0].current == 0 {
             press(h, key, 1);
@@ -648,14 +648,14 @@ fn up_and_down_turn_pages_in_single_page_view() {
     // #273: in single-page view ↓ / ↑ only scrolled, so on a page that fits (or once scrolled to
     // the end) they did nothing, while the wheel turned the page there.
     use egui::Key;
-    use pdfcraft_ui_egui::canvas::{Fit, PageLayout};
+    use prckopis_ui_egui::canvas::{Fit, PageLayout};
     let mut h = harness();
     h.state_mut().active = Some(0);
     h.state_mut().views[0].layout = PageLayout::Single;
     h.state_mut().views[0].continuous = false;
     h.state_mut().views[0].fit = Fit::Page;
     h.run_steps(4);
-    let press = |h: &mut Harness<'static, PdfCraftApp>, key, times: usize| {
+    let press = |h: &mut Harness<'static, PrckopisApp>, key, times: usize| {
         for _ in 0..times {
             h.key_press(key);
             h.run_steps(2);
@@ -689,11 +689,11 @@ fn up_and_down_turn_pages_in_single_page_view() {
 fn v_h_and_space_pick_the_quick_tools() {
     // The toolbar's tooltips promise "Select (V)" and "Hand (H)", but the keys did nothing.
     use egui::{Key, Modifiers};
-    use pdfcraft_ui_egui::QuickTool;
+    use prckopis_ui_egui::QuickTool;
     let mut h = harness();
     h.state_mut().active = Some(0);
     h.run_steps(2);
-    let press = |h: &mut Harness<'static, PdfCraftApp>, key| {
+    let press = |h: &mut Harness<'static, PrckopisApp>, key| {
         h.key_press(key);
         h.run_steps(2);
         h.state().quick_tool
@@ -763,7 +763,7 @@ fn page_down_steps_every_spread_when_several_fit_on_screen() {
     // than one spread fit on screen: the current page was whichever wholly visible page rounding
     // made "most visible", so the next step started from the wrong spread.
     use egui::{Key, Modifiers};
-    use pdfcraft_ui_egui::canvas::{Fit, PageLayout};
+    use prckopis_ui_egui::canvas::{Fit, PageLayout};
     // a printed book: portrait cover and back, landscape two-page spreads between
     let mut sizes = vec![(200, 300)];
     sizes.extend([(400, 300); 10]);
@@ -771,7 +771,7 @@ fn page_down_steps_every_spread_when_several_fit_on_screen() {
     for fit in [Fit::Width, Fit::Page, Fit::Height] {
         let bytes = sized_fixture(&sizes);
         let mut h = Harness::builder().with_size(egui::vec2(1400.0, 900.0)).build_eframe(move |_cc| {
-            let mut app = PdfCraftApp::new();
+            let mut app = PrckopisApp::new();
             app.set_option("language", "en").unwrap();
             app.open_bytes("book.pdf", None, bytes).unwrap();
             app
@@ -794,29 +794,29 @@ fn page_down_steps_every_spread_when_several_fit_on_screen() {
 }
 
 /// Open `sizes` in Fit width, continuous, with the Pages panel showing.
-fn pages_panel_harness(sizes: &[(u32, u32)]) -> Harness<'static, PdfCraftApp> {
+fn pages_panel_harness(sizes: &[(u32, u32)]) -> Harness<'static, PrckopisApp> {
     let bytes = sized_fixture(sizes);
     let mut h = Harness::builder().with_size(egui::vec2(1400.0, 900.0)).build_eframe(move |_cc| {
-        let mut app = PdfCraftApp::new();
+        let mut app = PrckopisApp::new();
         app.set_option("language", "en").unwrap();
         app.open_bytes("cheques.pdf", None, bytes).unwrap();
-        app.right = Some(pdfcraft_ui_egui::RightPanel::Pages);
+        app.right = Some(prckopis_ui_egui::RightPanel::Pages);
         app
     });
     h.run_steps(6);
     h.state_mut().active = Some(0);
-    h.state_mut().views[0].fit = pdfcraft_ui_egui::canvas::Fit::Width;
+    h.state_mut().views[0].fit = prckopis_ui_egui::canvas::Fit::Width;
     h.run_steps(6);
     h
 }
 
 /// A thumbnail in the Pages panel (the panel lists pages as "Page n" buttons).
-fn thumbnail(h: &Harness<'static, PdfCraftApp>, label: &str) -> egui::Pos2 {
+fn thumbnail(h: &Harness<'static, PrckopisApp>, label: &str) -> egui::Pos2 {
     h.get_all_by_label(label).find(|n| n.rect().left() > 1000.0).expect("the Pages panel thumbnail").rect().center()
 }
 
 /// Press and release `button` at `at`.
-fn press(h: &mut Harness<'static, PdfCraftApp>, at: egui::Pos2, button: egui::PointerButton) {
+fn press(h: &mut Harness<'static, PrckopisApp>, at: egui::Pos2, button: egui::PointerButton) {
     h.hover_at(at);
     h.run_steps(1);
     h.event(egui::Event::PointerButton { pos: at, button, pressed: true, modifiers: Default::default() });
@@ -857,13 +857,13 @@ fn pages_panel_thumbnails_have_a_context_menu() {
 /// trackpad (point) scrolling keeps its own speed. The choice is saved.
 #[test]
 fn the_scroll_speed_preference_scales_mouse_wheel_notches() {
-    use pdfcraft_ui_egui::scroll_speed::ScrollSpeed;
+    use prckopis_ui_egui::scroll_speed::ScrollSpeed;
     let scrolled = |speed: ScrollSpeed, unit: egui::MouseWheelUnit, dy: f32| -> f32 {
         let mut h = harness();
         h.state_mut().scroll_speed = speed;
         h.run_steps(2);
         let i = h.state().active.expect("a document is shown");
-        let top = |h: &Harness<'static, PdfCraftApp>| h.state().views[i].page_screen_rect(0).expect("page 1 on screen").min.y;
+        let top = |h: &Harness<'static, PrckopisApp>| h.state().views[i].page_screen_rect(0).expect("page 1 on screen").min.y;
         let before = top(&h);
         h.event(egui::Event::PointerMoved(h.state().views[i].viewport_rect().center()));
         h.event(egui::Event::MouseWheel { unit, delta: egui::vec2(0.0, -dy), phase: egui::TouchPhase::Move, modifiers: egui::Modifiers::NONE });
@@ -879,10 +879,10 @@ fn the_scroll_speed_preference_scales_mouse_wheel_notches() {
     let point = egui::MouseWheelUnit::Point;
     let (normal_points, fast_points) = (scrolled(ScrollSpeed::Normal, point, 30.0), scrolled(ScrollSpeed::Fast, point, 30.0));
     assert!(normal_points > 0.0 && (normal_points - fast_points).abs() < 1.0, "trackpad: {normal_points} vs {fast_points}");
-    let mut app = PdfCraftApp::new();
+    let mut app = PrckopisApp::new();
     app.set_option("scroll_speed", "fast").unwrap();
     assert!(app.set_option("scroll_speed", "warp").unwrap_err().contains("slow, normal, or fast"));
-    let mut again = PdfCraftApp::new();
+    let mut again = PrckopisApp::new();
     again.restore(&app.persist());
     assert_eq!(again.scroll_speed, ScrollSpeed::Fast);
 }

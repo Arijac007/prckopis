@@ -3,8 +3,8 @@
 
 use egui_kittest::Harness;
 use egui_kittest::kittest::Queryable;
-use pdfcraft_engine::{AddedText, Edit, Session, export};
-use pdfcraft_ui_egui::PdfCraftApp;
+use prckopis_engine::{AddedText, Edit, Session, export};
+use prckopis_ui_egui::PrckopisApp;
 
 /// A one-page PDF that is only a picture of a sentence.
 fn scan() -> Vec<u8> {
@@ -18,7 +18,7 @@ fn scan() -> Vec<u8> {
 #[test]
 fn recognize_text_dialog_adds_searchable_text() {
     let mut h = Harness::builder().with_size(egui::vec2(1400.0, 900.0)).build_eframe(|_cc| {
-        let mut app = PdfCraftApp::new();
+        let mut app = PrckopisApp::new();
         app.set_option("language", "en").unwrap();
         app.open_bytes("scan.pdf", None, scan()).unwrap();
         app.run_inline = true;
@@ -29,7 +29,7 @@ fn recognize_text_dialog_adds_searchable_text() {
     h.run_steps(2);
     h.get_by_label("Document language");
     h.get_by_label("Output");
-    if !pdfcraft_engine::ocr::available() {
+    if !prckopis_engine::ocr::available() {
         eprintln!("skipped: OCR models not installed");
         return;
     }
@@ -45,18 +45,18 @@ fn recognize_text_dialog_adds_searchable_text() {
 
 #[test]
 fn recognize_text_in_multiple_files_writes_searchable_copies() {
-    if !pdfcraft_engine::ocr::available() {
+    if !prckopis_engine::ocr::available() {
         eprintln!("skipped: OCR models not installed");
         return;
     }
-    let dir = std::env::temp_dir().join(format!("pdfcraft-ocr-ui-{}", std::process::id()));
+    let dir = std::env::temp_dir().join(format!("prckopis-ocr-ui-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).unwrap();
-    let mut app = PdfCraftApp::new();
+    let mut app = PrckopisApp::new();
     app.set_option("language", "en").unwrap();
     app.run_inline = true;
     app.export_dir_override = Some(dir.to_string_lossy().into_owned());
-    app.use_files(pdfcraft_ui_egui::FilePurpose::Ocr, vec![("one.pdf".into(), scan()), ("two.pdf".into(), scan())]);
+    app.use_files(prckopis_ui_egui::FilePurpose::Ocr, vec![("one.pdf".into(), scan()), ("two.pdf".into(), scan())]);
     assert!(app.ocr_batch.is_none(), "finished");
     let toast = app.toast.clone().unwrap().0;
     assert!(toast.starts_with("Recognized ") && toast.ends_with("in 2 files"), "{toast}");
@@ -83,7 +83,7 @@ fn recognize_text_can_read_pictures_on_pages_with_text() {
         s.save_bytes(id).unwrap().to_vec()
     };
     let mut h = Harness::builder().with_size(egui::vec2(1400.0, 900.0)).build_eframe(|_cc| {
-        let mut app = PdfCraftApp::new();
+        let mut app = PrckopisApp::new();
         app.set_option("language", "en").unwrap();
         app.open_bytes("hybrid.pdf", None, hybrid).unwrap();
         app.run_inline = true;
@@ -96,7 +96,7 @@ fn recognize_text_can_read_pictures_on_pages_with_text() {
     h.get_by_label("Also recognize pages that already have text").click();
     h.run_steps(2);
     assert!(!h.state().ocr_draft.settings().skip_text_pages);
-    if !pdfcraft_engine::ocr::available() {
+    if !prckopis_engine::ocr::available() {
         eprintln!("skipped: OCR models not installed");
         return;
     }
@@ -109,8 +109,8 @@ fn recognize_text_can_read_pictures_on_pages_with_text() {
     let id = app.active_ids().unwrap().1;
     let doc = app.session.get(id).unwrap();
     assert_eq!(doc.can_undo(), Some("Recognize text"));
-    let mut r = pdfcraft_render::PageRenderer::new(doc.bytes.clone(), Default::default());
-    let text = r.render(pdfcraft_render::RenderRequest { page: 0, kind: pdfcraft_render::RequestKind::Text, scale: 1.0, ..Default::default() });
+    let mut r = prckopis_render::PageRenderer::new(doc.bytes.clone(), Default::default());
+    let text = r.render(prckopis_render::RenderRequest { page: 0, kind: prckopis_render::RequestKind::Text, scale: 1.0, ..Default::default() });
     let text = text.text.unwrap().plain_text().to_lowercase();
     assert_eq!((text.matches("invoice").count(), text.matches("scanned").count()), (1, 1), "{text}");
 }

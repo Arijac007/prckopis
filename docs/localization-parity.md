@@ -2,7 +2,7 @@
 
 > **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-10 · **Change:** major (first per-language status, measured from the catalogs) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
 
-Per-language status of PdfCraft's interface against Acrobat Pro's. How translations work and how to
+Per-language status of Prckopis's interface against Acrobat Pro's. How translations work and how to
 add a language: [localization.md](localization.md). Summary in [ROADMAP.md](../ROADMAP.md).
 
 ## How this was measured
@@ -62,7 +62,7 @@ none has translated help.
 | Italian | `it` | 2,130 (99.4%) | partial | yes |
 
 **8 other languages** ship (15 catalogs plus English, 16 interface languages in Preferences).
-Acrobat languages PdfCraft lacks: Danish, Dutch, Finnish, Norwegian, Polish, Swedish, Turkish,
+Acrobat languages Prckopis lacks: Danish, Dutch, Finnish, Norwegian, Polish, Swedish, Turkish,
 Hebrew.
 
 ## Revision history

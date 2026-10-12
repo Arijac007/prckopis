@@ -5,7 +5,7 @@ use std::path::PathBuf;
 
 use egui_kittest::Harness;
 use egui_kittest::kittest::Queryable;
-use pdfcraft_ui_egui::PdfCraftApp;
+use prckopis_ui_egui::PrckopisApp;
 
 /// A PDF whose pages each show one line of Helvetica text.
 fn pdf(lines: &[&str]) -> Vec<u8> {
@@ -39,7 +39,7 @@ fn pdf(lines: &[&str]) -> Vec<u8> {
 }
 
 fn folder() -> PathBuf {
-    let dir = std::env::temp_dir().join(format!("pdfcraft-ui-folder-search-{}", std::process::id()));
+    let dir = std::env::temp_dir().join(format!("prckopis-ui-folder-search-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).unwrap();
     std::fs::write(dir.join("contract.pdf"), pdf(&["Introduction", "Payment is due by invoice"])).unwrap();
@@ -51,7 +51,7 @@ fn folder() -> PathBuf {
 fn searching_a_folder_lists_matches_and_opens_one_at_its_page() {
     let dir = folder();
     let mut h = Harness::builder().with_size(egui::vec2(1400.0, 1000.0)).build_eframe(|_cc| {
-        let mut app = PdfCraftApp::new();
+        let mut app = PrckopisApp::new();
         app.set_option("language", "en").unwrap();
         app
     });

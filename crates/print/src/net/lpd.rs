@@ -27,13 +27,13 @@ fn ack(s: &mut TcpStream, target: &Target, step: &str) -> Result<(), PrintError>
 fn local_host() -> String {
     let name = std::env::var("COMPUTERNAME").or_else(|_| std::env::var("HOSTNAME")).unwrap_or_default();
     let name: String = name.chars().filter(|c| c.is_ascii_alphanumeric() || *c == '-').take(31).collect();
-    if name.is_empty() { "pdfcraft".into() } else { name }
+    if name.is_empty() { "prckopis".into() } else { name }
 }
 
 /// The LPD control file for one job (RFC 1179 §7).
 pub fn control_file(job: &NetJob, host: &str, data_name: &str) -> String {
     let user = clean_text(&job.user, 31).replace(' ', "_");
-    let user = if user.is_empty() { "pdfcraft".to_string() } else { user };
+    let user = if user.is_empty() { "prckopis".to_string() } else { user };
     let title = clean_text(&job.title, 99);
     let mut c = format!("H{host}\nP{user}\nJ{title}\nN{title}\n");
     // 'l' prints the file as it is, control characters included (binary-safe).

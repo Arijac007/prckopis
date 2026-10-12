@@ -2,7 +2,7 @@
 //! dialog options; find network printers and print to them directly (IPP, LPD, raw socket),
 //! and follow, release or cancel their jobs.
 
-use pdfcraft_engine::print::{self, Binding, BookletSubset, Content, Layout, Orientation, PAPERS, PageOrder, SizeMode, Subset, net, spool};
+use prckopis_engine::print::{self, Binding, BookletSubset, Content, Layout, Orientation, PAPERS, PageOrder, SizeMode, Subset, net, spool};
 use serde_json::{Value, json};
 
 use crate::{Args, Automation, Result, ToolError, failed, write_atomic};

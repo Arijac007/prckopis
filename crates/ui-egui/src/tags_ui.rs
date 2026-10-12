@@ -4,9 +4,9 @@ use std::collections::{BTreeSet, HashMap, HashSet};
 use std::sync::Arc;
 
 use egui::Ui;
-use pdfcraft_cos::ObjRef;
-use pdfcraft_engine::a11y::{TagInfo, TagProperty};
-use pdfcraft_engine::{DocId, Edit};
+use prckopis_cos::ObjRef;
+use prckopis_engine::a11y::{TagInfo, TagProperty};
+use prckopis_engine::{DocId, Edit};
 
 use crate::{icons, theme::Tokens, widgets};
 
@@ -65,7 +65,7 @@ impl Draft {
 
 impl State {
     /// The document's tags, walked again only after an edit.
-    pub(crate) fn tags(&mut self, doc: &pdfcraft_engine::Document) -> Arc<Vec<TagInfo>> {
+    pub(crate) fn tags(&mut self, doc: &prckopis_engine::Document) -> Arc<Vec<TagInfo>> {
         let generation = doc.edit_generation();
         if let Some((id, g, tags)) = &self.cache
             && *id == doc.id

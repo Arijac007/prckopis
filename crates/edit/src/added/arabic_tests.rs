@@ -37,7 +37,7 @@ fn snapshot(doc: &Document) -> Vec<u8> {
     let mut bytes = Vec::new();
     for num in doc.object_numbers() {
         let obj = doc.get(ObjRef { num, generation: doc.generation(num) });
-        pdfcraft_cos::serialize(&obj, &mut bytes);
+        prckopis_cos::serialize(&obj, &mut bytes);
         bytes.push(b'\n');
     }
     bytes
@@ -56,7 +56,7 @@ fn golden_snapshot(doc: &Document) -> Vec<u8> {
             let decoded = stream.decoded_strict().expect("generated stream decodes");
             stream.raw = decoded.into();
         }
-        pdfcraft_cos::serialize(&obj, &mut bytes);
+        prckopis_cos::serialize(&obj, &mut bytes);
         bytes.push(b'\n');
     }
     bytes
@@ -80,7 +80,7 @@ fn fonts_of(doc: &Document, fonts: &Dict) -> Vec<(Vec<u8>, usize)> {
 fn glyphs_shown(out: &[u8]) -> Vec<(Vec<u8>, u8)> {
     let mut font = Vec::new();
     let mut shown = Vec::new();
-    for op in pdfcraft_content::parse(out).ops {
+    for op in prckopis_content::parse(out).ops {
         if op.is("Tf") {
             font = op.name(0).unwrap_or_default().to_vec();
         } else if op.is("Tj")
@@ -153,7 +153,7 @@ fn an_item_below_the_old_limit_is_drawn_exactly_as_before() {
     // The injected outlines are fixed; only the descriptor's family comes from craft-fonts.
     // Check that metadata separately, then normalize those two fields to the original golden.
     // The drawing bytes and semantic object fields must match in both font build modes.
-    let family = pdfcraft_fonts::document_arabic_font().map_or("Arabic", |face| face.family);
+    let family = prckopis_fonts::document_arabic_font().map_or("Arabic", |face| face.family);
     for (_, font) in fonts.iter() {
         let descriptor = doc.dict(font).unwrap().get(b"FontDescriptor").and_then(Object::as_ref).unwrap();
         let dict = doc.dict(&Object::Ref(descriptor)).unwrap();
@@ -166,7 +166,7 @@ fn an_item_below_the_old_limit_is_drawn_exactly_as_before() {
         .unwrap();
     }
     let mut bytes = out.clone();
-    pdfcraft_cos::serialize(&Object::Dict(fonts.clone()), &mut bytes);
+    prckopis_cos::serialize(&Object::Dict(fonts.clone()), &mut bytes);
     bytes.extend(golden_snapshot(&doc));
     assert_eq!(fnv1a(&bytes), SMALL_ITEM_FINGERPRINT, "small-item output changed");
 }

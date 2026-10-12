@@ -6,8 +6,8 @@
 
 use egui_kittest::Harness;
 use egui_kittest::kittest::Queryable;
-use pdfcraft_render::PageRenderer;
-use pdfcraft_ui_egui::PdfCraftApp;
+use prckopis_render::PageRenderer;
+use prckopis_ui_egui::PrckopisApp;
 
 /// An `n`-page document with a proper xref table.
 fn fixture(n: usize) -> Vec<u8> {
@@ -35,16 +35,16 @@ fn fixture(n: usize) -> Vec<u8> {
     out
 }
 
-fn pages(app: &PdfCraftApp, view: usize) -> usize {
+fn pages(app: &PrckopisApp, view: usize) -> usize {
     let doc = app.session.get(app.views[view].id).unwrap();
     PageRenderer::new(doc.bytes.clone(), Default::default()).page_count()
 }
 
 /// A shell with `docs` open, each the given number of pages.
-fn harness(docs: &[usize]) -> Harness<'static, PdfCraftApp> {
+fn harness(docs: &[usize]) -> Harness<'static, PrckopisApp> {
     let docs = docs.to_vec();
     let mut h = Harness::builder().with_size(egui::vec2(1200.0, 800.0)).build_eframe(move |_cc| {
-        let mut app = PdfCraftApp::new();
+        let mut app = PrckopisApp::new();
         app.set_option("language", "en").unwrap();
         for (i, n) in docs.iter().enumerate() {
             app.open_bytes(&format!("doc{i}.pdf"), None, fixture(*n)).unwrap();
@@ -111,7 +111,7 @@ fn a_pick_for_a_document_that_is_no_longer_active_is_dropped() {
 
 /// A scratch folder for one test.
 fn scratch(name: &str) -> std::path::PathBuf {
-    let dir = std::env::temp_dir().join(format!("pdfcraft-pickers-{name}-{}", std::process::id()));
+    let dir = std::env::temp_dir().join(format!("prckopis-pickers-{name}-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).unwrap();
     dir
@@ -121,12 +121,12 @@ fn page_count(bytes: Vec<u8>) -> usize {
     PageRenderer::new(std::sync::Arc::new(bytes), Default::default()).page_count()
 }
 
-fn dirty(app: &PdfCraftApp, view: usize) -> bool {
+fn dirty(app: &PrckopisApp, view: usize) -> bool {
     app.session.get(app.views[view].id).is_some_and(|d| d.dirty)
 }
 
-fn rotate_first_page(app: &mut PdfCraftApp) {
-    app.apply_edit(pdfcraft_engine::Edit::RotatePages { pages: vec![0], degrees: 90 });
+fn rotate_first_page(app: &mut PrckopisApp) {
+    app.apply_edit(prckopis_engine::Edit::RotatePages { pages: vec![0], degrees: 90 });
 }
 
 #[test]
@@ -138,7 +138,7 @@ fn save_as_writes_on_a_later_frame_including_edits_made_meanwhile() {
     assert!(h.state_mut().execute("file.save_as"));
     assert!(!out.exists(), "the command must not wait for the picker");
     // The user keeps working while the panel is open.
-    h.state_mut().apply_edit(pdfcraft_engine::Edit::DeletePages { pages: vec![0] });
+    h.state_mut().apply_edit(prckopis_engine::Edit::DeletePages { pages: vec![0] });
     h.run_steps(2);
     assert_eq!(page_count(std::fs::read(&out).unwrap()), 2, "the edit made while choosing is saved too");
     assert!(!dirty(h.state(), 0));
@@ -325,7 +325,7 @@ fn extracted_pages_are_not_deleted_if_the_document_was_edited_while_choosing_the
     h.state_mut().extract_selection();
     // While the folder picker is open the user deletes page 1 themselves: the page that would
     // now be deleted is the original page 2, which was never written out.
-    h.state_mut().apply_edit(pdfcraft_engine::Edit::DeletePages { pages: vec![0] });
+    h.state_mut().apply_edit(prckopis_engine::Edit::DeletePages { pages: vec![0] });
     h.run_steps(2);
     assert!(dir.join("doc0 (page 1).pdf").exists(), "the extracted file is still written");
     assert_eq!(pages(h.state(), 0), 2, "nothing more is deleted");
@@ -370,7 +370,7 @@ fn an_image_pick_is_dropped_if_the_document_was_edited_meanwhile() {
     // Replace image 0 on page 2...
     h.state_mut().replace_image_dialog(1, 0);
     // ...but page 1 is deleted while choosing: "page 2" is now a different page.
-    h.state_mut().apply_edit(pdfcraft_engine::Edit::DeletePages { pages: vec![0] });
+    h.state_mut().apply_edit(prckopis_engine::Edit::DeletePages { pages: vec![0] });
     h.run_steps(2);
     assert_eq!(pages(h.state(), 0), 1);
     let toast = h.state().toast.as_ref().map(|(m, _)| m.clone()).unwrap_or_default();
@@ -407,8 +407,8 @@ fn a_watermark_file_from_browse_lands_only_in_the_dialog_that_asked() {
 
 /// Browsers read picked files asynchronously and queue them on `requests` (#167): the request
 /// is made when the picker opens, so it is bound to the document active then.
-fn browser_insert(h: &Harness<'static, PdfCraftApp>, pages: usize) -> pdfcraft_ui_egui::FileRequest {
-    h.state().file_request(pdfcraft_ui_egui::FilePurpose::InsertPages, vec![("b.pdf".into(), fixture(pages))])
+fn browser_insert(h: &Harness<'static, PrckopisApp>, pages: usize) -> prckopis_ui_egui::FileRequest {
+    h.state().file_request(prckopis_ui_egui::FilePurpose::InsertPages, vec![("b.pdf".into(), fixture(pages))])
 }
 
 #[test]
@@ -441,7 +441,7 @@ fn a_browser_insert_that_arrives_after_switching_documents_changes_neither() {
 fn a_browser_insert_into_a_document_edited_meanwhile_is_refused() {
     let mut h = harness(&[3]);
     let request = browser_insert(&h, 1);
-    h.state_mut().apply_edit(pdfcraft_engine::Edit::DeletePages { pages: vec![0] });
+    h.state_mut().apply_edit(prckopis_engine::Edit::DeletePages { pages: vec![0] });
     h.state_mut().requests.lock().unwrap().push(request);
     h.run_steps(2);
     assert_eq!(pages(h.state(), 0), 2, "only the user's own edit applied");
@@ -452,9 +452,9 @@ fn replace_pages_applies_only_to_the_document_its_dialog_was_opened_on() {
     for switch in [false, true] {
         let mut h = harness(&[3, 3]);
         h.state_mut().active = Some(0);
-        h.state_mut().use_files(pdfcraft_ui_egui::FilePurpose::ReplacePages, vec![("r.pdf".into(), fixture(1))]);
+        h.state_mut().use_files(prckopis_ui_egui::FilePurpose::ReplacePages, vec![("r.pdf".into(), fixture(1))]);
         h.run_steps(2);
-        assert_eq!(h.state().dialog, Some(pdfcraft_ui_egui::Dialog::ReplacePages));
+        assert_eq!(h.state().dialog, Some(prckopis_ui_egui::Dialog::ReplacePages));
         if switch {
             // A file opened meanwhile (a browser read finishing) becomes the active document.
             h.state_mut().active = Some(1);
@@ -486,7 +486,7 @@ fn a_failed_startup_url_is_reported_in_the_app() {
     assert!(failed.lock().unwrap().is_empty(), "each failure is reported once");
 }
 
-fn deliver_startup(h: &Harness<'static, PdfCraftApp>, name: &str, bytes: Vec<u8>) {
+fn deliver_startup(h: &Harness<'static, PrckopisApp>, name: &str, bytes: Vec<u8>) {
     h.state().startup_inbox.lock().unwrap().push((name.into(), bytes));
 }
 
@@ -504,8 +504,8 @@ fn a_startup_url_opens_in_front_when_the_user_has_not_started_working() {
 
 #[test]
 fn a_late_startup_url_preserves_the_current_edit_workspace_and_save_target() {
-    use pdfcraft_engine::{Edit, InitialView, Magnification, Navigation, Session};
-    use pdfcraft_ui_egui::{LeftPanel, Mode, QuickTool, RightPanel};
+    use prckopis_engine::{Edit, InitialView, Magnification, Navigation, Session};
+    use prckopis_ui_egui::{LeftPanel, Mode, QuickTool, RightPanel};
 
     // A downloaded PDF can ask to show a different panel and magnification. Its own view
     // should honour those settings without taking the user's workspace away.
@@ -568,7 +568,7 @@ fn a_late_startup_url_preserves_home_even_after_all_other_tabs_are_closed() {
         deliver_startup(&h, "late.pdf", fixture(1));
         h.run_steps(2);
         assert_eq!(h.state().active, None, "Home stays selected (closed tabs: {close})");
-        h.get_by_label_contains("Welcome to PdfCraft");
+        h.get_by_label_contains("Welcome to Prckopis");
         h.get_by_label("late.pdf").click();
         h.run_steps(2);
         assert!(h.state().active.is_some());
@@ -610,7 +610,7 @@ fn a_broken_late_startup_file_reports_its_error_without_changing_the_active_docu
 }
 
 fn encrypted_fixture() -> Vec<u8> {
-    use pdfcraft_engine::{Edit, Protection, Session};
+    use prckopis_engine::{Edit, Protection, Session};
     let mut s = Session::new();
     let id = s.open("encrypted.pdf", None, std::sync::Arc::new(fixture(1)), None).unwrap();
     s.apply(id, Edit::Protect(Protection { open_password: Some("test-password".into()), ..Default::default() })).unwrap();
@@ -672,10 +672,10 @@ fn a_late_startup_url_preserves_the_combine_files_tab() {
 #[test]
 fn a_late_startup_url_waits_for_an_existing_dialog_to_close() {
     let mut h = harness(&[3]);
-    h.state_mut().dialog = Some(pdfcraft_ui_egui::Dialog::Preferences);
+    h.state_mut().dialog = Some(prckopis_ui_egui::Dialog::Preferences);
     deliver_startup(&h, "late.pdf", fixture(1));
     h.run_steps(2);
-    assert_eq!(h.state().dialog, Some(pdfcraft_ui_egui::Dialog::Preferences));
+    assert_eq!(h.state().dialog, Some(prckopis_ui_egui::Dialog::Preferences));
     assert_eq!(h.state().views.len(), 1);
     assert_eq!(h.state().startup_inbox.lock().unwrap().len(), 1);
     h.state_mut().dialog = None;
@@ -697,10 +697,10 @@ fn a_late_startup_text_file_is_still_converted_without_stealing_focus() {
 
 #[test]
 fn a_background_startup_forms_script_notice_waits_until_its_tab_is_selected() {
-    let template = pdfcraft_xfa::fixtures::scripted_template()
+    let template = prckopis_xfa::fixtures::scripted_template()
         .replace("if (qty.rawValue === null) qty.rawValue = 2;", r#"xfa.host.messageBox("Late form opened");"#);
     let mut h = harness(&[3]);
-    deliver_startup(&h, "late-form.pdf", pdfcraft_xfa::fixtures::shell(&template));
+    deliver_startup(&h, "late-form.pdf", prckopis_xfa::fixtures::shell(&template));
     h.run_steps(2);
     assert_eq!(h.state().active, Some(0));
     assert!(h.state().toast.is_none(), "the background form must not interrupt the current document");

@@ -1,6 +1,6 @@
 [package]
-name = "pdfcraft-engine"
-description = "PdfCraft engine façade: session, documents, command/tool catalogue"
+name = "prckopis-engine"
+description = "Prckopis engine façade: session, documents, command/tool catalogue"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -9,31 +9,31 @@ license.workspace = true
 workspace = true
 
 [dependencies]
-pdfcraft-measure = { workspace = true }
+prckopis-measure = { workspace = true }
 image = { version = "0.25", default-features = false, features = ["png", "jpeg", "tiff"] }
-pdfcraft-render = { workspace = true }
-pdfcraft-cos = { workspace = true }
-pdfcraft-organize = { workspace = true }
-pdfcraft-annot = { workspace = true }
-pdfcraft-forms = { workspace = true }
-pdfcraft-xfa = { workspace = true }
-pdfcraft-edit = { workspace = true }
-pdfcraft-audit = { workspace = true }
-pdfcraft-redact = { workspace = true }
-pdfcraft-print = { workspace = true }
-pdfcraft-xfdf = { workspace = true }
-pdfcraft-sign = { workspace = true }
-pdfcraft-optimize = { workspace = true }
-pdfcraft-a11y = { workspace = true }
-pdfcraft-ocr = { workspace = true }
-pdfcraft-js = { workspace = true }
-pdfcraft-compare = { workspace = true }
-pdfcraft-preflight = { workspace = true }
-pdfcraft-export = { workspace = true }
-pdfcraft-fonts = { workspace = true }
-pdfcraft-create = { workspace = true }
-pdfcraft-model = { workspace = true }
-pdfcraft-geom = { workspace = true }
+prckopis-render = { workspace = true }
+prckopis-cos = { workspace = true }
+prckopis-organize = { workspace = true }
+prckopis-annot = { workspace = true }
+prckopis-forms = { workspace = true }
+prckopis-xfa = { workspace = true }
+prckopis-edit = { workspace = true }
+prckopis-audit = { workspace = true }
+prckopis-redact = { workspace = true }
+prckopis-print = { workspace = true }
+prckopis-xfdf = { workspace = true }
+prckopis-sign = { workspace = true }
+prckopis-optimize = { workspace = true }
+prckopis-a11y = { workspace = true }
+prckopis-ocr = { workspace = true }
+prckopis-js = { workspace = true }
+prckopis-compare = { workspace = true }
+prckopis-preflight = { workspace = true }
+prckopis-export = { workspace = true }
+prckopis-fonts = { workspace = true }
+prckopis-create = { workspace = true }
+prckopis-model = { workspace = true }
+prckopis-geom = { workspace = true }
 thiserror = { workspace = true }
 png = "0.18"
 # Already in the graph (url and idna through webbrowser, icu_properties through boa): they show

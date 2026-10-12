@@ -8,7 +8,7 @@
 //! - [`ControlPlugin`], an egui plugin, keeps a copy of the AccessKit tree from every frame's
 //!   output (the widget tree with ids, roles, labels, rects and states) and injects queued input
 //!   events (AccessKit click actions, pointer events, keys, text) at the start of later frames.
-//! - Requests reach the app through a channel; `PdfCraftApp` answers them at the start of a
+//! - Requests reach the app through a channel; `PrckopisApp` answers them at the start of a
 //!   frame, so they see and change exactly what the user would.
 //!
 //! Methods (JSON in, JSON out):
@@ -118,7 +118,7 @@ pub struct ControlPlugin {
 
 impl egui::Plugin for ControlPlugin {
     fn debug_name(&self) -> &'static str {
-        "pdfcraft-control"
+        "prckopis-control"
     }
 
     fn input_hook(&mut self, ctx: &egui::Context, input: &mut egui::RawInput) {
@@ -176,7 +176,7 @@ pub fn attach(ctx: &egui::Context) -> (Control, ControlClient) {
     (Control { rx, shared, pending: Vec::new(), next_tag: 1 }, ControlClient { tx, ctx: ctx.clone() })
 }
 
-/// What a request needs from the app (implemented by `PdfCraftApp`).
+/// What a request needs from the app (implemented by `PrckopisApp`).
 pub(crate) trait Host {
     fn state(&self) -> Value;
     fn command(&mut self, id: &str) -> Reply;
@@ -622,7 +622,7 @@ fn screenshot_png(image: &egui::ColorImage, region: Option<egui::Rect>, ppp: f32
     Ok(json!({ "png_base64": base64::engine::general_purpose::STANDARD.encode(out), "width": cw, "height": ch, "pixels_per_point": ppp }))
 }
 
-impl Host for crate::PdfCraftApp {
+impl Host for crate::PrckopisApp {
     fn dock(&mut self, reset: bool, params: &Value) -> Reply {
         crate::docking::command(self, reset, params)
     }
@@ -716,7 +716,7 @@ impl Host for crate::PdfCraftApp {
     }
 
     fn command(&mut self, id: &str) -> Reply {
-        let spec = pdfcraft_engine::commands::command(id).ok_or_else(|| format!("unknown command {id:?} (see ui.commands)"))?;
+        let spec = prckopis_engine::commands::command(id).ok_or_else(|| format!("unknown command {id:?} (see ui.commands)"))?;
         if !self.command_enabled(spec) {
             return Err(format!("{id} is disabled right now"));
         }
@@ -725,7 +725,7 @@ impl Host for crate::PdfCraftApp {
     }
 
     fn commands(&self) -> Value {
-        let mut list: Vec<Value> = pdfcraft_engine::commands::COMMANDS
+        let mut list: Vec<Value> = prckopis_engine::commands::COMMANDS
             .iter()
             .map(|c| json!({ "id": c.id, "label": c.label, "menu": c.menu, "enabled": self.command_enabled(c), "shortcut": c.shortcut.map(|s| s.label(cfg!(target_os = "macos"))) }))
             .collect();
@@ -774,11 +774,11 @@ pub fn serve(client: ControlClient) -> std::io::Result<Endpoint> {
     let port = listener.local_addr()?.port();
     let token = random_token()?;
     let expected = token.clone();
-    std::thread::Builder::new().name("pdfcraft-control".into()).spawn(move || {
+    std::thread::Builder::new().name("prckopis-control".into()).spawn(move || {
         for stream in listener.incoming().flatten() {
             let client = client.clone();
             let expected = expected.clone();
-            let _ = std::thread::Builder::new().name("pdfcraft-control-conn".into()).spawn(move || {
+            let _ = std::thread::Builder::new().name("prckopis-control-conn".into()).spawn(move || {
                 let Ok(read) = stream.try_clone() else { return };
                 let mut write = stream;
                 let mut authed = false;

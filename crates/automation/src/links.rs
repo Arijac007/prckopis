@@ -1,8 +1,8 @@
 //! Link tools: list, add, edit and delete links; create links from URLs in the text; remove
 //! all links. Rectangles are points from the top-left of the displayed page.
 
-use pdfcraft_engine::{Edit, LinkAction, LinkHighlight, LinkStyle, read_remote_document, resolve_remote_document_path};
-use pdfcraft_render::{DestView, LinkTarget, RemoteDestination};
+use prckopis_engine::{Edit, LinkAction, LinkHighlight, LinkStyle, read_remote_document, resolve_remote_document_path};
+use prckopis_render::{DestView, LinkTarget, RemoteDestination};
 use serde_json::{Value, json};
 use std::path::Path;
 

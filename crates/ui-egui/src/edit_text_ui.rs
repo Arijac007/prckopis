@@ -8,8 +8,8 @@ use std::collections::BTreeMap;
 use std::sync::Arc;
 
 use egui::{Color32, CornerRadius, FontFamily, FontId, Pos2, Rect, Stroke};
-use pdfcraft_engine::{Edit, ObjectKind, ObjectTarget};
-use pdfcraft_render::DocInfo;
+use prckopis_engine::{Edit, ObjectKind, ObjectTarget};
+use prckopis_render::DocInfo;
 
 use crate::canvas::{DocView, PageXform};
 
@@ -20,11 +20,11 @@ const ACCENT: Color32 = Color32::from_rgb(0x14, 0x73, 0xE6);
 #[derive(Default)]
 pub(crate) struct TextBackground {
     key: Option<(u64, usize, usize)>,
-    renderer: Option<pdfcraft_render::RenderPool>,
+    renderer: Option<prckopis_render::RenderPool>,
     texture: Option<egui::TextureHandle>,
     tag: Option<u64>,
     received: Option<u64>,
-    draft_key: Option<(String, pdfcraft_engine::BlockStyle)>,
+    draft_key: Option<(String, prckopis_engine::BlockStyle)>,
     draft_rect: Option<[f64; 4]>,
 }
 
@@ -33,7 +33,7 @@ impl TextBackground {
         self.renderer.is_some() && self.received != self.tag
     }
 
-    pub fn prepare(&mut self, ctx: &egui::Context, doc: &pdfcraft_engine::Document, editor: Option<&LineEditor>, scale: f32) {
+    pub fn prepare(&mut self, ctx: &egui::Context, doc: &prckopis_engine::Document, editor: Option<&LineEditor>, scale: f32) {
         let key = editor.map(|ed| (doc.edit_generation(), ed.page, ed.block));
         if self.key != key {
             *self = Self { key, ..Default::default() };
@@ -54,7 +54,7 @@ impl TextBackground {
         let scale = scale.min(crate::canvas::BASE_SIDE.min(max_side) / p.width.max(p.height).max(1.0));
         let tag = (scale * 1000.0) as u64;
         if self.tag != Some(tag) {
-            renderer.set_queue(vec![pdfcraft_render::RenderRequest { page, scale, tag, ..Default::default() }]);
+            renderer.set_queue(vec![prckopis_render::RenderRequest { page, scale, tag, ..Default::default() }]);
             self.tag = Some(tag);
         }
         if let Some(out) = renderer.try_recv() {
@@ -111,7 +111,7 @@ pub struct LineEditor {
     /// stays attached while the page is zoomed, scrolled, or rotated.
     source_rect: [f32; 4],
     multiline: bool,
-    source: Option<(pdfcraft_engine::TextBlock, Vec<pdfcraft_engine::TextLine>)>,
+    source: Option<(prckopis_engine::TextBlock, Vec<prckopis_engine::TextLine>)>,
     pub(crate) fonts: BTreeMap<String, String>,
     /// The draft extends outside the source container; its frame follows the live draft bounds.
     pub overflow: bool,
@@ -121,8 +121,8 @@ pub struct LineEditor {
     size: f32,
     focus: bool,
     /// The Format text panel's values, and what the paragraph had (to send only changes).
-    pub look: pdfcraft_engine::AddedText,
-    look0: pdfcraft_engine::AddedText,
+    pub look: prckopis_engine::AddedText,
+    look0: prckopis_engine::AddedText,
     /// Underline, line spacing (× size; 0 = the paragraph's own), character spacing (pt) and
     /// horizontal scale (%), and what they were.
     pub extras: Extras,
@@ -186,9 +186,9 @@ impl LineEditor {
     }
 
     /// The formatting the panel changed.
-    pub fn style(&self) -> pdfcraft_engine::BlockStyle {
+    pub fn style(&self) -> prckopis_engine::BlockStyle {
         let (l, o) = (&self.look, &self.look0);
-        let mut style = pdfcraft_engine::BlockStyle {
+        let mut style = prckopis_engine::BlockStyle {
             resource: self.font_resource.clone(),
             family: (l.family != o.family || l.bold != o.bold || l.italic != o.italic).then_some((l.family, l.bold, l.italic)),
             size: (l.size != o.size).then_some(l.size),
@@ -210,7 +210,7 @@ impl LineEditor {
                 || style.char_spacing.is_some()
                 || style.scale.is_some())
         {
-            style.ranges.push(pdfcraft_engine::RangeStyle {
+            style.ranges.push(prckopis_engine::RangeStyle {
                 range: range.clone(),
                 family: style.family.take(),
                 resource: style.resource.take(),
@@ -235,7 +235,7 @@ impl LineEditor {
     }
 
     /// Adopt the rewritten paragraph's current geometry before the next overlay frame.
-    pub(crate) fn refresh_source(&mut self, block: &pdfcraft_engine::TextBlock, lines: Vec<pdfcraft_engine::TextLine>) {
+    pub(crate) fn refresh_source(&mut self, block: &prckopis_engine::TextBlock, lines: Vec<prckopis_engine::TextLine>) {
         self.source_rect = block.rect.map(|v| v as f32);
         self.multiline = block.rows.len() > 1;
         self.source = Some((block.clone(), lines));
@@ -245,8 +245,8 @@ impl LineEditor {
 }
 
 /// The look shown for a paragraph: the family and weight guessed from its PDF font name.
-fn source_look(base_font: &str, size: f64, color: [f64; 3], detected_bold: bool, detected_italic: bool) -> pdfcraft_engine::AddedText {
-    use pdfcraft_engine::FontFamily as F;
+fn source_look(base_font: &str, size: f64, color: [f64; 3], detected_bold: bool, detected_italic: bool) -> prckopis_engine::AddedText {
+    use prckopis_engine::FontFamily as F;
     let name = base_font.to_ascii_lowercase();
     let family = if ["courier", "mono", "consolas", "menlo", "monaco", "lucida console"].iter().any(|s| name.contains(s)) {
         F::Courier
@@ -255,7 +255,7 @@ fn source_look(base_font: &str, size: f64, color: [f64; 3], detected_bold: bool,
     } else {
         F::Helvetica
     };
-    pdfcraft_engine::AddedText {
+    prckopis_engine::AddedText {
         family,
         bold: detected_bold || ["bold", "black", "heavy", "semibold", "demi"].iter().any(|s| name.contains(s)),
         italic: detected_italic || ["italic", "oblique", "slanted"].iter().any(|s| name.contains(s)),
@@ -265,13 +265,13 @@ fn source_look(base_font: &str, size: f64, color: [f64; 3], detected_bold: bool,
     }
 }
 
-fn look_of(b: &pdfcraft_engine::TextBlock) -> pdfcraft_engine::AddedText {
+fn look_of(b: &prckopis_engine::TextBlock) -> prckopis_engine::AddedText {
     source_look(&b.base_font, b.size, b.color, b.bold, b.italic)
 }
 
-fn editor_font(look: &pdfcraft_engine::AddedText, size: f32) -> FontId {
+fn editor_font(look: &prckopis_engine::AddedText, size: f32) -> FontId {
     let family = match (look.family, look.bold) {
-        (pdfcraft_engine::FontFamily::Courier, _) => FontFamily::Monospace,
+        (prckopis_engine::FontFamily::Courier, _) => FontFamily::Monospace,
         (_, true) => FontFamily::Name("semibold".into()),
         (_, false) => FontFamily::Proportional,
     };
@@ -409,7 +409,7 @@ pub(crate) fn image_input(
     xf: &PageXform,
     page: usize,
     info: &DocInfo,
-    images: &[pdfcraft_engine::PageImage],
+    images: &[prckopis_engine::PageImage],
     view: &mut DocView,
     action: &mut Option<ImageAction>,
     allow_interaction: bool,
@@ -529,7 +529,7 @@ pub(crate) fn image_input(
                 }
                 if preview != b {
                     view.pending_edit =
-                        Some(Edit::EditPageImage { page, index: i, change: pdfcraft_engine::ImageEdit::Move(user_box(xf, info, page, target)) });
+                        Some(Edit::EditPageImage { page, index: i, change: prckopis_engine::ImageEdit::Move(user_box(xf, info, page, target)) });
                 }
             }
             ui.ctx().set_cursor_icon(match opposite {
@@ -544,7 +544,7 @@ pub(crate) fn image_input(
             && !ui.ctx().egui_wants_keyboard_input()
         {
             view.image_selection = None;
-            view.pending_edit = Some(Edit::EditPageImage { page, index: i, change: pdfcraft_engine::ImageEdit::Delete });
+            view.pending_edit = Some(Edit::EditPageImage { page, index: i, change: prckopis_engine::ImageEdit::Delete });
             return true;
         }
     }
@@ -569,7 +569,7 @@ pub(crate) fn image_input(
     }
     if selected == Some(hit) {
         resp.context_menu(|ui| {
-            use pdfcraft_engine::ImageEdit as E;
+            use prckopis_engine::ImageEdit as E;
             let items: [(&str, Option<E>); 4] = [
                 (tl!("Rotate Clockwise"), Some(E::Rotate(1))),
                 (tl!("Rotate Counterclockwise"), Some(E::Rotate(3))),
@@ -610,8 +610,8 @@ pub(crate) fn page_input(
     resp: &egui::Response,
     xf: &PageXform,
     page: usize,
-    doc: &pdfcraft_engine::Document,
-    lines: &[pdfcraft_engine::TextBlock],
+    doc: &prckopis_engine::Document,
+    lines: &[prckopis_engine::TextBlock],
     view: &mut DocView,
     allow_interaction: bool,
 ) -> bool {
@@ -665,7 +665,7 @@ pub(crate) fn page_input(
                 // edge) moves the paragraph with it.
                 let width = (l.rect[2] - l.rect[0]) + (to[2] - to[0]) - (from[2] - from[0]);
                 let shift = to[0] - from[0];
-                let style = pdfcraft_engine::BlockStyle { width: Some(width), offset: (shift != 0.0).then_some([shift, 0.0]), ..Default::default() };
+                let style = prckopis_engine::BlockStyle { width: Some(width), offset: (shift != 0.0).then_some([shift, 0.0]), ..Default::default() };
                 Edit::EditTextBlock { page, block: d.block, text: l.text.clone(), style }
             } else {
                 // Translation must keep the selected source operators. Rewriting unchanged text
@@ -741,7 +741,7 @@ pub(crate) fn page_input(
 }
 
 /// One TextEdit lays out all source runs; its caret and selection span the whole region.
-pub(crate) fn install_source_fonts(ctx: &egui::Context, doc: &pdfcraft_engine::Document, page: usize) -> BTreeMap<String, String> {
+pub(crate) fn install_source_fonts(ctx: &egui::Context, doc: &prckopis_engine::Document, page: usize) -> BTreeMap<String, String> {
     let programs = doc.text_editor_fonts(page);
     let mut definitions = ctx.fonts(|f| f.definitions().clone());
     // Only the current editor's document fonts live in the atlas. Never accumulate the
@@ -763,7 +763,7 @@ pub(crate) fn install_source_fonts(ctx: &egui::Context, doc: &pdfcraft_engine::D
             programs
                 .iter()
                 .filter(|p| {
-                    pdfcraft_fonts::embedding::face_key(&p.face) == pdfcraft_fonts::embedding::face_key(&program.face)
+                    prckopis_fonts::embedding::face_key(&p.face) == prckopis_fonts::embedding::face_key(&program.face)
                         && p.resource != program.resource
                 })
                 .filter_map(|p| families.get(&p.resource).cloned()),
@@ -1031,7 +1031,7 @@ pub(crate) fn overlay(ctx: &egui::Context, view: &mut DocView, info: &DocInfo) -
         Some(apply) => {
             let ed = view.line_editor.take()?;
             let style = ed.style();
-            (apply && (ed.text != ed.original || style != pdfcraft_engine::BlockStyle::default())).then_some(Edit::EditTextBlock {
+            (apply && (ed.text != ed.original || style != prckopis_engine::BlockStyle::default())).then_some(Edit::EditTextBlock {
                 page: ed.page,
                 block: ed.block,
                 text: ed.text,
@@ -1054,7 +1054,7 @@ mod tests {
 
     #[test]
     fn text_background_is_cached_without_editing_and_released_on_cancel() {
-        let mut app = crate::PdfCraftApp::new();
+        let mut app = crate::PrckopisApp::new();
         let bytes = app.session.create_from_text("Preview", "Preview text").unwrap();
         app.open_bytes("preview.pdf", None, bytes.as_ref().clone()).unwrap();
         let doc = app.session.get(app.views[0].id).unwrap();

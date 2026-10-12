@@ -6,7 +6,7 @@
 //! is read only once it has stopped changing ([`SETTLE`] apart) and ends like a whole PDF: its
 //! last KiB is read first, so a file still being written costs one small read. The new bytes go
 //! to the UI thread, which is woken for them: a clean document is reloaded in place, keeping its
-//! tab, page, zoom and scroll; one with unsaved changes gets a notice instead. PdfCraft's own
+//! tab, page, zoom and scroll; one with unsaved changes gets a notice instead. Prckopis's own
 //! saves are recognised by the file's stamp after writing, so they never reload.
 
 use std::collections::HashMap;
@@ -16,9 +16,9 @@ use std::sync::mpsc::{self, RecvTimeoutError};
 use std::sync::{Arc, Mutex, PoisonError};
 use std::time::{Duration, SystemTime};
 
-use pdfcraft_engine::DocId;
+use prckopis_engine::DocId;
 
-use crate::PdfCraftApp;
+use crate::PrckopisApp;
 
 /// How often an unchanged file is looked at.
 pub const IDLE: Duration = Duration::from_millis(250);
@@ -66,7 +66,7 @@ impl Stamp {
 pub struct Watched {
     pub doc: DocId,
     pub path: String,
-    /// The version PdfCraft last read or wrote (`None`: the first one the watcher sees).
+    /// The version Prckopis last read or wrote (`None`: the first one the watcher sees).
     pub known: Option<Stamp>,
 }
 
@@ -230,16 +230,16 @@ pub struct FileWatch {
     found: Arc<Mutex<Vec<Changed>>>,
     /// What the watcher was last told.
     sent: Vec<Watched>,
-    /// In tests ([`PdfCraftApp::run_inline`]) there is no thread: each frame looks once.
+    /// In tests ([`PrckopisApp::run_inline`]) there is no thread: each frame looks once.
     inline: Watcher,
-    /// The version of each document's file that PdfCraft last read or wrote.
+    /// The version of each document's file that Prckopis last read or wrote.
     known: HashMap<DocId, Stamp>,
     /// The notice bar's Reload was pressed for this document.
     pub reload_request: Option<DocId>,
 }
 
 impl FileWatch {
-    /// PdfCraft read or wrote `path` for `doc`: that version is not a change.
+    /// Prckopis read or wrote `path` for `doc`: that version is not a change.
     pub fn known_now(&mut self, doc: DocId, path: &str) {
         if let Some(stamp) = Stamp::at(path) {
             self.known.insert(doc, stamp);
@@ -254,7 +254,7 @@ impl FileWatch {
     }
 }
 
-impl PdfCraftApp {
+impl PrckopisApp {
     /// The documents to watch: every open one with a file, while the preference is on.
     fn watched(&self) -> impl Iterator<Item = (DocId, &str, Option<Stamp>)> {
         self.views.iter().filter(|_| self.reload_changed_files).filter_map(|v| {
@@ -304,7 +304,7 @@ impl PdfCraftApp {
             let Some(ctx) = self.ctx.clone() else { return false };
             let (tx, rx) = mpsc::channel();
             let out = self.watch.found.clone();
-            if std::thread::Builder::new().name("pdfcraft-watch".into()).spawn(move || run(rx, out, ctx)).is_err() {
+            if std::thread::Builder::new().name("prckopis-watch".into()).spawn(move || run(rx, out, ctx)).is_err() {
                 return false;
             }
             self.watch.inbox = Some(tx);
@@ -321,7 +321,7 @@ impl PdfCraftApp {
     /// changes.
     fn file_changed(&mut self, c: Changed) {
         let Some(i) = self.views.iter().position(|v| v.id == c.doc) else { return };
-        // PdfCraft wrote this version itself (a save), or it was handled already.
+        // Prckopis wrote this version itself (a save), or it was handled already.
         if self.watch.known.get(&c.doc) == Some(&c.stamp) {
             return;
         }

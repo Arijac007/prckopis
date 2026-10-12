@@ -426,7 +426,7 @@ declare_class!(
 
             self.ivars().ime_startup.borrow_mut().insert(&string);
             let is_control = string.chars().next().is_some_and(|c| c.is_control());
-            // PdfCraft patch: commit when a composition was started (`pending_commit`, set by
+            // Prckopis patch: commit when a composition was started (`pending_commit`, set by
             // `setMarkedText`), not when marked text is still present, and send the text of other
             // `insertText` calls through `KeyboardInput` as before (rust-windowing/winit#4650,
             // the 0.30 backport of #4651). Input methods that call `unmarkText` before `insertText`
@@ -446,7 +446,7 @@ declare_class!(
             if pending_commit && ime_enabled && !is_control {
                 self.ivars().pending_commit.set(false);
                 self.queue_event(WindowEvent::Ime(Ime::Commit(string)));
-                // PdfCraft patch: input methods also commit outside a key press (a candidate
+                // Prckopis patch: input methods also commit outside a key press (a candidate
                 // clicked with the mouse, dictation), where no key follows to clear the marked text
                 // and reset the state: the next key would be swallowed
                 // (rust-windowing/winit#4748).
@@ -464,7 +464,7 @@ declare_class!(
                 && !string.is_empty()
                 && !is_control
             {
-                // PdfCraft patch: text sent outside a key press without a composition, e.g. from
+                // Prckopis patch: text sent outside a key press without a composition, e.g. from
                 // the emoji picker (Fn/Globe-E, Control-Command-Space). No `KeyboardInput` event
                 // will carry it, so commit it directly (rust-windowing/winit#4749, the 0.30 backport
                 // of #4748).
@@ -520,7 +520,7 @@ declare_class!(
             self.ivars().forward_key_to_app.set(false);
             let event = replace_event(event, self.option_as_alt());
 
-            // PdfCraft patch: on the first key in a fresh app, Apple Korean can call `insertText`
+            // Prckopis patch: on the first key in a fresh app, Apple Korean can call `insertText`
             // with the raw compatibility jamo instead of starting a composition, so g k s typed
             // ㅎㅏㄴ instead of 한. Retry that exact key once, synchronously, before it is sent
             // as `KeyboardInput`, and only in that case (rust-windowing/winit#4744; `ImeStartup`).
@@ -582,7 +582,7 @@ declare_class!(
                 // `key_down` could result in preedit clear, so compare old and current state.
                 _ => old_ime_state != self.ivars().ime_state.get(),
             };
-            // PdfCraft patch: a key whose text was committed through IME isn't sent again as
+            // Prckopis patch: a key whose text was committed through IME isn't sent again as
             // `KeyboardInput` (unless `doCommandBySelector` forwards it, as for Enter). Apple Korean
             // answers Space with no syllable in progress with `setMarkedText(" ")`,
             // `insertText(" ")`, then `setMarkedText("")`, which resets the state above to the
@@ -1001,7 +1001,7 @@ impl WinitView {
             return;
         }
 
-        // PdfCraft patch: tell the input method to drop the composition in progress
+        // Prckopis patch: tell the input method to drop the composition in progress
         // (rust-windowing/winit#4745). Otherwise it keeps the marked text and continues composing
         // it once IME is allowed again (focus back in a text field), although winit has ended it:
         // the old syllable is committed a second time or merged into the next one. AppKit may call

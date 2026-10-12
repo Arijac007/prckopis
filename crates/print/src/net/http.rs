@@ -18,7 +18,7 @@ pub const MAX_BODY: usize = 16 * 1024 * 1024;
 pub fn post(target: &Target, content_type: &str, body: &[u8], timeout: Duration) -> Result<Vec<u8>, PrintError> {
     let mut s = target.connect(timeout)?;
     let head = format!(
-        "POST {} HTTP/1.1\r\nHost: {}\r\nUser-Agent: PdfCraft\r\nContent-Type: {content_type}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
+        "POST {} HTTP/1.1\r\nHost: {}\r\nUser-Agent: Prckopis\r\nContent-Type: {content_type}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
         path_of(target),
         target.authority(),
         body.len()

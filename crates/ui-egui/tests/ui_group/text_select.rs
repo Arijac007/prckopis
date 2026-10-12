@@ -3,7 +3,7 @@
 
 use egui::{Event, Modifiers, PointerButton, Pos2};
 use egui_kittest::Harness;
-use pdfcraft_ui_egui::PdfCraftApp;
+use prckopis_ui_egui::PrckopisApp;
 
 /// One 300×200 page with two lines of Helvetica text.
 fn two_lines() -> Vec<u8> {
@@ -26,9 +26,9 @@ trailer << /Root 1 0 R >>
 
 /// The page on screen and the pointer over the "u" of "quick". Frames are 1/60 s: a click takes
 /// two frames (press, release), and egui counts a double-click only within 0.3 s.
-fn harness(setup: impl FnOnce(&mut PdfCraftApp) + 'static) -> (Harness<'static, PdfCraftApp>, Pos2) {
+fn harness(setup: impl FnOnce(&mut PrckopisApp) + 'static) -> (Harness<'static, PrckopisApp>, Pos2) {
     let mut h = Harness::builder().with_size(egui::vec2(1400.0, 900.0)).with_step_dt(1.0 / 60.0).build_eframe(move |_cc| {
-        let mut app = PdfCraftApp::new();
+        let mut app = PrckopisApp::new();
         app.set_option("language", "en").unwrap();
         app.open_bytes("lines.pdf", None, two_lines()).expect("opens");
         app.set_option("left", "closed").unwrap();
@@ -50,7 +50,7 @@ fn harness(setup: impl FnOnce(&mut PdfCraftApp) + 'static) -> (Harness<'static, 
 }
 
 /// Press and release without moving or leaving the page.
-fn click(h: &mut Harness<'static, PdfCraftApp>, pos: Pos2) {
+fn click(h: &mut Harness<'static, PrckopisApp>, pos: Pos2) {
     for pressed in [true, false] {
         h.event(Event::PointerButton { pos, button: PointerButton::Primary, pressed, modifiers: Modifiers::NONE });
     }
@@ -107,7 +107,7 @@ fn quick_clicks_with_the_highlighter_mark_only_the_word() {
 }
 
 /// Press at `from`, move to `to` and release there.
-fn drag(h: &mut Harness<'static, PdfCraftApp>, from: Pos2, to: Pos2) {
+fn drag(h: &mut Harness<'static, PrckopisApp>, from: Pos2, to: Pos2) {
     h.event(Event::PointerButton { pos: from, button: PointerButton::Primary, pressed: true, modifiers: Modifiers::NONE });
     h.run_steps(1);
     for k in 1..=4 {
@@ -119,7 +119,7 @@ fn drag(h: &mut Harness<'static, PdfCraftApp>, from: Pos2, to: Pos2) {
 }
 
 /// Click at `pos` with Shift held.
-fn shift_click(h: &mut Harness<'static, PdfCraftApp>, pos: Pos2) {
+fn shift_click(h: &mut Harness<'static, PrckopisApp>, pos: Pos2) {
     h.event(Event::ModifiersChanged(Modifiers::SHIFT));
     h.hover_at(pos);
     h.run_steps(1);
@@ -135,7 +135,7 @@ fn shift_click(h: &mut Harness<'static, PdfCraftApp>, pos: Pos2) {
 #[test]
 fn shift_click_extends_the_selection_from_its_anchor() {
     let (mut h, _) = harness(|_| {});
-    let glyph = |h: &Harness<'static, PdfCraftApp>, g: usize| h.state().views[0].glyph_screen_pos(0, g).expect("glyph on screen");
+    let glyph = |h: &Harness<'static, PrckopisApp>, g: usize| h.state().views[0].glyph_screen_pos(0, g).expect("glyph on screen");
     // Drag over "quick" (glyphs 4..=8).
     let (q, k) = (glyph(&h, 4), glyph(&h, 8));
     drag(&mut h, q, k);

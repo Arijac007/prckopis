@@ -1,6 +1,6 @@
 //! The transport for RFC 3161 timestamp servers (Acrobat: Preferences ▸ Security ▸ Timestamp
 //! Servers): one HTTP POST of a DER `TimeStampReq` (`application/timestamp-query`), the DER
-//! `TimeStampResp` back. The reply is checked by `pdfcraft-sign` (imprint, nonce, the TSA's
+//! `TimeStampResp` back. The reply is checked by `prckopis-sign` (imprint, nonce, the TSA's
 //! signature), so plain HTTP is safe; that is what most public authorities serve. HTTPS
 //! authorities are not reached yet: the error says so and suggests their http address.
 //!
@@ -179,7 +179,7 @@ fn exchange(url: &HttpUrl, auth: Option<&str>, query: &[u8], timeout: Duration) 
     s.set_read_timeout(Some(timeout)).map_err(unreachable)?;
     s.set_write_timeout(Some(timeout)).map_err(unreachable)?;
     let mut head = format!(
-        "POST {} HTTP/1.1\r\nHost: {name}\r\nUser-Agent: PdfCraft\r\nContent-Type: application/timestamp-query\r\nAccept: application/timestamp-reply\r\nContent-Length: {}\r\nConnection: close\r\n",
+        "POST {} HTTP/1.1\r\nHost: {name}\r\nUser-Agent: Prckopis\r\nContent-Type: application/timestamp-query\r\nAccept: application/timestamp-reply\r\nContent-Length: {}\r\nConnection: close\r\n",
         url.path,
         query.len()
     );

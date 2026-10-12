@@ -7,9 +7,9 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::{Receiver, TryRecvError};
 
-use pdfcraft_engine::folder_search::{Options, Report};
+use prckopis_engine::folder_search::{Options, Report};
 
-use crate::PdfCraftApp;
+use crate::PrckopisApp;
 use crate::theme::{self, Tokens};
 use crate::widgets;
 
@@ -63,8 +63,8 @@ impl FolderSearch {
                 }
             };
             // A panic in a damaged file's text must not leave the dialog searching forever.
-            let result = pdfcraft_engine::guard(|| {
-                pdfcraft_engine::folder_search::search_folder(&folder, &query, opts, &stop, |done, total, path| {
+            let result = prckopis_engine::guard(|| {
+                prckopis_engine::folder_search::search_folder(&folder, &query, opts, &stop, |done, total, path| {
                     let name = path.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
                     // The receiver may be gone (the app closed): nothing to report to then.
                     let _ = tx.send(Progress::File { done, total, name });
@@ -109,7 +109,7 @@ impl FolderSearch {
 }
 
 /// The dialog. Returns true when it should close.
-pub(crate) fn body(ui: &mut egui::Ui, app: &mut PdfCraftApp, t: &Tokens) -> bool {
+pub(crate) fn body(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> bool {
     app.folder_search.poll();
     let mut close = false;
     let mut choose = false;
@@ -236,7 +236,7 @@ pub(crate) fn body(ui: &mut egui::Ui, app: &mut PdfCraftApp, t: &Tokens) -> bool
     close
 }
 
-impl PdfCraftApp {
+impl PrckopisApp {
     /// Open a folder-search result (or switch to it when already open) at `page`, with the
     /// searched phrase highlighted as Find does.
     pub(crate) fn open_search_result(&mut self, path: &std::path::Path, page: usize) {

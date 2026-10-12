@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use pdfcraft_render::{PageRenderer, RenderConfig, RenderRequest, RequestKind};
+use prckopis_render::{PageRenderer, RenderConfig, RenderRequest, RequestKind};
 
 /// At most this many files are searched.
 pub const MAX_FILES: usize = 5000;
@@ -139,7 +139,7 @@ fn search_file(path: &Path, query: &str, opts: Options, cancel: &AtomicBool, hit
         return Err("the file is too large to search".into());
     }
     let bytes = Arc::new(std::fs::read(path).map_err(|e| e.to_string())?);
-    let pages = pdfcraft_render::inspect(bytes.clone(), None).map_err(|e| e.to_string())?.pages.len();
+    let pages = prckopis_render::inspect(bytes.clone(), None).map_err(|e| e.to_string())?.pages.len();
     let mut r = PageRenderer::new(bytes, RenderConfig::default());
     for page in 0..pages {
         if cancel.load(Ordering::Relaxed) || hits.len() >= MAX_HITS {
@@ -163,7 +163,7 @@ fn search_file(path: &Path, query: &str, opts: Options, cancel: &AtomicBool, hit
 }
 
 /// The whole line(s) a match is on, shortened to about [`CONTEXT_CHARS`] around the match.
-fn context(text: &pdfcraft_render::PageText, range: std::ops::Range<usize>) -> String {
+fn context(text: &prckopis_render::PageText, range: std::ops::Range<usize>) -> String {
     let n = text.glyphs.len();
     let line = |i: usize| text.line_of.get(i).copied();
     let (Some(first_line), Some(last_line)) = (line(range.start), line(range.end.saturating_sub(1).max(range.start))) else {
@@ -229,7 +229,7 @@ mod tests {
     }
 
     fn folder(name: &str) -> PathBuf {
-        let dir = std::env::temp_dir().join(format!("pdfcraft-folder-search-{name}-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("prckopis-folder-search-{name}-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(dir.join("sub")).unwrap();
         std::fs::create_dir_all(dir.join(".hidden")).unwrap();

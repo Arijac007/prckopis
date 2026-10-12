@@ -162,7 +162,7 @@ pub(crate) fn get(
     };
 
     let mut decryption_key = if revision <= 4 {
-        // PdfCraft patch: (see vendor/README.md hayro-syntax (14)) the password is tried as
+        // Prckopis patch: (see vendor/README.md hayro-syntax (14)) the password is tried as
         // given and then in PDFDocEncoding, which revisions 2–4 specify.
         let mut found = Err(DecryptionError::PasswordProtected);
         for candidate in legacy_passwords(password) {
@@ -457,7 +457,7 @@ fn compute_hash_rev56(
     Ok(result)
 }
 
-/// `PdfCraft` patch: the byte strings to try as a revision 2–4 password. Revisions 2–4 take the
+/// `Prckopis` patch: the byte strings to try as a revision 2–4 password. Revisions 2–4 take the
 /// password in `PDFDocEncoding` (ISO 32000-2 §7.6.4.3.2, Algorithm 2 a), but the password arrives
 /// as UTF-8 text: first the bytes as given (what earlier versions used, and what some writers
 /// store), then, for text with characters outside ASCII that `PDFDocEncoding` all has ("ılık€",
@@ -473,7 +473,7 @@ fn legacy_passwords(password: &[u8]) -> Vec<Vec<u8>> {
     out
 }
 
-/// `PdfCraft` patch: `PDFDocEncoding` (ISO 32000-2 Annex D) of `c`, `None` when it has none.
+/// `Prckopis` patch: `PDFDocEncoding` (ISO 32000-2 Annex D) of `c`, `None` when it has none.
 /// It differs from Latin-1 in 0x18–0x1F and 0x80–0xA0 (0x9F is undefined).
 fn pdf_doc_byte(c: char) -> Option<u8> {
     const LOW: [char; 8] = ['˘', 'ˇ', 'ˆ', '˙', '˝', '˛', '˚', '˜'];
@@ -508,7 +508,7 @@ fn decryption_key_rev1234(
 ) -> Result<Vec<u8>, DecryptionError> {
     let mut md5_input = vec![];
 
-    // (PDFDocEncoding: see `legacy_passwords`, PdfCraft patch.)
+    // (PDFDocEncoding: see `legacy_passwords`, Prckopis patch.)
     // a) Pad or truncate password to 32 bytes using PASSWORD_PADDING.
     let mut padded_password = [0_u8; 32];
     let copy_len = password.len().min(32);
@@ -722,7 +722,7 @@ fn decryption_key_rev56(
 }
 
 #[cfg(test)]
-mod pdfcraft_password_tests {
+mod prckopis_password_tests {
     use super::*;
 
     #[test]

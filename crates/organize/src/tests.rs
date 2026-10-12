@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use pdfcraft_cos::{Document, Object, SaveOptions, write_full, write_incremental};
+use prckopis_cos::{Document, Object, SaveOptions, write_full, write_incremental};
 
 use super::*;
 
@@ -244,11 +244,11 @@ fn inserts_blank_page() {
 fn document_info_edits_round_trip_with_unicode() {
     let mut doc = open(fixture());
     set_info(&mut doc, "Title", "Résumé — 履歴書").unwrap();
-    set_info(&mut doc, "Author", "PdfCraft").unwrap();
+    set_info(&mut doc, "Author", "Prckopis").unwrap();
     set_info(&mut doc, "Producer", "").unwrap(); // clearing removes the key
     let doc = save_and_reopen(&doc);
     assert_eq!(info(&doc, "Title").as_deref(), Some("Résumé — 履歴書"));
-    assert_eq!(info(&doc, "Author").as_deref(), Some("PdfCraft"));
+    assert_eq!(info(&doc, "Author").as_deref(), Some("Prckopis"));
     assert_eq!(info(&doc, "Producer"), None);
 }
 
@@ -1294,7 +1294,7 @@ fn page_label_limits_reject_cyclic_old_trees_without_rewriting() {
 fn page_label_limits_reject_oversized_old_arrays_without_rewriting() {
     let mut d = doc_a();
     let mut dict = Dict::new();
-    dict.set(b"Kids".to_vec(), Object::Array(vec![Object::Null; pdfcraft_cos::page_labels::MAX_LABEL_TREE_WORK + 1]));
+    dict.set(b"Kids".to_vec(), Object::Array(vec![Object::Null; prckopis_cos::page_labels::MAX_LABEL_TREE_WORK + 1]));
     let tree = d.add(Object::Dict(dict));
     d.update_dict(d.root().unwrap(), |c| c.set(b"PageLabels".to_vec(), Object::Ref(tree))).unwrap();
     let before = d.modified_objects();
@@ -1403,7 +1403,7 @@ fn page_label_missing_kids_are_not_a_cycle() {
     leaf.set(b"Nums".to_vec(), Object::Array(vec![Object::Int(0), Object::Dict(spec)]));
     let leaf = d.add(Object::Dict(leaf));
     let mut tree = Dict::new();
-    let missing = |n| Object::Ref(pdfcraft_cos::ObjRef { num: n, generation: 0 });
+    let missing = |n| Object::Ref(prckopis_cos::ObjRef { num: n, generation: 0 });
     tree.set(b"Kids".to_vec(), Object::Array(vec![missing(9_000), missing(9_001), Object::Ref(leaf)]));
     let tree = d.add(Object::Dict(tree));
     d.update_dict(d.root().unwrap(), |c| c.set(b"PageLabels".to_vec(), Object::Ref(tree))).unwrap();
@@ -1502,7 +1502,7 @@ fn page_label_prefixes_are_bounded_in_total() {
     assert!(crate::number_pages(&mut d, 0, 1, crate::LabelStyle::Decimal, "", 1).is_err());
     assert_eq!(d.modified_objects(), before, "a refused relabelling changes nothing");
     // Exactly 4 MiB of prefixes is still read.
-    let max = pdfcraft_cos::page_labels::MAX_PREFIX_TOTAL_BYTES / 1024;
+    let max = prckopis_cos::page_labels::MAX_PREFIX_TOTAL_BYTES / 1024;
     assert!(crate::page_labels(&shared(max as i64, 1024)).unwrap().iter().all(|l| l.len() == 1024));
 }
 
@@ -1603,9 +1603,9 @@ fn initial_view_round_trips_and_keeps_scripts() {
     // A script opening action survives a change that needs no destination.
     let mut doc = doc;
     let root = doc.root().unwrap();
-    let mut js = pdfcraft_cos::Dict::new();
+    let mut js = prckopis_cos::Dict::new();
     js.set(b"S".to_vec(), Object::name("JavaScript"));
-    js.set(b"JS".to_vec(), pdfcraft_cos::PdfString::text("app.alert('hi')"));
+    js.set(b"JS".to_vec(), prckopis_cos::PdfString::text("app.alert('hi')"));
     doc.update_dict(root, |c| c.set(b"OpenAction".to_vec(), Object::Dict(js))).unwrap();
     crate::set_initial_view(&mut doc, &crate::InitialView { layout: Layout::SinglePage, ..Default::default() }).unwrap();
     assert!(doc.get(root).as_dict().unwrap().get(b"OpenAction").and_then(|o| o.as_dict()).is_some_and(|d| d.name(b"S") == Some(b"JavaScript")));

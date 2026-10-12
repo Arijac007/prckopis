@@ -399,7 +399,7 @@ pub(crate) fn read_widths(dict: &Dict<'_>, descriptor: &Dict<'_>) -> Option<(Vec
     let missing_width = descriptor.get::<f32>(MISSING_WIDTH).unwrap_or(0.0);
 
     if let (Some(fc), Some(lc), Some(w)) = (first_char, last_char, widths_arr) {
-        // PdfCraft patch: simple-font codes are single bytes, so only codes up to 255 get an
+        // Prckopis patch: simple-font codes are single bytes, so only codes up to 255 get an
         // entry (one per code below /FirstChar was pushed: 4294967295 asked for 34 GB). An
         // entry that isn't a number leaves its code missing instead of ending the array, and a
         // /LastChar below /FirstChar means no widths rather than no font.

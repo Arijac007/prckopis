@@ -1,14 +1,14 @@
-//! Links: the Help menu and the About dialog open the PdfCraft pages; nothing points at a chat
+//! Links: the Help menu and the About dialog open the Prckopis pages; nothing points at a chat
 //! community.
 
 use egui_kittest::Harness;
 use egui_kittest::kittest::Queryable;
-use pdfcraft_engine::links;
-use pdfcraft_ui_egui::{Dialog, PdfCraftApp};
+use prckopis_engine::links;
+use prckopis_ui_egui::{Dialog, PrckopisApp};
 
-fn harness(setup: impl FnOnce(&mut PdfCraftApp) + 'static) -> Harness<'static, PdfCraftApp> {
+fn harness(setup: impl FnOnce(&mut PrckopisApp) + 'static) -> Harness<'static, PrckopisApp> {
     let mut h = Harness::builder().with_size(egui::vec2(1400.0, 900.0)).build_eframe(move |_cc| {
-        let mut app = PdfCraftApp::new();
+        let mut app = PrckopisApp::new();
         app.set_option("language", "en").unwrap();
         setup(&mut app);
         app
@@ -23,7 +23,7 @@ fn no_community_chat_anywhere() {
     assert!(h.query_by_label("Discord").is_none());
     assert!(h.query_by_label("Join the ArtCraft community").is_none());
     assert!(links::LINKS.iter().all(|l| !l.url.contains("discord")));
-    assert!(pdfcraft_engine::commands::command("help.discord").is_none());
+    assert!(prckopis_engine::commands::command("help.discord").is_none());
 }
 
 #[test]
@@ -35,7 +35,7 @@ fn about_dialog_shows_the_brand_and_links() {
         app.dialog = Some(Dialog::About);
     });
     assert!(h.query_all_by_label("ArtCraft").count() >= 2, "the mark and the wordmark (alt text)");
-    h.get_by_label("PdfCraft on GitHub").click();
+    h.get_by_label("Prckopis on GitHub").click();
     h.run_steps(2);
     assert_eq!(h.state().last_opened_url.as_deref(), Some(links::GITHUB));
 }
@@ -46,7 +46,7 @@ fn help_commands_open_each_link() {
         let mut h = harness(|_| {});
         assert!(h.state_mut().execute(l.command), "{}", l.command);
         assert_eq!(h.state().last_opened_url.as_deref(), Some(l.url));
-        assert_eq!(pdfcraft_engine::commands::command(l.command).unwrap().menu, Some("Help"));
+        assert_eq!(prckopis_engine::commands::command(l.command).unwrap().menu, Some("Help"));
     }
 }
 
@@ -57,7 +57,7 @@ fn help_commands_open_each_link() {
 /// fixed number of frames is a guess at how long that takes: it was too few after the 0.5.0
 /// contributors refresh (78 names instead of 5) on some machines, the click on Table landed where
 /// the button had been, and the table never opened (#671).
-fn settled<'a>(h: &'a mut Harness<'static, PdfCraftApp>, label: &'a str) -> egui_kittest::Node<'a> {
+fn settled<'a>(h: &'a mut Harness<'static, PrckopisApp>, label: &'a str) -> egui_kittest::Node<'a> {
     let mut last = None;
     for _ in 0..60 {
         h.run_steps(1);

@@ -1,17 +1,17 @@
 //! Editing glue: apply engine edits from the UI, undo/redo, save/save-as, and the
 //! "save changes?" prompt when closing a tab or quitting with unsaved edits.
 
-use pdfcraft_engine::Edit;
-use pdfcraft_platform::staging::{StagingName, create_staging, staging_suffixes};
+use prckopis_engine::Edit;
+use prckopis_platform::staging::{StagingName, create_staging, staging_suffixes};
 
-use crate::PdfCraftApp;
+use crate::PrckopisApp;
 
 /// What the user was doing when we asked whether to save.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum CloseRequest {
     /// Close this document's tab. By id, not tab index: tabs can close and shift while a save
     /// panel is open.
-    Tab(pdfcraft_engine::DocId),
+    Tab(prckopis_engine::DocId),
     /// Quit the application once every dirty document is resolved.
     Quit,
     /// File ▸ Close all: like Quit, but the application stays open.
@@ -27,7 +27,7 @@ pub enum SaveTarget {
     As,
 }
 
-impl PdfCraftApp {
+impl PrckopisApp {
     /// Apply an edit to the active document. Returns `true` on success; failures are shown.
     pub fn apply_edit(&mut self, edit: Edit) -> bool {
         let Some((i, id)) = self.active_ids() else { return false };
@@ -113,7 +113,7 @@ impl PdfCraftApp {
                     // A stroke drawn with the pen stays unselected, so the selection box and
                     // author popup don't sit over the next stroke (#429).
                     Edit::AddAnnotation(a)
-                        if matches!(a.shape, pdfcraft_engine::Shape::Ink { .. })
+                        if matches!(a.shape, prckopis_engine::Shape::Ink { .. })
                             && self.quick_tool == crate::QuickTool::Comment(crate::comments::CommentTool::Ink) =>
                     {
                         view.comments.selected = None;
@@ -125,7 +125,7 @@ impl PdfCraftApp {
                         view.comments.reveal = true;
                         // A new highlight opens its note for typing straight away, as in Acrobat,
                         // unless a note typed into another card is still unsaved.
-                        if let (pdfcraft_engine::Shape::TextMarkup { kind: pdfcraft_engine::Markup::Highlight, .. }, Some(n)) = (&a.shape, newest)
+                        if let (prckopis_engine::Shape::TextMarkup { kind: prckopis_engine::Markup::Highlight, .. }, Some(n)) = (&a.shape, newest)
                             && a.contents.is_empty()
                             && view.comments.editing.as_ref().is_none_or(|(_, _, text)| text.is_empty())
                         {
@@ -241,7 +241,7 @@ impl PdfCraftApp {
     fn camera_level(&mut self, i: usize) {
         let Some(view) = self.views.get(i) else { return };
         let (id, Some(done)) = (view.id, view.camera_done) else { return };
-        let ours = |s: &pdfcraft_engine::Session, k: usize| {
+        let ours = |s: &prckopis_engine::Session, k: usize| {
             let label = s.get(id).and_then(|d| d.can_undo().map(str::to_owned));
             let want = if k + 1 == done.steps { "Enhance camera image" } else { "Rotate page" };
             label.as_deref() == Some(want)
@@ -368,7 +368,7 @@ impl PdfCraftApp {
         // Pasting into the document the pages came from is a duplicate (or, after Cut, a move):
         // its fields keep their names. Pasting into another document renames colliding ones.
         let field_conflicts =
-            if self.views[i].id == clip.from { pdfcraft_engine::FieldConflicts::Merge } else { pdfcraft_engine::FieldConflicts::Rename };
+            if self.views[i].id == clip.from { prckopis_engine::FieldConflicts::Merge } else { prckopis_engine::FieldConflicts::Rename };
         if self.apply_edit(Edit::InsertPagesFrom {
             name: clip.name.clone(),
             bytes: clip.bytes.clone(),
@@ -465,7 +465,7 @@ impl PdfCraftApp {
     /// [`Self::commit_form_typing`] for document `id`, which may not be the active tab (a save
     /// panel answering later, Close All). If its tab has typing or a queued edit, the tab is
     /// brought forward first, so the commit and any field scripts act on that document.
-    pub(crate) fn commit_typing_in(&mut self, id: pdfcraft_engine::DocId) -> bool {
+    pub(crate) fn commit_typing_in(&mut self, id: prckopis_engine::DocId) -> bool {
         let Some(i) = self.views.iter().position(|v| v.id == id) else { return true };
         // Added text the standard fonts can't draw can't be saved: show it rather than drop it.
         // Its page is brought into view, so the text, the warning and Discard are on screen.
@@ -497,7 +497,7 @@ impl PdfCraftApp {
 
     /// The Fill & Sign type box commits on click-away. Save does that first, so the text is in
     /// the file (and can be flattened) instead of being left on the screen.
-    fn commit_open_fill_text(&mut self, id: pdfcraft_engine::DocId) -> bool {
+    fn commit_open_fill_text(&mut self, id: prckopis_engine::DocId) -> bool {
         let Some(i) = self.views.iter().position(|v| v.id == id) else { return true };
         let Some(tb) = self.views[i].fill_text.clone() else { return true };
         let text = tb.text.trim().to_string();
@@ -521,7 +521,7 @@ impl PdfCraftApp {
 
     /// When the preference is on, bake Fill & Sign marks before the bytes are written.
     /// Returns false when the document is not allowed to change (nothing is written).
-    fn flatten_fill_sign_for_save(&mut self, id: pdfcraft_engine::DocId) -> bool {
+    fn flatten_fill_sign_for_save(&mut self, id: prckopis_engine::DocId) -> bool {
         if !self.flatten_fill_sign_on_save {
             return true;
         }
@@ -653,7 +653,7 @@ impl PdfCraftApp {
 
     /// Write document `id` to `dest` and make it the document's file. Returns `true` if written.
     #[cfg(not(target_arch = "wasm32"))]
-    fn save_doc_to(&mut self, id: pdfcraft_engine::DocId, dest: &str) -> bool {
+    fn save_doc_to(&mut self, id: prckopis_engine::DocId, dest: &str) -> bool {
         // Save As answers on a later frame: commit what was typed meanwhile, too (#166), even
         // if another tab is active by then.
         if !self.commit_typing_in(id) || !self.flatten_fill_sign_for_save(id) {
@@ -967,7 +967,7 @@ pub(crate) fn download(name: &str, bytes: &[u8]) -> Result<(), String> {
     Ok(())
 }
 
-impl PdfCraftApp {
+impl PrckopisApp {
     /// Carry out a Bookmarks-panel action as an undoable edit.
     pub fn bookmark_action(&mut self, action: crate::panels::BmAction) {
         use crate::panels::BmAction as A;
@@ -1019,7 +1019,7 @@ impl PdfCraftApp {
     }
 }
 
-fn bookmark_at<'a>(items: &'a [pdfcraft_render::OutlineItem], path: &[usize]) -> Option<&'a pdfcraft_render::OutlineItem> {
+fn bookmark_at<'a>(items: &'a [prckopis_render::OutlineItem], path: &[usize]) -> Option<&'a prckopis_render::OutlineItem> {
     let (first, rest) = path.split_first()?;
     let item = items.get(*first)?;
     if rest.is_empty() { Some(item) } else { bookmark_at(&item.children, rest) }
@@ -1028,19 +1028,19 @@ fn bookmark_at<'a>(items: &'a [pdfcraft_render::OutlineItem], path: &[usize]) ->
 #[cfg(test)]
 mod tests {
     use super::{SaveTarget, is_mail_temp_copy, write_atomically, write_atomically_with};
-    use pdfcraft_platform::staging::{STAGING_ATTEMPTS, staging_suffixes};
+    use prckopis_platform::staging::{STAGING_ATTEMPTS, staging_suffixes};
     use std::path::{Path, PathBuf};
 
     /// A fresh, empty folder for one staging test.
     fn staging_dir(test: &str) -> PathBuf {
-        let dir = std::env::temp_dir().join(format!("pdfcraft-ui-staging-{}-{test}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("prckopis-ui-staging-{}-{test}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).unwrap();
         dir
     }
 
     fn staged(dir: &Path, suffix: u64) -> PathBuf {
-        dir.join(format!(".out.pdf.pdfcraft-{suffix:016x}.tmp"))
+        dir.join(format!(".out.pdf.prckopis-{suffix:016x}.tmp"))
     }
 
     fn read(p: &Path) -> String {
@@ -1242,10 +1242,10 @@ mod tests {
         std::fs::write(&attachment, &original).unwrap();
         let kept = dir.join("Quote.pdf");
 
-        let mut app = crate::PdfCraftApp::new();
+        let mut app = crate::PrckopisApp::new();
         app.set_option("language", "en").unwrap();
         app.open_bytes("Quote.pdf", Some(attachment.to_string_lossy().into_owned()), original.clone()).unwrap();
-        assert!(app.apply_edit(pdfcraft_engine::Edit::RotatePages { pages: vec![0], degrees: 90 }));
+        assert!(app.apply_edit(prckopis_engine::Edit::RotatePages { pages: vec![0], degrees: 90 }));
         app.pick_override = Some(vec![kept.to_string_lossy().into_owned()]);
 
         assert!(!app.save_active(SaveTarget::InPlace), "Save asks instead of writing the temporary copy");
@@ -1255,7 +1255,7 @@ mod tests {
 
         // The chosen file is the document's file now: the next Save writes it without asking.
         app.pick_override = None;
-        assert!(app.apply_edit(pdfcraft_engine::Edit::RotatePages { pages: vec![0], degrees: 90 }));
+        assert!(app.apply_edit(prckopis_engine::Edit::RotatePages { pages: vec![0], degrees: 90 }));
         assert!(app.save_active(SaveTarget::InPlace));
         let _ = std::fs::remove_dir_all(&dir);
     }
@@ -1265,7 +1265,7 @@ mod tests {
 mod revert_draft_tests {
     use super::*;
     use crate::forms_ui::Focus;
-    use pdfcraft_engine::FieldValue;
+    use prckopis_engine::FieldValue;
 
     fn focus(text: &str) -> Focus {
         Focus {
@@ -1280,13 +1280,13 @@ mod revert_draft_tests {
         }
     }
 
-    fn app() -> PdfCraftApp {
-        let mut app = PdfCraftApp::new();
+    fn app() -> PrckopisApp {
+        let mut app = PrckopisApp::new();
         app.open_bytes("source.pdf", None, include_bytes!("../tests/data/form.pdf").to_vec()).unwrap();
         app
     }
 
-    fn queue_draft(app: &mut PdfCraftApp, index: usize, text: &str) {
+    fn queue_draft(app: &mut PrckopisApp, index: usize, text: &str) {
         app.views[index].forms.focus = Some(focus(text));
         let form = app.session.get(app.views[index].id).unwrap().form.clone();
         crate::forms_ui::commit(&mut app.views[index], &form);
@@ -1332,7 +1332,7 @@ mod revert_draft_tests {
     fn a_value_its_font_cannot_draw_is_kept_and_explained() {
         let mut app = app();
         let fill =
-            |app: &mut PdfCraftApp, text: &str| app.apply_edit(Edit::SetFieldValue { name: "name".into(), value: FieldValue::Text(text.into()) });
+            |app: &mut PrckopisApp, text: &str| app.apply_edit(Edit::SetFieldValue { name: "name".into(), value: FieldValue::Text(text.into()) });
         assert!(fill(&mut app, "张三"));
         let toast = app.toast.as_ref().map(|t| t.0.clone()).expect("a notice");
         assert!(toast.contains("“张” (U+5F20)") && toast.contains("other PDF viewers redraw the field"), "{toast}");
@@ -1418,14 +1418,14 @@ mod revert_draft_tests {
             matches!(&app.views[0].pending_edit, Some(Edit::SetFieldValue { name, value: FieldValue::Text(text) }) if name == "name" && text == "Queued draft")
         );
         assert_eq!(app.active_ids(), Some((0, source)));
-        assert_eq!(app.toast.as_ref().unwrap().0, pdfcraft_engine::EditError::NoDocument.to_string());
+        assert_eq!(app.toast.as_ref().unwrap().0, prckopis_engine::EditError::NoDocument.to_string());
     }
 }
 
 #[cfg(test)]
 mod content_page_tests {
     use super::content_page;
-    use pdfcraft_engine::{Edit, ObjectKind, ObjectTarget};
+    use prckopis_engine::{Edit, ObjectKind, ObjectTarget};
 
     /// Single-page content edits keep every other page's rasters; anything else still
     /// invalidates the whole document.

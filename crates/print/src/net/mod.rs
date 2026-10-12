@@ -278,7 +278,7 @@ impl Default for NetJob {
             collate: true,
             duplex: None,
             color: ColorMode::Auto,
-            title: "PdfCraft".into(),
+            title: "Prckopis".into(),
             user: default_user(),
             hold: false,
             pin: None,
@@ -317,7 +317,7 @@ impl NetJob {
 pub fn default_user() -> String {
     let name = std::env::var("USER").or_else(|_| std::env::var("USERNAME")).unwrap_or_default();
     let name = clean_text(&name, 64);
-    if name.is_empty() { "pdfcraft".into() } else { name }
+    if name.is_empty() { "prckopis".into() } else { name }
 }
 
 /// Keep printable characters only (no quotes or control characters), at most `max` of them.

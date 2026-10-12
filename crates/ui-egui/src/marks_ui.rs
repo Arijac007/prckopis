@@ -3,10 +3,10 @@
 //! preview of the current page. "Update" opens the same dialog in replace mode.
 
 use egui::{Align, Color32, CornerRadius, Layout, Rect, Stroke, pos2, vec2};
-use pdfcraft_engine::{Background, Edit, HeaderFooter, MarkKind, Watermark};
+use prckopis_engine::{Background, Edit, HeaderFooter, MarkKind, Watermark};
 
 use crate::theme::{self, Tokens};
-use crate::{PdfCraftApp, widgets};
+use crate::{PrckopisApp, widgets};
 
 /// How far a watermark may be moved from the page centre, in points.
 const MAX_OFFSET: f64 = 20_000.0;
@@ -149,7 +149,7 @@ fn rgb32(c: [f64; 3]) -> Color32 {
 }
 
 /// The dialog for `kind`; returns (apply, cancel).
-pub(crate) fn body(ui: &mut egui::Ui, app: &mut PdfCraftApp, t: &Tokens, kind: MarkKind) -> (bool, bool) {
+pub(crate) fn body(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens, kind: MarkKind) -> (bool, bool) {
     let Some((i, id)) = app.active_ids() else { return (false, true) };
     let current = app.views[i].current;
     let Some(doc) = app.session.get(id) else { return (false, true) };
@@ -447,7 +447,7 @@ pub(crate) fn body(ui: &mut egui::Ui, app: &mut PdfCraftApp, t: &Tokens, kind: M
                 if app.dialog_epoch() == epoch {
                     let d = &mut app.marks_draft;
                     for p in paths {
-                        if !d.more_files.contains(&p) && d.more_files.len() < pdfcraft_engine::bates::MAX_FILES {
+                        if !d.more_files.contains(&p) && d.more_files.len() < prckopis_engine::bates::MAX_FILES {
                             d.more_files.push(p);
                         }
                     }
@@ -527,7 +527,7 @@ pub(crate) fn number_more_files(d: &MarksDraft, first_pages: usize) -> Option<St
         return None;
     }
     let dir = d.out_dir.clone()?;
-    let start = d.hf.text.iter().find_map(|t| pdfcraft_edit_bates_start(t)).unwrap_or(1).saturating_add(first_pages as u64);
+    let start = d.hf.text.iter().find_map(|t| prckopis_edit_bates_start(t)).unwrap_or(1).saturating_add(first_pages as u64);
     let mut inputs = Vec::new();
     let mut failed = Vec::new();
     for p in &d.more_files {
@@ -544,7 +544,7 @@ pub(crate) fn number_more_files(d: &MarksDraft, first_pages: usize) -> Option<St
     if let Err(e) = std::fs::create_dir_all(&dir) {
         return Some(crate::i18n::fmt(tl!("No other files were numbered: {e}"), &[("e", &e.to_string())]));
     }
-    let run = pdfcraft_engine::bates::number_files(inputs, &d.hf, start);
+    let run = prckopis_engine::bates::number_files(inputs, &d.hf, start);
     let mut done = 0;
     for (p, r) in d.more_files.iter().zip(run.files) {
         let saved = r.and_then(|f| {
@@ -570,8 +570,8 @@ pub(crate) fn number_more_files(d: &MarksDraft, first_pages: usize) -> Option<St
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-fn pdfcraft_edit_bates_start(t: &str) -> Option<u64> {
-    pdfcraft_engine::bates::start_of(t)
+fn prckopis_edit_bates_start(t: &str) -> Option<u64> {
+    prckopis_engine::bates::start_of(t)
 }
 
 /// `<stem>.pdf` in `dir`, or `<stem> (2).pdf` and so on when that name is taken.
@@ -585,9 +585,9 @@ fn unused_pdf(dir: &std::path::Path, stem: &str) -> std::path::PathBuf {
     (2..10_000u32).map(|n| dir.join(format!("{safe} ({n}).pdf"))).find(|p| !p.exists()).unwrap_or(first)
 }
 
-fn mark_file(d: &MarksDraft) -> Option<pdfcraft_engine::MarkFile> {
+fn mark_file(d: &MarksDraft) -> Option<prckopis_engine::MarkFile> {
     let (name, bytes) = d.file.clone().filter(|_| d.use_file)?;
-    Some(pdfcraft_engine::MarkFile { name, bytes, page: d.file_page.max(1) - 1 })
+    Some(prckopis_engine::MarkFile { name, bytes, page: d.file_page.max(1) - 1 })
 }
 
 /// Source ▸ File: Browse…, the page of a PDF, and the size relative to the page. Returns true

@@ -27,7 +27,7 @@ impl Class {
     }
 }
 
-/// Every workspace crate (package name without the `pdfcraft-` prefix) and its layer.
+/// Every workspace crate (package name without the `prckopis-` prefix) and its layer.
 pub const TABLE: &[(&str, Class)] = &[
     // L0 foundation (standalone, publishable)
     ("geom", Class::Standalone(0)),
@@ -85,7 +85,7 @@ pub const TABLE: &[(&str, Class)] = &[
     ("testkit", Class::Testkit),
     ("oracle", Class::Testkit),
     // L8 apps + tooling
-    ("pdfcraft", Class::Exempt),
+    ("prckopis", Class::Exempt),
     ("cli", Class::Exempt),
     ("web", Class::Exempt),
     ("xtask", Class::Exempt),
@@ -112,7 +112,7 @@ pub const UI_CRATES: &[&str] = &["egui", "eframe", "winit", "egui_kittest", "cra
 pub const UI_MIN_LAYER: u8 = 7;
 
 pub fn short_name(pkg: &str) -> &str {
-    pkg.strip_prefix("pdfcraft-").unwrap_or(pkg)
+    pkg.strip_prefix("prckopis-").unwrap_or(pkg)
 }
 
 pub fn classify(pkg: &str) -> Option<Class> {
@@ -272,68 +272,68 @@ mod tests {
     #[test]
     fn current_graph_shape_passes() {
         let g = [
-            c("pdfcraft-geom", &[]),
-            c("pdfcraft-render", &[("hayro", Normal, false), ("lopdf", Normal, false)]),
-            c("pdfcraft-engine", &[("pdfcraft-render", Normal, true)]),
-            c("pdfcraft-ui-egui", &[("pdfcraft-engine", Normal, true), ("egui", Normal, false), ("egui_kittest", Dev, false)]),
-            c("pdfcraft", &[("pdfcraft-ui-egui", Normal, true)]),
+            c("prckopis-geom", &[]),
+            c("prckopis-render", &[("hayro", Normal, false), ("lopdf", Normal, false)]),
+            c("prckopis-engine", &[("prckopis-render", Normal, true)]),
+            c("prckopis-ui-egui", &[("prckopis-engine", Normal, true), ("egui", Normal, false), ("egui_kittest", Dev, false)]),
+            c("prckopis", &[("prckopis-ui-egui", Normal, true)]),
         ];
         assert!(check(&g).is_empty(), "{:?}", check(&g));
     }
 
     #[test]
     fn upward_and_sideways_edges_flagged() {
-        let v = check(&[c("pdfcraft-model", &[("pdfcraft-engine", Normal, true)])]);
+        let v = check(&[c("prckopis-model", &[("prckopis-engine", Normal, true)])]);
         assert!(matches!(v[..], [Violation::Upward { from: 2, to: 6, .. }]));
         // forms -> js must go through the ActionRunner trait, never directly.
-        let v = check(&[c("pdfcraft-forms", &[("pdfcraft-js", Normal, true)])]);
+        let v = check(&[c("prckopis-forms", &[("prckopis-js", Normal, true)])]);
         assert!(matches!(v[..], [Violation::Upward { from: 3, to: 3, .. }]));
     }
 
     #[test]
     fn listed_sideways_edges_allowed() {
-        assert!(check(&[c("pdfcraft-redact", &[("pdfcraft-edit", Normal, true)])]).is_empty());
-        assert!(!check(&[c("pdfcraft-edit", &[("pdfcraft-redact", Normal, true)])]).is_empty());
+        assert!(check(&[c("prckopis-redact", &[("prckopis-edit", Normal, true)])]).is_empty());
+        assert!(!check(&[c("prckopis-edit", &[("prckopis-redact", Normal, true)])]).is_empty());
     }
 
     #[test]
     fn cos_may_use_only_its_listed_foundation() {
-        assert!(check(&[c("pdfcraft-cos", &[("pdfcraft-filters", Normal, true), ("pdfcraft-crypt", Normal, true)])]).is_empty());
-        let v = check(&[c("pdfcraft-cos", &[("pdfcraft-arlington", Normal, true)])]);
+        assert!(check(&[c("prckopis-cos", &[("prckopis-filters", Normal, true), ("prckopis-crypt", Normal, true)])]).is_empty());
+        let v = check(&[c("prckopis-cos", &[("prckopis-arlington", Normal, true)])]);
         assert!(matches!(v[..], [Violation::StandaloneHasWorkspaceDep { .. }]));
-        let v = check(&[c("pdfcraft-filters", &[("pdfcraft-geom", Normal, true)])]);
+        let v = check(&[c("prckopis-filters", &[("prckopis-geom", Normal, true)])]);
         assert!(matches!(v[..], [Violation::StandaloneHasWorkspaceDep { .. }]));
     }
 
     #[test]
     fn ui_crates_below_l7_flagged() {
         for dep in ["egui", "eframe", "winit", "rfd", "wgpu", "wgpu-core", "egui_dock", "craft-ui"] {
-            let v = check(&[c("pdfcraft-engine", &[(dep, Normal, false)])]);
+            let v = check(&[c("prckopis-engine", &[(dep, Normal, false)])]);
             assert!(matches!(v[..], [Violation::UiBelowL7 { layer: 6, .. }]), "{dep}");
         }
-        assert!(check(&[c("pdfcraft-platform", &[("winit", Normal, false)])]).is_empty());
-        assert!(check(&[c("pdfcraft-ui-egui", &[("craft-ui", Normal, false)])]).is_empty());
+        assert!(check(&[c("prckopis-platform", &[("winit", Normal, false)])]).is_empty());
+        assert!(check(&[c("prckopis-ui-egui", &[("craft-ui", Normal, false)])]).is_empty());
     }
 
     #[test]
     fn test_support_only_as_dev_dependency() {
-        let v = check(&[c("pdfcraft-cos", &[("pdfcraft-testkit", Normal, true)])]);
+        let v = check(&[c("prckopis-cos", &[("prckopis-testkit", Normal, true)])]);
         assert!(!v.is_empty());
-        assert!(check(&[c("pdfcraft-render", &[("pdfcraft-oracle", Dev, true)])]).is_empty());
-        let v = check(&[c("pdfcraft-render", &[("pdfcraft-oracle", Normal, true)])]);
+        assert!(check(&[c("prckopis-render", &[("prckopis-oracle", Dev, true)])]).is_empty());
+        let v = check(&[c("prckopis-render", &[("prckopis-oracle", Normal, true)])]);
         assert!(matches!(v[..], [Violation::TestkitAsNormalDep { .. }]));
     }
 
     #[test]
     fn unregistered_crate_is_error() {
-        let v = check(&[c("pdfcraft-mystery", &[])]);
-        assert!(matches!(&v[..], [Violation::Unregistered { krate }] if krate == "pdfcraft-mystery"));
+        let v = check(&[c("prckopis-mystery", &[])]);
+        assert!(matches!(&v[..], [Violation::Unregistered { krate }] if krate == "prckopis-mystery"));
     }
 
     #[test]
     fn apps_exempt() {
-        for app in ["pdfcraft", "pdfcraft-cli", "pdfcraft-web", "xtask"] {
-            assert!(check(&[c(app, &[("egui", Normal, false), ("pdfcraft-ui-egui", Normal, true)])]).is_empty());
+        for app in ["prckopis", "prckopis-cli", "prckopis-web", "xtask"] {
+            assert!(check(&[c(app, &[("egui", Normal, false), ("prckopis-ui-egui", Normal, true)])]).is_empty());
         }
     }
 }

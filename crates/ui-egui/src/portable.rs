@@ -1,5 +1,5 @@
 //! Portable mode (#157): a marker file beside the executable ([`MARKERS`]) keeps the settings,
-//! log files, crash-recovery autosaves and new digital IDs in `<exe dir>/PdfCraftData`, so a
+//! log files, crash-recovery autosaves and new digital IDs in `<exe dir>/PrckopisData`, so a
 //! portable copy (on a USB stick, say) writes nothing to `%APPDATA%` or `%LOCALAPPDATA%`. The
 //! Windows portable zip ships with `portable.txt`; the MSI doesn't. PhotoCraft uses the same
 //! scheme (`photocraft/apps/photocraft/src/app_dirs.rs`).
@@ -10,15 +10,19 @@
 use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
 
-/// Files beside the executable that switch on portable mode (either one; contents are ignored).
-pub const MARKERS: [&str; 2] = ["portable.txt", "PdfCraft.portable"];
+/// Files beside the executable that switch on portable mode (any one; contents are ignored).
+/// `PdfCraft.portable` is the marker of the app's former name.
+pub const MARKERS: [&str; 3] = ["portable.txt", "Prckopis.portable", "PdfCraft.portable"];
 /// The data folder created beside the executable in portable mode.
-pub const DATA_DIR: &str = "PdfCraftData";
+pub const DATA_DIR: &str = "PrckopisData";
+/// The data folder of the app's former name, PdfCraft: renamed to [`DATA_DIR`] when that doesn't
+/// exist yet, so a portable copy keeps its settings across the rename.
+pub const LEGACY_DATA_DIR: &str = "PdfCraftData";
 
 /// The outcome of looking for a portable marker.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Portable {
-    /// `<exe dir>/PdfCraftData` when portable mode is on, `None` otherwise.
+    /// `<exe dir>/PrckopisData` when portable mode is on, `None` otherwise.
     pub dir: Option<PathBuf>,
     /// Set when a marker was found but its data folder can't be written.
     pub unwritable: Option<Unwritable>,
@@ -72,9 +76,22 @@ pub fn resolve(exe_dir: Option<&Path>) -> Portable {
         return Portable::default();
     };
     let folder = exe_dir.join(DATA_DIR);
+    adopt_legacy_folder(&exe_dir.join(LEGACY_DATA_DIR), &folder);
     match ensure_writable(&folder) {
         Ok(()) => Portable { dir: Some(folder), unwritable: None },
         Err(e) => Portable { dir: None, unwritable: Some(Unwritable { marker, folder, error: e.to_string() }) },
+    }
+}
+
+/// Rename the former name's data folder to `folder` when only the former one exists. Best effort:
+/// if the rename fails, a fresh folder is used and the old one is left as it was.
+fn adopt_legacy_folder(legacy: &Path, folder: &Path) {
+    if !legacy.is_dir() || folder.exists() {
+        return;
+    }
+    match std::fs::rename(legacy, folder) {
+        Ok(()) => log::info!("portable mode: moved {} to {}", legacy.display(), folder.display()),
+        Err(e) => log::warn!("portable mode: moving {} to {}: {e}", legacy.display(), folder.display()),
     }
 }
 
@@ -100,7 +117,7 @@ mod tests {
 
     fn temp(tag: &str) -> PathBuf {
         static N: AtomicUsize = AtomicUsize::new(0);
-        let d = std::env::temp_dir().join(format!("pdfcraft-portable-{tag}-{}-{}", std::process::id(), N.fetch_add(1, Ordering::Relaxed)));
+        let d = std::env::temp_dir().join(format!("prckopis-portable-{tag}-{}-{}", std::process::id(), N.fetch_add(1, Ordering::Relaxed)));
         let _ = std::fs::remove_dir_all(&d);
         std::fs::create_dir_all(&d).unwrap();
         d
@@ -132,11 +149,37 @@ mod tests {
     #[test]
     fn an_existing_data_folder_is_reused() {
         let exe = temp("reuse");
-        std::fs::write(exe.join("portable.txt"), b"PdfCraft portable mode").unwrap();
+        std::fs::write(exe.join("portable.txt"), b"Prckopis portable mode").unwrap();
         std::fs::create_dir_all(exe.join(DATA_DIR)).unwrap();
         std::fs::write(exe.join(DATA_DIR).join("app.ron"), b"()").unwrap();
         assert_eq!(resolve(Some(&exe)).dir, Some(exe.join(DATA_DIR)));
         assert_eq!(std::fs::read(exe.join(DATA_DIR).join("app.ron")).unwrap(), b"()", "existing settings are kept");
+        let _ = std::fs::remove_dir_all(&exe);
+    }
+
+    #[test]
+    fn the_former_names_data_folder_is_taken_over() {
+        let exe = temp("legacy");
+        std::fs::write(exe.join("PdfCraft.portable"), b"").unwrap();
+        std::fs::create_dir_all(exe.join(LEGACY_DATA_DIR)).unwrap();
+        std::fs::write(exe.join(LEGACY_DATA_DIR).join("app.ron"), b"(old)").unwrap();
+        assert_eq!(resolve(Some(&exe)).dir, Some(exe.join(DATA_DIR)));
+        assert_eq!(std::fs::read(exe.join(DATA_DIR).join("app.ron")).unwrap(), b"(old)", "the old settings move over");
+        assert!(!exe.join(LEGACY_DATA_DIR).exists());
+        let _ = std::fs::remove_dir_all(&exe);
+    }
+
+    #[test]
+    fn the_former_names_data_folder_is_left_when_the_new_one_exists() {
+        let exe = temp("legacy-both");
+        std::fs::write(exe.join("portable.txt"), b"").unwrap();
+        for (dir, ron) in [(LEGACY_DATA_DIR, b"(old)"), (DATA_DIR, b"(new)")] {
+            std::fs::create_dir_all(exe.join(dir)).unwrap();
+            std::fs::write(exe.join(dir).join("app.ron"), ron).unwrap();
+        }
+        assert_eq!(resolve(Some(&exe)).dir, Some(exe.join(DATA_DIR)));
+        assert_eq!(std::fs::read(exe.join(DATA_DIR).join("app.ron")).unwrap(), b"(new)");
+        assert_eq!(std::fs::read(exe.join(LEGACY_DATA_DIR).join("app.ron")).unwrap(), b"(old)", "left alone");
         let _ = std::fs::remove_dir_all(&exe);
     }
 

@@ -4,7 +4,7 @@
 //! only draws characters none of them has, such as an Arabic file name in a build without
 //! craft-fonts, or the Simplified Chinese interface in a build without a `Hans` face (#826). A
 //! second installed face, [`devanagari_fallback`], draws Hindi when one is installed. It is
-//! read at runtime and never embedded or shipped (AGENTS.md §1.4), and `PDFCRAFT_SYSTEM_FONTS=0`
+//! read at runtime and never embedded or shipped (AGENTS.md §1.4), and `PRCKOPIS_SYSTEM_FONTS=0`
 //! turns it off (published screenshots do).
 
 use std::path::{Path, PathBuf};
@@ -54,7 +54,7 @@ pub fn fallback(need: Need) -> Option<Arc<FontData>> {
 }
 
 fn load(need: Need) -> Option<Arc<FontData>> {
-    if std::env::var_os("PDFCRAFT_SYSTEM_FONTS").is_some_and(|v| v == "0") {
+    if std::env::var_os("PRCKOPIS_SYSTEM_FONTS").is_some_and(|v| v == "0") {
         return None;
     }
     let (probe, max) = match need {
@@ -71,7 +71,7 @@ pub fn devanagari_fallback() -> Option<Arc<FontData>> {
     static CACHE: OnceLock<Option<Arc<FontData>>> = OnceLock::new();
     CACHE
         .get_or_init(|| {
-            if std::env::var_os("PDFCRAFT_SYSTEM_FONTS").is_some_and(|v| v == "0") {
+            if std::env::var_os("PRCKOPIS_SYSTEM_FONTS").is_some_and(|v| v == "0") {
                 return None;
             }
             devanagari_candidates().iter().find_map(|path| read(path, DEVANAGARI_PROBE, MAX_BYTES))

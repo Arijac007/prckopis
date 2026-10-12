@@ -4,8 +4,8 @@
 use std::collections::HashMap;
 
 use egui::{Color32, Pos2, Rect, Stroke};
-use pdfcraft_engine::{Document, Edit, EditableObject, MAX_MOVE_OBJECTS, ObjectKind, ObjectTarget};
-use pdfcraft_render::DocInfo;
+use prckopis_engine::{Document, Edit, EditableObject, MAX_MOVE_OBJECTS, ObjectKind, ObjectTarget};
+use prckopis_render::DocInfo;
 
 use crate::canvas::{DocView, PageXform};
 
@@ -328,7 +328,7 @@ pub(crate) fn paint(painter: &egui::Painter, xf: &PageXform, page: usize, info: 
 }
 
 /// Keep the UI refusal actionable and translated; headless callers retain the detailed error.
-pub(crate) fn move_error(error: &pdfcraft_engine::EditError) -> String {
+pub(crate) fn move_error(error: &prckopis_engine::EditError) -> String {
     let detail = error.to_string();
     match detail.as_str() {
         "vertical text cannot be moved in a group" => tl!("Vertical text cannot be moved with this selection.").into(),

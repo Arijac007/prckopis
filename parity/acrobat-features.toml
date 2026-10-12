@@ -1,4 +1,4 @@
-# PdfCraft parity checklist vs Acrobat Pro (offline feature set). Generated from plan docs; maintained by hand.
+# Prckopis parity checklist vs Acrobat Pro (offline feature set). Generated from plan docs; maintained by hand.
 # Validated and reported by `cargo xtask parity`. Schema: see the [schema] table.
 # Status rules: `shipped` = usable today with at least one cited test; `partial` = part exists (notes say what is
 # missing); `planned` = not started; `na` = Adobe-cloud-only (notes name the local or pluggable alternative).
@@ -23,7 +23,7 @@ status = "shipped"
 commands = ["file.open"]
 tools = ["doc_open"]
 evidence = ["crates/automation/tests/automation.rs::open_inspect_render_and_find", "crates/ui-egui/tests/ui.rs::opening_a_pdf_shows_comments_and_bookmarks", "crates/ui-egui/tests/ui.rs::files_and_quit_from_the_operating_system"]
-notes = "File ▸ Open, the command line (Linux and Windows file associations), the Windows MSI's \"Edit with PdfCraft\" entry on PDF files' File Explorer right-click menu (#682; several selected PDFs open as tabs of one window), and on macOS Finder, Open With and the Dock (Apple events; the bundle declares PDF as a document type). Not yet: a first-level Windows 11 menu entry (needs package identity) or Combine from the file manager (#585)"
+notes = "File ▸ Open, the command line (Linux and Windows file associations), the Windows MSI's \"Edit with Prckopis\" entry on PDF files' File Explorer right-click menu (#682; several selected PDFs open as tabs of one window), and on macOS Finder, Open With and the Dock (Apple events; the bundle declares PDF as a document type). Not yet: a first-level Windows 11 menu entry (needs package identity) or Combine from the file manager (#585)"
 
 [[feature]]
 id = "core.repair-broken-files"
@@ -635,7 +635,7 @@ status = "shipped"
 commands = []
 tools = []
 evidence = ["crates/engine/src/tests.rs::reload_reads_the_new_file_into_the_same_document", "crates/ui-egui/tests/reload.rs::a_rebuilt_file_reloads_in_place_keeping_the_page_and_zoom", "crates/ui-egui/tests/reload.rs::a_half_written_file_waits_until_the_pdf_is_whole", "crates/ui-egui/tests/reload.rs::saving_does_not_reload_or_lose_undo", "crates/ui-egui/tests/reload.rs::unsaved_changes_are_kept_until_reload_is_chosen", "crates/ui-egui/tests/reload.rs::a_deleted_file_leaves_the_document_open", "crates/ui-egui/tests/reload.rs::nothing_reloads_with_the_preference_off", "crates/ui-egui/tests/reload.rs::a_shorter_new_version_drops_what_pointed_into_the_old_one"]
-notes = "Desktop, on by default (Preferences ▸ Documents and view, #431), for LaTeX/Typst builds: a worker thread checks each open file's metadata every 250 ms and reads a change once it has settled and ends in %%EOF; a clean document reloads in place (same tab, page, zoom, scroll; old page images stay until new ones are drawn), one with unsaved changes gets a Reload notice; PdfCraft's own saves never reload. Measured on Windows: one check 11 µs per file, reload of a 417-page 0.9 MB pdflatex file 16 ms. Not yet: OS change notifications (polling adds up to 250 ms), the web build; a reload clears undo history, like Revert."
+notes = "Desktop, on by default (Preferences ▸ Documents and view, #431), for LaTeX/Typst builds: a worker thread checks each open file's metadata every 250 ms and reads a change once it has settled and ends in %%EOF; a clean document reloads in place (same tab, page, zoom, scroll; old page images stay until new ones are drawn), one with unsaved changes gets a Reload notice; Prckopis's own saves never reload. Measured on Windows: one check 11 µs per file, reload of a 417-page 0.9 MB pdflatex file 16 ms. Not yet: OS change notifications (polling adds up to 250 ms), the web build; a reload clears undo history, like Revert."
 
 [[feature]]
 id = "core.signed-save-policy"
@@ -683,7 +683,7 @@ status = "shipped"
 commands = []
 tools = []
 evidence = ["crates/ui-egui/tests/editing.rs::the_last_session_reopens_its_files_pages_and_active_tab", "crates/ui-egui/tests/editing.rs::quitting_with_unsaved_changes_still_remembers_every_file", "crates/ui-egui/tests/editing.rs::the_last_session_is_off_by_default_and_skips_missing_and_duplicate_files", "crates/ui-egui/src/last_session.rs::malformed_sessions_are_skipped_and_capped"]
-notes = "Desktop, off by default (Preferences ▸ Documents and view, #442): the files open when PdfCraft last closed reopen at the page each showed, with the same tab in front; files named on the command line open after them, in front; files that are gone, and documents the Recovery dialog offers, are skipped. Quitting with unsaved changes still remembers every tab. Not yet: zoom, layout and scroll position within the page (#418); only the first encrypted file asks for its password (later ones stay closed), and a file opened after it dismisses that prompt; a save that fails partway through a quit can leave the remembered list from that quit; never-saved documents and the web build have no paths to reopen."
+notes = "Desktop, off by default (Preferences ▸ Documents and view, #442): the files open when Prckopis last closed reopen at the page each showed, with the same tab in front; files named on the command line open after them, in front; files that are gone, and documents the Recovery dialog offers, are skipped. Quitting with unsaved changes still remembers every tab. Not yet: zoom, layout and scroll position within the page (#418); only the first encrypted file asks for its password (later ones stay closed), and a file opened after it dismisses that prompt; a save that fails partway through a quit can leave the remembered list from that quit; never-saved documents and the web build have no paths to reopen."
 
 [[feature]]
 id = "core.usage-rights-preserve"
@@ -939,7 +939,7 @@ status = "shipped"
 commands = []
 tools = []
 evidence = ["crates/ui-egui/tests/ui.rs::selection_works_in_every_view_rotation"]
-notes = "PdfCraft draws a percentage on its fixed 96-dpi basis: 96/72 logical pixels per PDF point at 100%. Acrobat draws it at its Page Display resolution, with logical pixels per PDF point = ppi / 72 × zoom (checked black-box with Custom resolutions of 96, 110 and 120 ppi on one display), so the same percentage can differ in size. Acrobat's Use System Setting resolution is not reproduced. Tracked with misc.prefs-page-display"
+notes = "Prckopis draws a percentage on its fixed 96-dpi basis: 96/72 logical pixels per PDF point at 100%. Acrobat draws it at its Page Display resolution, with logical pixels per PDF point = ppi / 72 × zoom (checked black-box with Custom resolutions of 96, 110 and 120 ppi on one display), so the same percentage can differ in size. Acrobat's Use System Setting resolution is not reproduced. Tracked with misc.prefs-page-display"
 
 [[feature]]
 id = "view.zoom-actual-size"
@@ -951,7 +951,7 @@ status = "shipped"
 commands = []
 tools = []
 evidence = ["crates/ui-egui/tests/view.rs::actual_size_fit_width_and_fit_page"]
-notes = "Actual size is 100% on PdfCraft's fixed 96-dpi basis: 96/72 logical pixels per PDF point. Acrobat's Actual Size uses its Page Display resolution (ppi / 72 logical pixels per PDF point at 100%), which PdfCraft does not offer yet, so the two can draw a page at different sizes. Tracked with misc.prefs-page-display"
+notes = "Actual size is 100% on Prckopis's fixed 96-dpi basis: 96/72 logical pixels per PDF point. Acrobat's Actual Size uses its Page Display resolution (ppi / 72 logical pixels per PDF point at 100%), which Prckopis does not offer yet, so the two can draw a page at different sizes. Tracked with misc.prefs-page-display"
 
 [[feature]]
 id = "view.zoom-fit-page"
@@ -1503,7 +1503,7 @@ status = "shipped"
 commands = ["edit.column_select"]
 tools = ["text_extract"]
 evidence = ["crates/render/src/text.rs::a_column_selection_takes_one_table_column", "crates/render/src/text.rs::a_column_selection_across_columns_reads_row_by_row", "crates/render/src/text.rs::right_to_left_rows_read_right_to_left", "crates/render/src/text.rs::vertical_lines_keep_reading_order", "crates/ui-egui/tests/ui_group/column_select.rs::alt_drag_selects_only_the_text_inside_the_rectangle", "crates/ui-egui/tests/ui_group/column_select.rs::the_column_select_tool_needs_no_modifier", "crates/ui-egui/tests/ui_group/column_select.rs::alt_drag_with_the_highlighter_marks_only_the_column", "crates/automation/tests/automation.rs::text_extract_with_a_rect_takes_one_column"]
-notes = "Issue #740. Holding Alt (Option on macOS) when a drag starts selects only the text inside the rectangle drawn, with the Select tool, the text markup tools and Redact (with Highlight and Redact the drag must start on text, since off text they draw an area box). Edit ▸ Column select does the same with a plain drag. A glyph counts when its centre is inside. Copy gives one row per visual line, top to bottom; pieces side by side (table cells) are separated by a tab, right to left in right-to-left rows; vertical text keeps reading order. text_extract takes the same rectangle as rect. Platforms: on Linux desktops whose window manager moves windows with Alt-drag (Xfce, Cinnamon and MATE by default; KDE Plasma 5 and other setups with Alt as the window modifier; GNOME and Plasma 6 use Super) the drag never reaches PdfCraft, so use Edit ▸ Column select or change that setting. On Windows, releasing Alt does not open a system menu (the window has no native menu). The web build has the same Linux caveat in the browser. Checked by hand on Linux (Fedora) with the Column select tool; Alt/Option-drag, and macOS and Windows generally, rest on the kittest tests. Missing: selection across pages, ⇧-click extending a column, a default shortcut, and a check of Acrobat's own copied-text format (not observed)."
+notes = "Issue #740. Holding Alt (Option on macOS) when a drag starts selects only the text inside the rectangle drawn, with the Select tool, the text markup tools and Redact (with Highlight and Redact the drag must start on text, since off text they draw an area box). Edit ▸ Column select does the same with a plain drag. A glyph counts when its centre is inside. Copy gives one row per visual line, top to bottom; pieces side by side (table cells) are separated by a tab, right to left in right-to-left rows; vertical text keeps reading order. text_extract takes the same rectangle as rect. Platforms: on Linux desktops whose window manager moves windows with Alt-drag (Xfce, Cinnamon and MATE by default; KDE Plasma 5 and other setups with Alt as the window modifier; GNOME and Plasma 6 use Super) the drag never reaches Prckopis, so use Edit ▸ Column select or change that setting. On Windows, releasing Alt does not open a system menu (the window has no native menu). The web build has the same Linux caveat in the browser. Checked by hand on Linux (Fedora) with the Column select tool; Alt/Option-drag, and macOS and Windows generally, rest on the kittest tests. Missing: selection across pages, ⇧-click extending a column, a default shortcut, and a check of Acrobat's own copied-text format (not observed)."
 
 [[feature]]
 id = "view.copy-text"
@@ -1730,7 +1730,7 @@ milestone = "M3"
 status = "partial"
 commands = ["help.check_updates"]
 tools = []
-evidence = ["crates/ui-egui/tests/ui_group/updates.rs::a_newer_release_is_offered_for_download", "crates/ui-egui/tests/ui_group/updates.rs::nothing_is_asked_until_the_user_checks", "apps/pdfcraft/src/updates.rs::answers_are_read_and_only_our_release_pages_are_offered"]
+evidence = ["crates/ui-egui/tests/ui_group/updates.rs::a_newer_release_is_offered_for_download", "crates/ui-egui/tests/ui_group/updates.rs::nothing_is_asked_until_the_user_checks", "apps/prckopis/src/updates.rs::answers_are_read_and_only_our_release_pages_are_offered"]
 notes = "asks GitHub Releases on request and offers the release page. By the owner's decision there is no check at start and no in-place install (Acrobat has both)"
 
 [[feature]]
@@ -2365,7 +2365,7 @@ status = "shipped"
 commands = ["edit.header_footer.update", "edit.header_footer.remove"]
 tools = ["doc_header_footer", "doc_remove_marks"]
 evidence = ["crates/edit/src/tests.rs::replace_and_remove_restore_the_original_content", "crates/ui-egui/tests/ui_group/marks.rs::header_and_footer_dialog_inserts_tokens_and_applies_to_a_subset"]
-notes = "recognises PdfCraft marks; Acrobat-made headers are not detected yet"
+notes = "recognises Prckopis marks; Acrobat-made headers are not detected yet"
 
 [[feature]]
 id = "edit.header-footer-tokens"
@@ -2521,7 +2521,7 @@ status = "shipped"
 commands = ["edit.bates.remove"]
 tools = ["doc_remove_bates"]
 evidence = ["crates/edit/src/tests.rs::bates_start_carries_over_and_only_bates_marks_are_removed", "crates/automation/tests/automation.rs::bates_numbering_runs_across_files_and_can_be_removed"]
-notes = "Bates numbering > Remove takes away headers and footers with a Bates number PdfCraft added (tagged /PCBates); other headers and footers stay. Not yet: Bates added by Acrobat or other tools, or by PdfCraft before this version (remove those with Remove header & footer)."
+notes = "Bates numbering > Remove takes away headers and footers with a Bates number Prckopis added (tagged /PCBates); other headers and footers stay. Not yet: Bates added by Acrobat or other tools, or by Prckopis before this version (remove those with Remove header & footer)."
 
 [[feature]]
 id = "edit.spell-check"
@@ -3525,7 +3525,7 @@ status = "partial"
 commands = []
 tools = ["comment_add"]
 evidence = ["crates/annot/src/tests.rs::every_tool_creates_a_drawable_comment", "crates/engine/src/tests.rs::highlight_multiplies_over_text", "crates/annot/src/tests.rs::polygons_clouds_connected_lines_callouts_and_carets_are_drawn"]
-notes = "appearances for every type PdfCraft creates (highlight multiplies; clouds, callouts, stamps, polygons, carets); rich text not yet"
+notes = "appearances for every type Prckopis creates (highlight multiplies; clouds, callouts, stamps, polygons, carets); rich text not yet"
 
 [[feature]]
 id = "comment.sticky-note"
@@ -4041,7 +4041,7 @@ status = "shipped"
 commands = ["comment.stamp"]
 tools = ["comment_add"]
 evidence = ["crates/annot/src/tests.rs::stamps_draw_their_label_and_by_line", "crates/ui-egui/tests/stamps.rs::choosing_and_placing_stamps", "crates/automation/tests/automation.rs::stamps_through_tools"]
-notes = "12 standard business stamps in PdfCraft's own design; ISO 32000 stamp names where defined"
+notes = "12 standard business stamps in Prckopis's own design; ISO 32000 stamp names where defined"
 
 [[feature]]
 id = "comment.stamps-sign-here"
@@ -5245,7 +5245,7 @@ status = "shipped"
 commands = ["sign.fill.check", "sign.fill.cross", "sign.fill.dot", "sign.fill.line"]
 tools = ["fill_sign_add"]
 evidence = ["crates/ui-egui/tests/fill_sign.rs::text_marks_and_date", "crates/annot/src/tests.rs::fill_and_sign_items_are_drawn"]
-notes = "PdfCraft-drawn stamps"
+notes = "Prckopis-drawn stamps"
 
 [[feature]]
 id = "form.fill-sign-date"
@@ -5777,7 +5777,7 @@ status = "partial"
 commands = []
 tools = ["doc_audit_redactions"]
 evidence = ["crates/audit/src/tests.rs::faux_redaction_is_found", "crates/audit/src/tests.rs::background_before_text_is_not_flagged", "crates/audit/src/tests.rs::light_shading_after_text_is_not_flagged", "crates/audit/src/tests.rs::graphics_state_carries_across_streams", "crates/audit/src/tests.rs::audit_fails_closed_on_undecodable_stream", "crates/audit/src/tests.rs::unapplied_redact_mark_is_found", "crates/automation/tests/automation.rs::auditing_faux_redactions_through_tools"]
-notes = "New pdfcraft-audit crate. A filled rectangle (re + fill, opaque) counts as a cover only when painted after the text it overlaps and dark enough to hide it (WCAG contrast < 3.0); page backgrounds, table shading and highlights are not flagged. Graphics state carries across a page's content streams. Fails closed: undecodable content is an error, never a clean bill. Also flags /Redact annotations never applied. CLI: pdfcraft-cli audit (fails when findings exist)."
+notes = "New prckopis-audit crate. A filled rectangle (re + fill, opaque) counts as a cover only when painted after the text it overlaps and dark enough to hide it (WCAG contrast < 3.0); page backgrounds, table shading and highlights are not flagged. Graphics state carries across a page's content streams. Fails closed: undecodable content is an error, never a clean bill. Also flags /Redact annotations never applied. CLI: prckopis-cli audit (fails when findings exist)."
 
 [[feature]]
 id = "protect.remove-hidden-on-close"
@@ -5889,7 +5889,7 @@ status = "shipped"
 commands = ["sign.digital", "sign.certify"]
 tools = ["sign_document"]
 evidence = ["crates/sign/tests/pdf.rs::encrypted_documents_are_signed_with_an_unencrypted_contents", "crates/sign/tests/pdf.rs::encrypted_documents_are_signed_only_as_their_permissions_allow", "crates/sign/tests/pdf.rs::encrypted_documents_take_a_document_timestamp", "crates/cos/tests/encryption.rs::signature_contents_stay_unencrypted", "crates/automation/tests/automation.rs::signing_an_encrypted_form_through_tools"]
-notes = "RC4-40/128, AES-128 and AES-256 Standard security; the incremental update keeps /Encrypt and /ID, encrypts the new strings and streams, and leaves the signature /Contents unencrypted (§7.6.2), which reading also honours. Opened with the user password, permissions (Table 22) apply: existing signature fields need fill-forms, new fields need annotate + modify, certifying needs modify, a document timestamp needs fill-forms; the owner may do anything. Not yet: certificate (public-key) security, which PdfCraft can't open; checked only against PdfCraft's own validator, not yet against an external one (pyHanko) or Acrobat"
+notes = "RC4-40/128, AES-128 and AES-256 Standard security; the incremental update keeps /Encrypt and /ID, encrypts the new strings and streams, and leaves the signature /Contents unencrypted (§7.6.2), which reading also honours. Opened with the user password, permissions (Table 22) apply: existing signature fields need fill-forms, new fields need annotate + modify, certifying needs modify, a document timestamp needs fill-forms; the owner may do anything. Not yet: certificate (public-key) security, which Prckopis can't open; checked only against Prckopis's own validator, not yet against an external one (pyHanko) or Acrobat"
 
 [[feature]]
 id = "sign.pkcs11"
@@ -6033,7 +6033,7 @@ status = "shipped"
 commands = ["sign.digital"]
 tools = ["sign_document"]
 evidence = ["crates/sign/tests/crypto.rs::signatures_round_trip_for_every_key_type", "crates/sign/tests/crypto.rs::rsa_signatures_are_read_with_every_digestinfo_variant", "crates/sign/tests/crypto.rs::ecdsa_signatures_are_read_as_der_non_minimal_der_or_raw", "crates/sign/tests/crypto.rs::verifies_ecdsa_on_p521_and_the_brainpool_curves", "crates/sign/tests/crypto.rs::keys_of_unknown_algorithms_are_unsupported_not_wrong", "crates/sign/tests/crypto.rs::tolerated_encodings_are_noted_and_standard_ones_are_not", "crates/sign/tests/crypto.rs::weak_digests_say_so_in_words_that_are_pinned", "crates/sign/tests/crypto.rs::an_rsa_signature_value_not_below_the_modulus_is_refused", "crates/sign/tests/crypto.rs::hostile_rsa_signature_values_are_wrong_not_crashes", "crates/sign/tests/algorithms.rs::rsa_with_sha3_sha512_256_and_ripemd160", "crates/sign/tests/algorithms.rs::rsa_pss_with_its_declared_parameters", "crates/sign/tests/algorithms.rs::ed25519_signs_the_signed_attributes_themselves", "crates/sign/tests/algorithms.rs::ecdsa_on_brainpool_p512r1", "crates/sign/tests/algorithms.rs::brainpool_p512r1_keys_must_have_coordinates_reduced_modulo_p", "crates/sign/tests/algorithms.rs::only_weak_digests_leave_a_note_when_a_signature_validates", "crates/sign/tests/pdf.rs::validates_the_legacy_adbe_x509_rsa_sha1_format"]
-notes = "SHA-256, SHA-384 for P-384; SHA-1 refused for new signatures, validated in old ones. Validation also reads SHA-224, SHA-512/224, SHA-512/256, SHA3-224/256/384/512, RIPEMD-160, RSA PKCS#1 with or without the DigestInfo NULL (a bare digest without any DigestInfo is refused), RSA-PSS with its declared MGF1 hash and salt length, ECDSA as DER/non-minimal DER/raw r||s on P-256, P-384, P-521 and brainpoolP256r1/P384r1/P512r1 (the last hand-written on crypto-bigint, checked against OpenSSL), Ed25519 (RFC 8419), and the legacy adbe.x509.rsa_sha1 format. An RSA value not below the modulus is refused (RFC 8017 5.2.2). SHA-1 and RIPEMD-160 validate but the signature details say the algorithm is weak (wording pinned by tests); tolerated encodings are listed in the details. An algorithm PdfCraft cannot check gives Unknown, not Invalid. Still missing: Ed448/SHAKE, DSA, brainpool curves other than P256/P384/P512, signing with the new digests"
+notes = "SHA-256, SHA-384 for P-384; SHA-1 refused for new signatures, validated in old ones. Validation also reads SHA-224, SHA-512/224, SHA-512/256, SHA3-224/256/384/512, RIPEMD-160, RSA PKCS#1 with or without the DigestInfo NULL (a bare digest without any DigestInfo is refused), RSA-PSS with its declared MGF1 hash and salt length, ECDSA as DER/non-minimal DER/raw r||s on P-256, P-384, P-521 and brainpoolP256r1/P384r1/P512r1 (the last hand-written on crypto-bigint, checked against OpenSSL), Ed25519 (RFC 8419), and the legacy adbe.x509.rsa_sha1 format. An RSA value not below the modulus is refused (RFC 8017 5.2.2). SHA-1 and RIPEMD-160 validate but the signature details say the algorithm is weak (wording pinned by tests); tolerated encodings are listed in the details. An algorithm Prckopis cannot check gives Unknown, not Invalid. Still missing: Ed448/SHAKE, DSA, brainpool curves other than P256/P384/P512, signing with the new digests"
 
 [[feature]]
 id = "sign.certify"
@@ -6081,7 +6081,7 @@ status = "shipped"
 commands = ["sign.timestamp"]
 tools = ["sign_timestamp_document"]
 evidence = ["crates/sign/tests/pdf.rs::a_document_timestamp_covers_the_file_and_validates", "crates/sign/tests/pdf.rs::a_document_timestamp_held_by_a_signature_field_is_checked_as_a_timestamp", "crates/automation/tests/automation.rs::timestamp_servers_stamp_signatures_and_documents", "crates/ui-egui/tests/signing.rs::timestamping_a_document_from_a_configured_server"]
-notes = "Use a certificate > Timestamp (sign.timestamp, tool sign_timestamp_document) asks the default timestamp server for an RFC 3161 token over the whole file and saves a copy: an /ETSI.RFC3161 signature dictionary held by an invisible signature field (Timestamp1, …) on page 1, so other readers find it; validation verifies imprint, token signature and TSA certificate validity and reports the trusted time. Not yet: checked only against PdfCraft's own validator, not pyHanko or Acrobat; the request runs on the UI thread (bounded by a 20 s timeout)."
+notes = "Use a certificate > Timestamp (sign.timestamp, tool sign_timestamp_document) asks the default timestamp server for an RFC 3161 token over the whole file and saves a copy: an /ETSI.RFC3161 signature dictionary held by an invisible signature field (Timestamp1, …) on page 1, so other readers find it; validation verifies imprint, token signature and TSA certificate validity and reports the trusted time. Not yet: checked only against Prckopis's own validator, not pyHanko or Acrobat; the request runs on the UI thread (bounded by a 20 s timeout)."
 
 [[feature]]
 id = "sign.timestamp-servers"
@@ -6093,7 +6093,7 @@ status = "shipped"
 commands = []
 tools = ["sign_timestamp_servers"]
 evidence = ["crates/platform/src/tsa.rs::a_query_is_posted_and_the_reply_returned", "crates/platform/src/tsa.rs::chunked_replies_redirects_and_errors", "crates/automation/tests/automation.rs::timestamp_servers_stamp_signatures_and_documents", "crates/ui-egui/tests/signing.rs::timestamping_a_document_from_a_configured_server"]
-notes = "Preferences > Timestamp servers: a list (the first is the default) with name, http:// address, user name and password (HTTP Basic); remembered across launches without passwords, which last until PdfCraft closes. The transport (pdfcraft-platform tsa) POSTs application/timestamp-query, follows up to 3 http redirects, caps headers and replies, and explains 401/404/web-page answers. Not yet: HTTPS authorities (the error suggests their http address; replies are signed, so HTTP is safe), the OS proxy settings, editing a server in place."
+notes = "Preferences > Timestamp servers: a list (the first is the default) with name, http:// address, user name and password (HTTP Basic); remembered across launches without passwords, which last until Prckopis closes. The transport (prckopis-platform tsa) POSTs application/timestamp-query, follows up to 3 http redirects, caps headers and replies, and explains 401/404/web-page answers. Not yet: HTTPS authorities (the error suggests their http address; replies are signed, so HTTP is safe), the OS proxy settings, editing a server in place."
 
 [[feature]]
 id = "sign.pades-bt"
@@ -6105,7 +6105,7 @@ status = "shipped"
 commands = []
 tools = ["sign_document"]
 evidence = ["crates/sign/tests/pdf.rs::signing_with_a_timestamp_embeds_a_verified_rfc3161_token", "crates/automation/tests/automation.rs::timestamp_servers_stamp_signatures_and_documents"]
-notes = "Sign with an embedded RFC 3161 token from the default timestamp server (Sign as > Add a timestamp from <server>; sign_document timestamp: true, a server name or an http:// address): imprint and TSA signature verified at signing and validation time, trusted time reported. Not yet: HTTPS authorities; checked only against PdfCraft's own validator, not pyHanko or Acrobat."
+notes = "Sign with an embedded RFC 3161 token from the default timestamp server (Sign as > Add a timestamp from <server>; sign_document timestamp: true, a server name or an http:// address): imprint and TSA signature verified at signing and validation time, trusted time reported. Not yet: HTTPS authorities; checked only against Prckopis's own validator, not pyHanko or Acrobat."
 
 [[feature]]
 id = "sign.ltv"
@@ -7913,7 +7913,7 @@ status = "shipped"
 commands = ["print.dialog"]
 tools = ["printers", "printer_options", "doc_print", "net_printers", "net_printer_status", "net_jobs", "net_job_cancel", "net_job_release"]
 evidence = ["crates/print/src/tests.rs::spooler_arguments_and_printer_list", "crates/print/src/tests.rs::driverless_printers_join_the_list_without_a_queue", "crates/print/src/tests.rs::windows_printers_carry_one_default_and_keep_their_names", "crates/print/src/tests.rs::printer_options_come_from_the_ppd", "crates/print/src/tests.rs::printer_option_defaults_and_job_arguments", "crates/ui-egui/tests/print.rs::print_dialog_shows_the_printer_driver_options", "crates/ui-egui/tests/print.rs::printers_listed_in_the_background_preselect_the_default_unless_one_was_picked", "crates/ui-egui/src/web_print.rs::resolution_falls_with_the_sheet_count_and_long_jobs_are_refused", "crates/ui-egui/src/web_print.rs::large_sheets_are_drawn_within_the_pixel_cap_and_bad_sizes_are_refused", "crates/ui-egui/src/web_print.rs::a_sink_error_or_a_page_that_isnt_there_stops_the_job", "crates/print/src/net/tests.rs::a_print_job_carries_its_options_and_the_document", "crates/print/src/net/tests.rs::raw_jobs_go_out_wrapped_in_pjl", "crates/print/src/net/tests.rs::lpd_jobs_reach_the_queue", "crates/print/src/net/tests.rs::a_printer_without_bonjour_is_found_by_its_ports", "crates/print/src/net/tests.rs::ranges_parse_and_big_ones_are_refused", "crates/print/src/net/tests.rs::discovery_replies_become_printers", "crates/print/src/net/tests.rs::printer_status_reports_state_supplies_and_formats", "crates/automation/tests/automation.rs::network_printing_through_tools", "crates/ui-egui/tests/print.rs::a_network_printer_added_in_the_dialog_takes_the_job_with_its_pin"]
-notes = "CUPS queues via lpstat -p -d and driverless destinations without a queue via lpstat -e; on Windows the queues and the default come from Win32_Printer (PowerShell CIM) and jobs are rendered with Windows.Data.Pdf and spooled through shared craft-print at each sheet's physical size and orientation, with bounded raster resolution up to 600 dpi (not vector passthrough); the printer list and submission run on workers without a console window. Native Windows regression execution is pending; Save as PDF on every platform. Properties…: on CUPS the driver's own PPD job options (tray, paper type, finishing …, not installable options or what the dialog sets) for this job, sent as lp -o; on Windows the driver's Printing Preferences window (printui), saved as that printer's per-user defaults rather than per job. On the web: \"Browser's print dialog\" (the default there) reaches the system's printers through the browser; PdfCraft draws the sheets itself (300 dpi up to 100 sheets, 200 up to 300, 150 up to 1,000; at most 64 megapixels a sheet and 1 GiB a job) and prints them from a hidden iframe, one per printed page, a landscape sheet among portrait ones turned onto the paper; copies, two-sided and colour are chosen in the browser's dialog; a browser that refuses to print gets the print-ready PDF as a download. Checked in headless Chromium, not yet in Firefox or Safari; pictures, not vectors; sheets of another paper size print at their own size only where the browser honours named @page sizes (Chromium doesn't). Beyond Acrobat: network printers without a system queue (pdfcraft-print `net`): IPP over HTTP (RFC 8010/8011: Print-Job with copies, collation, sides, colour mode, job-hold-until, job-password PIN, job-account-id, finishings and print-scaling none; Get-Printer-Attributes for state, reasons, toner levels and formats, refusing printers that take no PDF before sending; Get-Jobs, Get-Job-Attributes, Cancel-Job, Release-Job), LPD (RFC 1179) and raw socket 9100, the latter two with a PJL header (copies, duplex, grayscale, user, accounting code, staple/punch, private hold with HOLDKEY PIN); discovery by multicast DNS and WS-Discovery on every interface plus a port check of the local subnets and of address ranges the user names (finds printers with Bonjour off and in other VLANs; printers without PDF support are listed and explained); in the Print dialog an Add network printer panel (address or Find on network), Hold/PIN/Account/Staple options and Printer status. Tested against fake printers on loopback, not physical hardware; missing: ipps (TLS), HTTP authentication, IPP printers that take only raster formats (they are refused with a message), saving added network printers across sessions"
+notes = "CUPS queues via lpstat -p -d and driverless destinations without a queue via lpstat -e; on Windows the queues and the default come from Win32_Printer (PowerShell CIM) and jobs are rendered with Windows.Data.Pdf and spooled through shared craft-print at each sheet's physical size and orientation, with bounded raster resolution up to 600 dpi (not vector passthrough); the printer list and submission run on workers without a console window. Native Windows regression execution is pending; Save as PDF on every platform. Properties…: on CUPS the driver's own PPD job options (tray, paper type, finishing …, not installable options or what the dialog sets) for this job, sent as lp -o; on Windows the driver's Printing Preferences window (printui), saved as that printer's per-user defaults rather than per job. On the web: \"Browser's print dialog\" (the default there) reaches the system's printers through the browser; Prckopis draws the sheets itself (300 dpi up to 100 sheets, 200 up to 300, 150 up to 1,000; at most 64 megapixels a sheet and 1 GiB a job) and prints them from a hidden iframe, one per printed page, a landscape sheet among portrait ones turned onto the paper; copies, two-sided and colour are chosen in the browser's dialog; a browser that refuses to print gets the print-ready PDF as a download. Checked in headless Chromium, not yet in Firefox or Safari; pictures, not vectors; sheets of another paper size print at their own size only where the browser honours named @page sizes (Chromium doesn't). Beyond Acrobat: network printers without a system queue (prckopis-print `net`): IPP over HTTP (RFC 8010/8011: Print-Job with copies, collation, sides, colour mode, job-hold-until, job-password PIN, job-account-id, finishings and print-scaling none; Get-Printer-Attributes for state, reasons, toner levels and formats, refusing printers that take no PDF before sending; Get-Jobs, Get-Job-Attributes, Cancel-Job, Release-Job), LPD (RFC 1179) and raw socket 9100, the latter two with a PJL header (copies, duplex, grayscale, user, accounting code, staple/punch, private hold with HOLDKEY PIN); discovery by multicast DNS and WS-Discovery on every interface plus a port check of the local subnets and of address ranges the user names (finds printers with Bonjour off and in other VLANs; printers without PDF support are listed and explained); in the Print dialog an Add network printer panel (address or Find on network), Hold/PIN/Account/Staple options and Printer status. Tested against fake printers on loopback, not physical hardware; missing: ipps (TLS), HTTP authentication, IPP printers that take only raster formats (they are refused with a message), saving added network printers across sessions"
 
 [[feature]]
 id = "print.copies-collate"
@@ -9384,7 +9384,7 @@ milestone = "M13"
 status = "shipped"
 commands = []
 tools = []
-evidence = ["crates/automation/tests/automation.rs::tool_table_is_well_formed", "crates/automation/tests/automation.rs::edit_undo_redo_and_save_round_trip", "apps/pdfcraft-cli/tests/stdout.rs::output_commands_exit_cleanly_when_the_reader_has_closed"]
+evidence = ["crates/automation/tests/automation.rs::tool_table_is_well_formed", "crates/automation/tests/automation.rs::edit_undo_redo_and_save_round_trip", "apps/prckopis-cli/tests/stdout.rs::output_commands_exit_cleanly_when_the_reader_has_closed"]
 notes = "CLI stdout exits cleanly if a pipe reader closes early; other output errors and command failures remain errors."
 
 [[feature]]
@@ -9444,7 +9444,7 @@ milestone = "M13"
 status = "shipped"
 commands = []
 tools = []
-evidence = ["crates/automation/tests/automation.rs::errors_are_specific_and_safe", "crates/automation/tests/automation.rs::root_refusals_do_not_reveal_what_exists_outside", "apps/pdfcraft-cli/tests/run_root.rs::script_image_output_is_confined_to_the_root", "crates/automation/tests/automation.rs::file_names_from_documents_stay_in_the_output_folder"]
+evidence = ["crates/automation/tests/automation.rs::errors_are_specific_and_safe", "crates/automation/tests/automation.rs::root_refusals_do_not_reveal_what_exists_outside", "apps/prckopis-cli/tests/run_root.rs::script_image_output_is_confined_to_the_root", "crates/automation/tests/automation.rs::file_names_from_documents_stay_in_the_output_folder"]
 notes = "One refusal for every path outside the root, existing or not (#136). `run --script` images (`out`) are confined too (#137). Check-then-write, not openat-style: a process racing the tool on the same disk could swap a folder for a link between the check and the write."
 
 [[feature]]
@@ -9457,7 +9457,7 @@ status = "shipped"
 commands = []
 tools = ["doc_info", "text_extract", "page_render"]
 evidence = ["crates/automation/tests/automation.rs::mcp_resources_expose_open_documents", "crates/automation/src/mcp.rs::resource_uris_parse", "crates/automation/tests/automation.rs::conventions_resources"]
-notes = "resources/list, resources/templates/list and resources/read: pdfcraft://doc/{doc}/info (JSON), /text, /page/{page}/text, /page/{page}/image?dpi= (PNG)"
+notes = "resources/list, resources/templates/list and resources/read: prckopis://doc/{doc}/info (JSON), /text, /page/{page}/text, /page/{page}/image?dpi= (PNG)"
 
 [[feature]]
 id = "misc.ui-control-channel"
@@ -10057,7 +10057,7 @@ status = "planned"
 commands = []
 tools = []
 evidence = []
-notes = "Windows MSI creates a Start menu shortcut, an optional (default on) desktop shortcut and an optional (default on, INSTALLPDFCONTEXTMENU) \"Edit with PdfCraft\" File Explorer menu entry for PDF files (#682), and confirms full-UI completion with Finish (#143); packaging/windows/test-msi.ps1 checks the compiled MSI and windows-arm64.yml checks installation/removal. PDF files use a dedicated embedded document icon when PdfCraft is chosen as the default reader (confirmed in Windows Explorer); first-page thumbnails remain unsupported. Signed installers across platforms remain planned."
+notes = "Windows MSI creates a Start menu shortcut, an optional (default on) desktop shortcut and an optional (default on, INSTALLPDFCONTEXTMENU) \"Edit with Prckopis\" File Explorer menu entry for PDF files (#682), and confirms full-UI completion with Finish (#143); packaging/windows/test-msi.ps1 checks the compiled MSI and windows-arm64.yml checks installation/removal. PDF files use a dedicated embedded document icon when Prckopis is chosen as the default reader (confirmed in Windows Explorer); first-page thumbnails remain unsupported. Signed installers across platforms remain planned."
 
 [[feature]]
 id = "misc.web-deploy"

@@ -697,7 +697,7 @@ impl ToRgb for Lab {
         let [xw, yw, zw] = white_point;
 
         for (input, output) in input.chunks_exact(3).zip(output.chunks_exact_mut(3)) {
-            // PdfCraft patch: `manual_scale` means the components arrive
+            // Prckopis patch: `manual_scale` means the components arrive
             // normalised to [0, 1] (an `/Indexed` palette over Lab looks its
             // bytes up as `byte / 255`). Map them linearly onto L* 0..100 and
             // the a*/b* /Range (ISO 32000-2 §8.6.6.3) before converting.
