@@ -2406,3 +2406,17 @@ animation effects	Off	Vypnuto
 	The linked PDF opened, but its named destination was not applied.	Odkazovaný PDF se otevřel, ale jeho pojmenovaný cíl nebyl použit.
 	The linked PDF opened, but its page destination was out of range.	Odkazovaný PDF se otevřel, ale cílová stránka je mimo rozsah.
 	Local cross-PDF links require the desktop app	Místní odkazy mezi soubory PDF vyžadují desktopovou aplikaci
+# Network printing (direct IPP / LPD / socket printers in the Print dialog)
+	Network printers	Síťové tiskárny
+	Add network printer…	Přidat síťovou tiskárnu…
+	Printer address:	Adresa tiskárny:
+	Find on network	Hledat v síti
+	Searching the network for printers…	Hledání tiskáren v síti…
+	No printers answered on the local network.	V místní síti neodpověděla žádná tiskárna.
+	Hold at printer until released	Podržet v tiskárně do uvolnění
+	Staple	Sešít
+	Release PIN:	PIN pro uvolnění:
+	Account code:	Kód nákladového střediska:
+	Printer status	Stav tiskárny
+	Status: {status}	Stav: {status}
+	An ipp://, lpd:// or socket:// address of a printer on your network	Adresa ipp://, lpd:// nebo socket:// tiskárny ve vaší síti

@@ -2330,3 +2330,17 @@ animation effects	Off	Өшірулі
 	The linked PDF opened, but its named destination was not applied.	Байланысты PDF ашылды, бірақ оның аталған мақсаты қолданылмады.
 	The linked PDF opened, but its page destination was out of range.	Байланысты PDF ашылды, бірақ оның мақсатты беті ауқымнан тыс.
 	Local cross-PDF links require the desktop app	PDF файлдары арасындағы жергілікті сілтемелер үшін жұмыс үстелі қолданбасы қажет
+# Network printing (direct IPP / LPD / socket printers in the Print dialog)
+	Network printers	Желілік принтерлер
+	Add network printer…	Желілік принтер қосу…
+	Printer address:	Принтер мекенжайы:
+	Find on network	Желіден іздеу
+	Searching the network for printers…	Желіден принтерлер ізделуде…
+	No printers answered on the local network.	Жергілікті желіде ешбір принтер жауап бермеді.
+	Hold at printer until released	Босатылғанша принтерде ұстау
+	Staple	Қапсырмалау
+	Release PIN:	Босату PIN коды:
+	Account code:	Шығын орталығының коды:
+	Printer status	Принтер күйі
+	Status: {status}	Күйі: {status}
+	An ipp://, lpd:// or socket:// address of a printer on your network	Желідегі принтердің ipp://, lpd:// немесе socket:// мекенжайы

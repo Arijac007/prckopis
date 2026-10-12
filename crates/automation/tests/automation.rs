@@ -2899,6 +2899,132 @@ fn printing_through_tools() {
     assert!(matches!(a.call("doc_print", &json!({ "doc": doc, "pages": "99", "path": "x.pdf" })), Err(ToolError::InvalidArgs(_))));
 }
 
+/// A fake IPP printer on the loopback interface answering `n` requests; each request it saw is
+/// sent back as (operation, parsed request, raw body).
+fn fake_ipp_printer(n: usize) -> (String, std::sync::mpsc::Receiver<(u16, pdfcraft_engine::print::net::ipp::Response, Vec<u8>)>) {
+    use pdfcraft_engine::print::net::ipp::{self, Request, tag};
+    use std::io::{BufRead, BufReader, Read, Write};
+    let l = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    let port = l.local_addr().unwrap().port();
+    let (tx, rx) = std::sync::mpsc::channel();
+    std::thread::spawn(move || {
+        for _ in 0..n {
+            let (s, _) = l.accept().unwrap();
+            let mut r = BufReader::new(s);
+            let mut len = 0usize;
+            loop {
+                let mut h = String::new();
+                r.read_line(&mut h).unwrap();
+                if h.trim_end().is_empty() {
+                    break;
+                }
+                if let Some(v) = h.strip_prefix("Content-Length:") {
+                    len = v.trim().parse().unwrap();
+                }
+            }
+            let mut body = vec![0u8; len];
+            r.read_exact(&mut body).unwrap();
+            let req = ipp::parse(&body).unwrap();
+            let mut resp = Request::new(0, req.request_id);
+            match req.status {
+                ipp::op::GET_PRINTER_ATTRIBUTES => {
+                    resp.group(tag::PRINTER);
+                    resp.str(tag::NAME, "printer-name", "Reception");
+                    resp.int(tag::ENUM, "printer-state", 5);
+                    resp.str(tag::KEYWORD, "printer-state-reasons", "media-empty-error");
+                    resp.str(tag::MIME, "document-format-supported", "application/pdf");
+                    resp.str(tag::NAME, "marker-names", "Black").also(tag::NAME, "Waste");
+                    resp.int(tag::INTEGER, "marker-levels", 40).raw(tag::INTEGER, "", &(-1i32).to_be_bytes());
+                }
+                ipp::op::PRINT_JOB => {
+                    resp.group(tag::JOB);
+                    resp.int(tag::INTEGER, "job-id", 501);
+                    resp.int(tag::ENUM, "job-state", 4);
+                }
+                ipp::op::GET_JOBS => {
+                    resp.group(tag::JOB);
+                    resp.int(tag::INTEGER, "job-id", 501);
+                    resp.str(tag::NAME, "job-originating-user-name", "ana");
+                    resp.int(tag::ENUM, "job-state", 4);
+                }
+                ipp::op::RELEASE_JOB => {}
+                _ => resp = Request::new(0x0501, req.request_id),
+            }
+            let out = resp.finish(&[]);
+            let mut s = r.into_inner();
+            write!(s, "HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n", out.len()).unwrap();
+            s.write_all(&out).unwrap();
+            tx.send((req.status, req, body)).unwrap();
+        }
+    });
+    (format!("ipp://127.0.0.1:{port}/ipp/print"), rx)
+}
+
+#[test]
+fn network_printing_through_tools() {
+    use pdfcraft_engine::print::net::ipp::{Value as IppValue, op, tag};
+    let dir = workdir("netprint");
+    let mut a = auto(&dir);
+    let doc = ok(&mut a, "doc_open", json!({ "path": "a.pdf" }))["doc"].as_u64().unwrap();
+
+    let (uri, rx) = fake_ipp_printer(5);
+    let s = ok(&mut a, "net_printer_status", json!({ "uri": uri }));
+    assert_eq!((s["name"].as_str(), s["state"].as_str()), (Some("Reception"), Some("stopped")));
+    assert_eq!(s["state_reasons"], json!(["media-empty-error"]));
+    assert_eq!(s["supplies"], json!([{ "name": "Black", "percent": 40 }, { "name": "Waste", "percent": null }]));
+    assert_eq!(s["takes_pdf"], true);
+    rx.recv().unwrap();
+
+    let r = ok(
+        &mut a,
+        "doc_print",
+        json!({ "doc": doc, "pages": "1", "uri": uri, "copies": 2, "duplex": "long-edge", "color": "monochrome", "pin": "2468", "account": "SALES-7", "finishings": ["staple"], "user": "ana" }),
+    );
+    assert_eq!(
+        (r["job"]["job_id"].as_i64(), r["job"]["state"].as_str(), r["job"]["protocol"].as_str()),
+        (Some(501), Some("pending-held"), Some("ipp"))
+    );
+    assert_eq!(r["sheets"], 1);
+    rx.recv().unwrap(); // the format check before the job
+    let (operation, job, body) = rx.recv().unwrap();
+    assert_eq!(operation, op::PRINT_JOB);
+    let get = |g, n: &str| job.get(g, n).map(|a| a.values.clone()).unwrap_or_default();
+    assert_eq!(get(tag::JOB, "copies"), vec![IppValue::Integer(2)]);
+    assert_eq!(get(tag::JOB, "sides"), vec![IppValue::Str("two-sided-long-edge".into())]);
+    assert_eq!(get(tag::JOB, "print-color-mode"), vec![IppValue::Str("monochrome".into())]);
+    assert_eq!(get(tag::JOB, "job-account-id"), vec![IppValue::Str("SALES-7".into())]);
+    assert_eq!(get(tag::JOB, "finishings"), vec![IppValue::Enum(4)]);
+    assert_eq!(get(tag::OPERATION, "requesting-user-name"), vec![IppValue::Str("ana".into())]);
+    let pdf_at = body.windows(5).position(|w| w == b"%PDF-").expect("the print-ready PDF follows the attributes");
+    let printed = dir.join("printed.pdf");
+    std::fs::write(&printed, body.get(pdf_at..).unwrap()).unwrap();
+    let p = ok(&mut a, "doc_open", json!({ "path": "printed.pdf" }))["doc"].as_u64().unwrap();
+    assert_eq!(ok(&mut a, "doc_info", json!({ "doc": p }))["document"]["pages"], 1, "the printer got a readable one-sheet PDF");
+
+    let jobs = ok(&mut a, "net_jobs", json!({ "uri": uri }));
+    assert_eq!(
+        jobs["jobs"],
+        json!([{ "job_id": 501, "name": null, "user": "ana", "state": "pending-held", "state_reasons": [], "sheets_completed": null }])
+    );
+    rx.recv().unwrap();
+    assert_eq!(ok(&mut a, "net_job_release", json!({ "uri": uri, "job_id": 501 }))["done"], "released");
+
+    // Arguments that can't work are refused before anything is sent.
+    for bad in [
+        json!({ "doc": doc, "uri": "smb://p/q" }),
+        json!({ "doc": doc, "uri": "ipp://p/", "path": "x.pdf" }),
+        json!({ "doc": doc, "uri": "ipp://p/", "pin": "12" }),
+        json!({ "doc": doc, "uri": "ipp://p/", "color": "sepia" }),
+        json!({ "doc": doc, "uri": "ipp://p/", "finishings": ["glue"] }),
+    ] {
+        assert!(matches!(a.call("doc_print", &bad), Err(ToolError::InvalidArgs(_))), "{bad}");
+    }
+    assert!(matches!(a.call("net_job_cancel", &json!({ "uri": uri, "job_id": 0 })), Err(ToolError::InvalidArgs(_))));
+    assert!(matches!(a.call("net_printers", &json!({ "seconds": 99 })), Err(ToolError::InvalidArgs(_))));
+    // Job control needs IPP.
+    assert!(a.call("net_jobs", &json!({ "uri": "socket://127.0.0.1:9" })).is_err());
+}
+
 #[test]
 fn adding_content_through_tools() {
     let dir = workdir("content");
@@ -3179,6 +3305,7 @@ fn local_gotor_link_open_refuses_directories_devices_and_non_pdf_targets() {
     std::fs::write(root.join("notes.txt"), fixture(1)).unwrap();
     std::fs::write(root.join("dir-source.pdf"), remote_link_pdf("folder.pdf", None)).unwrap();
     std::fs::write(root.join("txt-source.pdf"), remote_link_pdf("notes.txt", None)).unwrap();
+    #[cfg_attr(not(unix), allow(unused_mut))] // the FIFO case is Unix-only
     let mut cases = vec![("dir-source.pdf", "not a regular file"), ("txt-source.pdf", "not a .pdf file")];
     #[cfg(unix)]
     {

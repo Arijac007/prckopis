@@ -1,10 +1,12 @@
 //! The Print dialog (Acrobat's File ▸ Print, execution plan M10.5): printer, copies, grayscale;
 //! pages to print (all, current, range with labels, the selected pages; odd/even, reverse); page sizing & handling
 //! (Size, Poster, Multiple, Booklet); orientation; comments & forms; and a live preview of the
-//! sheets. Printing sends the print-ready PDF to the system spooler; "Save as PDF" writes it.
+//! sheets. Printing sends the print-ready PDF to the system spooler, or straight to a network
+//! printer (IPP, LPD or a raw socket, found on the local network or typed as an address);
+//! "Save as PDF" writes it.
 
 use egui::{Color32, Pos2, Rect, Stroke, pos2, vec2};
-use pdfcraft_engine::print::{self, Binding, BookletSubset, Content, Layout, Orientation, PAPERS, PageOrder, SizeMode, Subset, spool};
+use pdfcraft_engine::print::{self, Binding, BookletSubset, Content, Layout, Orientation, PAPERS, PageOrder, SizeMode, Subset, net, spool};
 
 use crate::theme::{self, Tokens};
 use crate::{PdfCraftApp, widgets};
@@ -78,6 +80,39 @@ pub struct PrintDraft {
     pub show_driver_options: bool,
     /// Why the printer's preferences window didn't open (Windows).
     pub driver_error: Option<String>,
+    /// Network printers offered besides the system's: (name shown, address). The address is
+    /// what `printer` holds when one is chosen.
+    pub net_printers: Vec<(String, String)>,
+    /// The Add network printer panel is open, with the address being typed.
+    pub net_adding: bool,
+    pub net_address: String,
+    /// A network search was asked for (the app starts it) or is running.
+    pub net_search: NetSearch,
+    /// Network job options: hold at the printer, a release PIN, a cost-centre code, stapling.
+    pub net_hold: bool,
+    pub net_pin: String,
+    pub net_account: String,
+    pub net_staple: bool,
+    /// The chosen network printer's status, once asked for (or why it couldn't be read).
+    pub net_status: Option<String>,
+    /// Printer status was asked for; the app reads it in the background.
+    pub net_status_wanted: bool,
+}
+
+/// Searching the local network for printers.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum NetSearch {
+    #[default]
+    Idle,
+    Wanted,
+    Running,
+    /// The last search found nothing.
+    NoneFound,
+}
+
+/// Whether a printer chosen in the dialog is a network address rather than a system queue.
+pub fn is_network(printer: &str) -> bool {
+    printer.contains("://")
 }
 
 impl Default for PrintDraft {
@@ -118,6 +153,16 @@ impl Default for PrintDraft {
             driver_choices: Default::default(),
             show_driver_options: false,
             driver_error: None,
+            net_printers: Vec::new(),
+            net_adding: false,
+            net_address: String::new(),
+            net_search: NetSearch::Idle,
+            net_hold: false,
+            net_pin: String::new(),
+            net_account: String::new(),
+            net_staple: false,
+            net_status: None,
+            net_status_wanted: false,
         }
     }
 }
@@ -177,6 +222,49 @@ impl PrintDraft {
     }
 }
 
+impl PrintDraft {
+    /// The job for a network printer.
+    pub fn net_job(&self, title: &str) -> net::NetJob {
+        let pin = self.net_pin.trim();
+        let account = self.net_account.trim();
+        net::NetJob {
+            copies: self.copies.clamp(1, 999),
+            collate: self.collate,
+            duplex: Some(self.duplex),
+            color: if self.grayscale { net::ColorMode::Monochrome } else { net::ColorMode::Auto },
+            title: title.to_string(),
+            user: net::default_user(),
+            hold: self.net_hold,
+            pin: (!pin.is_empty()).then(|| pin.to_string()),
+            account: (!account.is_empty()).then(|| account.to_string()),
+            finishings: if self.net_staple { vec![net::Finishing::Staple] } else { Vec::new() },
+            pjl: true,
+        }
+    }
+
+    /// Add a network printer by address and choose it. Returns why the address isn't one.
+    pub fn add_network_printer(&mut self, name: Option<&str>, address: &str) -> Result<(), String> {
+        let target = net::Target::parse(address).map_err(|e| e.to_string())?;
+        let uri = target.uri();
+        if !self.net_printers.iter().any(|(_, u)| *u == uri) {
+            let name = name.map(str::to_string).unwrap_or_else(|| target.host.clone());
+            self.net_printers.push((name, uri.clone()));
+        }
+        self.printer = Some(uri);
+        self.printer_picked = true;
+        self.net_status = None;
+        Ok(())
+    }
+
+    /// A chosen printer's name as the dialog shows it.
+    fn shown_printer(&self, printer: &str) -> String {
+        match self.net_printers.iter().find(|(_, uri)| uri == printer) {
+            Some((name, _)) => format!("{name} ({printer})"),
+            None => printer_label(printer),
+        }
+    }
+}
+
 /// Lists the printers off the UI thread (the desktop app sets [`PdfCraftApp::printer_source`]):
 /// on Windows that takes PowerShell a second or more, and CUPS' driverless discovery can wait on
 /// the network. Without a source the dialog reads them as it opens, so tests stay deterministic.
@@ -195,6 +283,12 @@ pub(crate) struct PrintTasks {
     printers: Option<std::sync::mpsc::Receiver<Vec<spool::Printer>>>,
     #[cfg(not(target_arch = "wasm32"))]
     jobs: Vec<(String, std::sync::mpsc::Receiver<Result<String, String>>)>,
+    /// Printers found on the local network, as they arrive.
+    #[cfg(not(target_arch = "wasm32"))]
+    net_search: Option<std::sync::mpsc::Receiver<Result<Vec<net::Found>, String>>>,
+    /// A network printer's status being read.
+    #[cfg(not(target_arch = "wasm32"))]
+    net_status: Option<std::sync::mpsc::Receiver<String>>,
     /// The browser print being drawn, a sheet a frame (`web_print`).
     #[cfg(target_arch = "wasm32")]
     web_job: Option<crate::web_print::WebPrintJob>,
@@ -324,7 +418,109 @@ impl PdfCraftApp {
             for (printer, result) in finished {
                 self.report_print_job(&printer, result);
             }
+            self.poll_network_printers();
         }
+    }
+
+    /// Start a network search or a status read the dialog asked for, and pick up their answers.
+    #[cfg(not(target_arch = "wasm32"))]
+    fn poll_network_printers(&mut self) {
+        let ctx = self.ctx.clone();
+        let spawn = |work: Box<dyn FnOnce() + Send>| {
+            let ctx = ctx.clone();
+            std::thread::spawn(move || {
+                work();
+                if let Some(ctx) = ctx {
+                    ctx.request_repaint();
+                }
+            });
+        };
+        if self.print_draft.net_search == NetSearch::Wanted && self.print_tasks.net_search.is_none() {
+            let (tx, rx) = std::sync::mpsc::channel();
+            spawn(Box::new(move || {
+                let _ = tx.send(net::discover().map_err(|e| e.to_string()));
+            }));
+            self.print_tasks.net_search = Some(rx);
+            self.print_draft.net_search = NetSearch::Running;
+        }
+        if let Some(rx) = &self.print_tasks.net_search {
+            let answer = match rx.try_recv() {
+                Ok(r) => Some(r),
+                Err(std::sync::mpsc::TryRecvError::Empty) => None,
+                Err(std::sync::mpsc::TryRecvError::Disconnected) => Some(Ok(Vec::new())),
+            };
+            if let Some(answer) = answer {
+                self.print_tasks.net_search = None;
+                let d = &mut self.print_draft;
+                match answer {
+                    Ok(found) => {
+                        let mut added = 0;
+                        for f in found.iter().filter(|f| f.protocol != net::Protocol::Ipps && f.pdf != Some(false)) {
+                            let uri = f.uri();
+                            if !d.net_printers.iter().any(|(_, u)| *u == uri) {
+                                d.net_printers.push((f.name.clone(), uri));
+                                added += 1;
+                            }
+                        }
+                        d.net_search = if added == 0 && d.net_printers.is_empty() { NetSearch::NoneFound } else { NetSearch::Idle };
+                    }
+                    Err(e) => {
+                        d.net_search = NetSearch::Idle;
+                        self.notify_error(e);
+                    }
+                }
+            }
+        }
+        if self.print_draft.net_status_wanted
+            && self.print_tasks.net_status.is_none()
+            && let Some(printer) = self.print_draft.printer.clone().filter(|p| is_network(p))
+        {
+            self.print_draft.net_status_wanted = false;
+            let (tx, rx) = std::sync::mpsc::channel();
+            spawn(Box::new(move || {
+                let _ = tx.send(net_status_text(&printer));
+            }));
+            self.print_tasks.net_status = Some(rx);
+        }
+        if let Some(rx) = &self.print_tasks.net_status {
+            match rx.try_recv() {
+                Ok(text) => {
+                    self.print_tasks.net_status = None;
+                    self.print_draft.net_status = Some(text);
+                }
+                Err(std::sync::mpsc::TryRecvError::Empty) => {}
+                Err(std::sync::mpsc::TryRecvError::Disconnected) => self.print_tasks.net_status = None,
+            }
+        }
+    }
+
+    /// Send a job straight to a network printer, off the UI thread.
+    #[cfg(not(target_arch = "wasm32"))]
+    fn send_to_network(&mut self, printer: String, bytes: Vec<u8>, job: net::NetJob) -> bool {
+        if let Err(e) = job.validate() {
+            self.notify_error(e);
+            return false;
+        }
+        let target = match net::Target::parse(&printer) {
+            Ok(t) => t,
+            Err(e) => {
+                self.notify_error(e);
+                return false;
+            }
+        };
+        let (tx, rx) = std::sync::mpsc::channel();
+        let ctx = self.ctx.clone();
+        std::thread::spawn(move || {
+            let result = net::submit(&target, &bytes, &job).map(|r| receipt_text(&r)).map_err(|e| e.to_string());
+            let _ = tx.send(result);
+            if let Some(ctx) = ctx {
+                ctx.request_repaint();
+            }
+        });
+        let shown = self.print_draft.shown_printer(&printer);
+        self.notify(crate::i18n::fmt(tl!("Sending to {printer}…"), &[("printer", &shown)]));
+        self.print_tasks.jobs.push((shown, rx));
+        true
     }
 
     fn report_print_job(&mut self, printer: &str, result: Result<String, String>) {
@@ -373,6 +569,8 @@ impl PdfCraftApp {
                     }
                 }
             }
+            #[cfg(not(target_arch = "wasm32"))]
+            Some(printer) if is_network(&printer) => self.send_to_network(printer, bytes, self.print_draft.net_job(&name)),
             Some(printer) => self.send_to_printer(printer, bytes, self.print_draft.job(&name)),
             None => self.save_print_pdf(&name, bytes),
         }
@@ -629,6 +827,129 @@ fn driver_options_panel(ui: &mut egui::Ui, d: &mut PrintDraft, t: &Tokens) {
     });
 }
 
+/// What a network printer accepted, for the notice: its job number and state.
+#[cfg(not(target_arch = "wasm32"))]
+fn receipt_text(r: &net::Receipt) -> String {
+    match (r.job_id, &r.state) {
+        (Some(id), Some(state)) => format!("#{id} {state}"),
+        (Some(id), None) => format!("#{id}"),
+        _ => String::new(),
+    }
+}
+
+/// A network printer's state in one line: its state and reasons, then its supplies.
+#[cfg(not(target_arch = "wasm32"))]
+fn net_status_text(printer: &str) -> String {
+    let status = net::Target::parse(printer).and_then(|t| net::status(&t));
+    match status {
+        Err(e) => e.to_string(),
+        Ok(s) => {
+            let mut parts: Vec<String> = Vec::new();
+            if let Some(model) = &s.make_and_model {
+                parts.push(model.clone());
+            }
+            let mut state = s.state.clone().unwrap_or_default();
+            if !s.state_reasons.is_empty() {
+                state = format!("{state} ({})", s.state_reasons.join(", "));
+            }
+            parts.push(state);
+            if !s.takes_pdf() {
+                parts.push(format!("formats: {}", s.document_formats.join(", ")));
+            }
+            let supplies: Vec<String> = s.supplies.iter().map(|(n, l)| if *l >= 0 { format!("{n} {l}%") } else { n.clone() }).collect();
+            if !supplies.is_empty() {
+                parts.push(supplies.join(", "));
+            }
+            parts.join(" · ")
+        }
+    }
+}
+
+/// The network printers in the printer menu, and the panel that adds one.
+fn network_printer_choices(ui: &mut egui::Ui, d: &mut PrintDraft) {
+    if cfg!(target_arch = "wasm32") {
+        return;
+    }
+    ui.separator();
+    ui.add_enabled(false, egui::Label::new(tl!("Network printers")));
+    for (name, uri) in d.net_printers.clone() {
+        ui.selectable_value(&mut d.printer, Some(uri.clone()), name).on_hover_text(&uri);
+    }
+    if ui.button(tl!("Add network printer…")).clicked() {
+        d.net_adding = true;
+        ui.close();
+    }
+}
+
+/// The Add network printer panel: an address, or a search of the local network.
+fn add_network_printer_panel(ui: &mut egui::Ui, d: &mut PrintDraft, t: &Tokens) {
+    if !d.net_adding || cfg!(target_arch = "wasm32") {
+        return;
+    }
+    egui::Frame::group(ui.style()).show(ui, |ui| {
+        ui.horizontal(|ui| {
+            ui.label(tl!("Printer address:"));
+            let field = ui.add(egui::TextEdit::singleline(&mut d.net_address).hint_text("ipp://10.0.0.5/ipp/print").desired_width(220.0));
+            field.on_hover_text(tl!("An ipp://, lpd:// or socket:// address of a printer on your network"));
+            if ui.button(tl!("Add")).clicked() {
+                let address = d.net_address.clone();
+                match d.add_network_printer(None, &address) {
+                    Ok(()) => {
+                        d.net_adding = false;
+                        d.net_address.clear();
+                    }
+                    Err(e) => d.net_status = Some(e),
+                }
+            }
+        });
+        ui.horizontal(|ui| {
+            let searching = matches!(d.net_search, NetSearch::Wanted | NetSearch::Running);
+            if ui.add_enabled(!searching, egui::Button::new(tl!("Find on network"))).clicked() {
+                d.net_search = NetSearch::Wanted;
+            }
+            if searching {
+                ui.spinner();
+                ui.label(egui::RichText::new(tl!("Searching the network for printers…")).small().color(t.text_muted));
+            } else if d.net_search == NetSearch::NoneFound {
+                ui.label(egui::RichText::new(tl!("No printers answered on the local network.")).small().color(t.text_muted));
+            }
+        });
+    });
+}
+
+/// Options only a network printer takes: held / PIN release, a cost-centre code, stapling, and
+/// its status.
+fn network_job_panel(ui: &mut egui::Ui, d: &mut PrintDraft, t: &Tokens) {
+    egui::Grid::new("print-network").num_columns(2).spacing([10.0, 6.0]).show(ui, |ui| {
+        ui.label("");
+        ui.horizontal(|ui| {
+            ui.add(widgets::checkbox(&mut d.net_hold, tl!("Hold at printer until released")));
+            ui.add(widgets::checkbox(&mut d.net_staple, tl!("Staple")));
+        });
+        ui.end_row();
+        ui.label(tl!("Release PIN:"));
+        ui.horizontal(|ui| {
+            let mut pin: String = d.net_pin.chars().filter(char::is_ascii_digit).take(10).collect();
+            ui.add(egui::TextEdit::singleline(&mut pin).password(true).desired_width(80.0));
+            d.net_pin = pin.chars().filter(char::is_ascii_digit).take(10).collect();
+            ui.label(tl!("Account code:"));
+            ui.add(egui::TextEdit::singleline(&mut d.net_account).char_limit(40).desired_width(120.0));
+        });
+        ui.end_row();
+    });
+    ui.horizontal_wrapped(|ui| {
+        if ui.button(tl!("Printer status")).clicked() {
+            d.net_status_wanted = true;
+            d.net_status = None;
+        }
+        if let Some(status) = &d.net_status {
+            ui.label(egui::RichText::new(crate::i18n::fmt(tl!("Status: {status}"), &[("status", status)])).small().color(t.text_muted));
+        } else if d.net_status_wanted {
+            ui.spinner();
+        }
+    });
+}
+
 fn combo<T: PartialEq + Copy>(ui: &mut egui::Ui, id: &str, value: &mut T, choices: &[(T, &str)], width: f32) {
     let shown = choices.iter().find(|c| c.0 == *value).map_or("", |c| c.1);
     egui::ComboBox::from_id_salt(id).selected_text(shown).width(width).show_ui(ui, |ui| {
@@ -664,7 +985,7 @@ pub(crate) fn body(
                 // The browser's print dialog sets copies, two-sided printing and colour itself.
                 let browser = d.printer.as_deref() == Some(crate::web_print::BROWSER_PRINTER);
                 ui.horizontal(|ui| {
-                    let shown = d.printer.as_deref().map_or_else(|| tl!("Save as PDF").to_string(), printer_label);
+                    let shown = d.printer.as_deref().map_or_else(|| tl!("Save as PDF").to_string(), |p| d.shown_printer(p));
                     egui::ComboBox::from_id_salt("printer").selected_text(shown).width(260.0).show_ui(ui, |ui| {
                         if d.printers_loading {
                             ui.add_enabled(false, egui::Label::new(tl!("Looking for printers…")));
@@ -679,13 +1000,15 @@ pub(crate) fn body(
                             ui.selectable_value(&mut d.printer, Some(p.name.clone()), label);
                         }
                         ui.selectable_value(&mut d.printer, None, tl!("Save as PDF"));
+                        network_printer_choices(ui, d);
                     });
                     let tip = if spool::HAS_PRINTER_PREFERENCES {
                         tl!("Opens the printer driver's preferences. They are saved for every print from this computer; the copies, two-sided, grayscale and paper chosen here still apply.")
                     } else {
                         tl!("The printer driver's own settings for this print: paper tray, paper type, finishing and more.")
                     };
-                    let properties = ui.add_enabled(d.printer.is_some() && !browser, egui::Button::new(tl!("Properties…"))).on_hover_text(tip);
+                    let network = d.printer.as_deref().is_some_and(is_network);
+                    let properties = ui.add_enabled(d.printer.is_some() && !browser && !network, egui::Button::new(tl!("Properties…"))).on_hover_text(tip);
                     if properties.clicked()
                         && let Some(p) = d.printer.clone()
                     {
@@ -704,6 +1027,7 @@ pub(crate) fn body(
                     d.printer_picked = true;
                     d.show_driver_options = false;
                     d.driver_error = None;
+                    d.net_status = None;
                 }
                 ui.end_row();
                 ui.label(tl!("Copies:"));
@@ -754,6 +1078,10 @@ pub(crate) fn body(
             }
             if d.show_driver_options {
                 driver_options_panel(ui, d, t);
+            }
+            add_network_printer_panel(ui, d, t);
+            if d.printer.as_deref().is_some_and(is_network) {
+                network_job_panel(ui, d, t);
             }
             if let Some(&source) = sizes.get(d.current_page) {
                 ui.horizontal_wrapped(|ui| {

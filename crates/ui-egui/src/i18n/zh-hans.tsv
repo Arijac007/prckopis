@@ -2296,3 +2296,17 @@ animation effects	Off	关
 	The linked PDF opened, but its named destination was not applied.	已打开链接的 PDF，但未应用其命名目标。
 	The linked PDF opened, but its page destination was out of range.	已打开链接的 PDF，但其页面目标超出范围。
 	Local cross-PDF links require the desktop app	PDF 之间的本地链接需要桌面应用
+# Network printing (direct IPP / LPD / socket printers in the Print dialog)
+	Network printers	网络打印机
+	Add network printer…	添加网络打印机…
+	Printer address:	打印机地址：
+	Find on network	在网络中查找
+	Searching the network for printers…	正在网络中查找打印机…
+	No printers answered on the local network.	本地网络中没有打印机响应。
+	Hold at printer until released	在打印机上保留直到释放
+	Staple	装订
+	Release PIN:	释放 PIN：
+	Account code:	成本中心代码：
+	Printer status	打印机状态
+	Status: {status}	状态：{status}
+	An ipp://, lpd:// or socket:// address of a printer on your network	网络中打印机的 ipp://、lpd:// 或 socket:// 地址

@@ -2245,3 +2245,17 @@ animation effects	Off	Выкл
 	The linked PDF opened, but its named destination was not applied.	Связанный PDF открыт, но его именованное назначение не применено.
 	The linked PDF opened, but its page destination was out of range.	Связанный PDF открыт, но страница назначения вне допустимого диапазона.
 	Local cross-PDF links require the desktop app	Локальные ссылки между PDF работают только в настольном приложении
+# Network printing (direct IPP / LPD / socket printers in the Print dialog)
+	Network printers	Сетевые принтеры
+	Add network printer…	Добавить сетевой принтер…
+	Printer address:	Адрес принтера:
+	Find on network	Найти в сети
+	Searching the network for printers…	Поиск принтеров в сети…
+	No printers answered on the local network.	Ни один принтер в локальной сети не ответил.
+	Hold at printer until released	Задержать на принтере до разблокировки
+	Staple	Сшить скобами
+	Release PIN:	PIN-код для печати:
+	Account code:	Код центра затрат:
+	Printer status	Состояние принтера
+	Status: {status}	Состояние: {status}
+	An ipp://, lpd:// or socket:// address of a printer on your network	Адрес ipp://, lpd:// или socket:// принтера в вашей сети

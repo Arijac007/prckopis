@@ -2337,3 +2337,17 @@ animation effects	Off	Izklopljeni
 	The linked PDF opened, but its named destination was not applied.	Povezani PDF se je odprl, vendar njegov poimenovani cilj ni bil uporabljen.
 	The linked PDF opened, but its page destination was out of range.	Povezani PDF se je odprl, vendar je ciljna stran zunaj obsega.
 	Local cross-PDF links require the desktop app	Lokalne povezave med PDF-ji zahtevajo namizno aplikacijo
+# Network printing (direct IPP / LPD / socket printers in the Print dialog)
+	Network printers	Omrežni tiskalniki
+	Add network printer…	Dodaj omrežni tiskalnik…
+	Printer address:	Naslov tiskalnika:
+	Find on network	Poišči v omrežju
+	Searching the network for printers…	Iskanje tiskalnikov v omrežju…
+	No printers answered on the local network.	V lokalnem omrežju se ni odzval noben tiskalnik.
+	Hold at printer until released	Zadrži na tiskalniku do sprostitve
+	Staple	Speni
+	Release PIN:	PIN za sprostitev:
+	Account code:	Koda stroškovnega mesta:
+	Printer status	Stanje tiskalnika
+	Status: {status}	Stanje: {status}
+	An ipp://, lpd:// or socket:// address of a printer on your network	Naslov ipp://, lpd:// ali socket:// tiskalnika v vašem omrežju

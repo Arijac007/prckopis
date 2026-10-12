@@ -2354,3 +2354,17 @@ animation effects	Off	Вимкнено
 	The linked PDF opened, but its named destination was not applied.	Пов’язаний PDF відкрито, але його іменоване призначення не застосовано.
 	The linked PDF opened, but its page destination was out of range.	Пов’язаний PDF відкрито, але сторінка призначення поза межами діапазону.
 	Local cross-PDF links require the desktop app	Локальні посилання між PDF працюють лише в настільному застосунку
+# Network printing (direct IPP / LPD / socket printers in the Print dialog)
+	Network printers	Мережеві принтери
+	Add network printer…	Додати мережевий принтер…
+	Printer address:	Адреса принтера:
+	Find on network	Знайти в мережі
+	Searching the network for printers…	Пошук принтерів у мережі…
+	No printers answered on the local network.	Жоден принтер у локальній мережі не відповів.
+	Hold at printer until released	Затримати на принтері до розблокування
+	Staple	Зшити скобами
+	Release PIN:	PIN-код для друку:
+	Account code:	Код центру витрат:
+	Printer status	Стан принтера
+	Status: {status}	Стан: {status}
+	An ipp://, lpd:// or socket:// address of a printer on your network	Адреса ipp://, lpd:// або socket:// принтера у вашій мережі

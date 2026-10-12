@@ -54,6 +54,50 @@ sets copies, two-sided printing and colour. This crate stays free of web APIs.
 Not yet: print as image, poster labels, PostScript output, colour conversion for
 grayscale.
 
+## Network printers (`net`)
+
+Offices are full of printers nobody installed on the laptop in front of them. `net` sends the
+print-ready PDF straight to them, without a system queue or a driver:
+
+```rust
+let target = net::Target::parse("ipp://10.0.0.5/ipp/print")?;   // or lpd://host/queue, socket://host:9100
+let job = net::NetJob { copies: 2, duplex: Some(Duplex::LongEdge), color: ColorMode::Monochrome,
+                        pin: Some("4711".into()), account: Some("FIN-204".into()), ..Default::default() };
+let receipt = net::submit(&target, &pdf, &job)?;                 // job id and state from IPP
+let found = net::discover()?;                                   // printers on the local network
+```
+
+| Protocol | Address | Options travel as | Status and jobs |
+| --- | --- | --- | --- |
+| IPP (RFC 8010/8011) over HTTP | `ipp://host[:631]/path` (also `http://`, or a bare host) | IPP job attributes | state, reasons, toner levels, formats; list, release and cancel jobs |
+| LPD (RFC 1179) | `lpd://host[:515]/queue` | PJL header (or one print line per copy) | the queue's own text |
+| Raw / JetDirect / AppSocket | `socket://host[:9100]` (also `raw://`) | PJL header | whether it answers |
+
+- **Business options**: copies and collation, two-sided, colour or monochrome, the job's name
+  and user (for the printer's job log), **held / secure printing** (`hold`, or a 4–10 digit
+  `pin` released at the panel: IPP `job-hold-until` and `job-password`, PJL `HOLDTYPE=PRIVATE`
+  with `HOLDKEY`), an **accounting / cost-centre code** (`job-account-id`, PJL `JOBACCT`), and
+  finishing (staple, punch, fold).
+- **Before sending**, an IPP printer is asked what it takes; one that reads no PDF (only
+  `image/urf` or PWG raster) is refused with a message instead of printing pages of PDF source.
+  A printer that sniffs formats gets `application/octet-stream`. Sheets go out with
+  `print-scaling=none`: they are already laid out at their physical size.
+- **Discovery** sends legacy-unicast multicast-DNS queries (no port 5353 needed) for
+  `_ipp._tcp`, `_ipps._tcp`, `_pdl-datastream._tcp` and `_printer._tcp`, then asks once more for
+  what the first answers left out. Numeric addresses are preferred to `.local` names.
+- **Untrusted input**: every reply is capped (HTTP headers 64 KiB, bodies 16 MiB, 20,000 IPP
+  attributes, 2,000 DNS records), parsed with bounds checks, collections and DNS compression
+  pointers are depth-limited, and PJL strings can't leave their quotes. Credentials in an address
+  are dropped, never sent.
+- Headless: `net_printers`, `net_printer_status`, `net_jobs`, `net_job_cancel`,
+  `net_job_release`, and `doc_print` with `uri`. In the Print dialog: *Add network printer…*
+  (type an address or *Find on network*), then Hold, Release PIN, Account code, Staple and
+  *Printer status*.
+
+Tests run against fake IPP, LPD and raw printers on the loopback interface. Not yet: `ipps`
+(TLS) and HTTP sign-in (both refused with a clear message), raster-only IPP printers, remembering
+added network printers across sessions, and validation on physical hardware.
+
 ## Architectural sheets and scale
 
 The Paper menu and `doc_print` share Letter, Legal, Tabloid, A3/A4/A5 plus

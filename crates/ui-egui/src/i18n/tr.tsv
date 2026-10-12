@@ -2328,3 +2328,17 @@ animation effects	Off	Kapalı
 	The linked PDF opened, but its named destination was not applied.	Bağlantılı PDF açıldı, ancak adlandırılmış hedefi uygulanmadı.
 	The linked PDF opened, but its page destination was out of range.	Bağlantılı PDF açıldı, ancak sayfa hedefi aralık dışında.
 	Local cross-PDF links require the desktop app	PDF'ler arası yerel bağlantılar masaüstü uygulamasını gerektirir
+# Network printing (direct IPP / LPD / socket printers in the Print dialog)
+	Network printers	Ağ yazıcıları
+	Add network printer…	Ağ yazıcısı ekle…
+	Printer address:	Yazıcı adresi:
+	Find on network	Ağda ara
+	Searching the network for printers…	Ağda yazıcılar aranıyor…
+	No printers answered on the local network.	Yerel ağda hiçbir yazıcı yanıt vermedi.
+	Hold at printer until released	Serbest bırakılana kadar yazıcıda beklet
+	Staple	Zımbala
+	Release PIN:	Serbest bırakma PIN'i:
+	Account code:	Masraf merkezi kodu:
+	Printer status	Yazıcı durumu
+	Status: {status}	Durum: {status}
+	An ipp://, lpd:// or socket:// address of a printer on your network	Ağınızdaki bir yazıcının ipp://, lpd:// veya socket:// adresi

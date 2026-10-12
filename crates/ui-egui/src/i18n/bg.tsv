@@ -2295,3 +2295,17 @@ animation effects	Off	Изключени
 	The linked PDF opened, but its named destination was not applied.	Свързаният PDF се отвори, но именуваната му цел не беше приложена.
 	The linked PDF opened, but its page destination was out of range.	Свързаният PDF се отвори, но целевата му страница е извън обхвата.
 	Local cross-PDF links require the desktop app	Локалните връзки между PDF файлове изискват настолното приложение
+# Network printing (direct IPP / LPD / socket printers in the Print dialog)
+	Network printers	Мрежови принтери
+	Add network printer…	Добавяне на мрежов принтер…
+	Printer address:	Адрес на принтера:
+	Find on network	Търсене в мрежата
+	Searching the network for printers…	Търсене на принтери в мрежата…
+	No printers answered on the local network.	Никой принтер в локалната мрежа не отговори.
+	Hold at printer until released	Задържане на принтера до освобождаване
+	Staple	Захващане с телбод
+	Release PIN:	ПИН за освобождаване:
+	Account code:	Код на разходен център:
+	Printer status	Състояние на принтера
+	Status: {status}	Състояние: {status}
+	An ipp://, lpd:// or socket:// address of a printer on your network	Адрес ipp://, lpd:// или socket:// на принтер във вашата мрежа

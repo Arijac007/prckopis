@@ -1,7 +1,8 @@
 //! Printing tools: list printers, and print (or save the print-ready PDF) with Acrobat's Print
-//! dialog options.
+//! dialog options; find network printers and print to them directly (IPP, LPD, raw socket),
+//! and follow, release or cancel their jobs.
 
-use pdfcraft_engine::print::{self, Binding, BookletSubset, Content, Layout, Orientation, PAPERS, PageOrder, SizeMode, Subset, spool};
+use pdfcraft_engine::print::{self, Binding, BookletSubset, Content, Layout, Orientation, PAPERS, PageOrder, SizeMode, Subset, net, spool};
 use serde_json::{Value, json};
 
 use crate::{Args, Automation, Result, ToolError, failed, write_atomic};
@@ -129,6 +130,9 @@ impl Automation {
         let sheets = print::layout(&sizes, &settings).map_err(|e| bad(e.to_string()))?.len();
         let bytes = self.session.print_pdf(id, &settings).map_err(failed)?;
         let mut out = json!({ "sheets": sheets, "pages": settings.pages.len(), "bytes": bytes.len() });
+        if a.opt_str("uri")?.is_some() && (a.opt_str("path")?.is_some() || a.opt_str("printer")?.is_some()) {
+            return Err(bad("pass only one of path, printer and uri"));
+        }
         match (a.opt_str("path")?, a.opt_str("printer")?) {
             (Some(p), None) => {
                 let path = self.resolve(p, true)?;
@@ -164,8 +168,141 @@ impl Automation {
                 };
                 out["job"] = json!(spool::submit(&bytes, &job).map_err(|e| failed(e.to_string()))?);
             }
-            _ => return Err(bad("pass either path (save the print-ready PDF) or printer (a name from printers, or \"default\")")),
+            (None, None) if a.opt_str("uri")?.is_some() => {
+                let target = target(a)?;
+                let job = net_job(a, self.doc(a)?.name.clone())?;
+                let r = net::submit(&target, &bytes, &job).map_err(|e| failed(e.to_string()))?;
+                out["uri"] = json!(target.uri());
+                out["job"] = receipt(&r);
+            }
+            _ => {
+                return Err(bad(
+                    "pass one of path (save the print-ready PDF), printer (a name from printers, or \"default\") or uri (a network printer from net_printers, e.g. ipp://10.0.0.5/ipp/print)",
+                ));
+            }
         }
         Ok(out)
     }
+
+    pub(crate) fn net_printers(&self, a: &Args) -> Result<Value> {
+        let seconds = a.opt_num("seconds")?.unwrap_or(2.0);
+        if !(0.2..=30.0).contains(&seconds) {
+            return Err(bad("seconds must be between 0.2 and 30"));
+        }
+        let found = net::discover_with(std::time::Duration::from_secs_f64(seconds)).map_err(|e| failed(e.to_string()))?;
+        let list: Vec<Value> = found
+            .iter()
+            .map(|f| {
+                json!({
+                    "name": f.name,
+                    "uri": f.uri(),
+                    "protocol": f.protocol.scheme(),
+                    "host": f.host,
+                    "address": f.address.map(|a| a.to_string()),
+                    "port": f.port,
+                    "make_and_model": f.make_and_model,
+                    "location": f.location,
+                    "pdf": f.pdf,
+                    "color": f.color,
+                    "duplex": f.duplex,
+                    "direct_printing": f.protocol != net::Protocol::Ipps,
+                })
+            })
+            .collect();
+        Ok(json!({ "count": list.len(), "printers": list }))
+    }
+
+    pub(crate) fn net_printer_status(&self, a: &Args) -> Result<Value> {
+        let target = target(a)?;
+        let s = net::status(&target).map_err(|e| failed(e.to_string()))?;
+        let supplies: Vec<Value> =
+            s.supplies.iter().map(|(name, level)| json!({ "name": name, "percent": (*level >= 0).then_some(*level) })).collect();
+        Ok(json!({
+            "uri": target.uri(),
+            "name": s.name,
+            "make_and_model": s.make_and_model,
+            "location": s.location,
+            "state": s.state,
+            "state_reasons": s.state_reasons,
+            "state_message": s.state_message,
+            "accepting_jobs": s.accepting_jobs,
+            "queued_jobs": s.queued_jobs,
+            "document_formats": s.document_formats,
+            "takes_pdf": s.takes_pdf(),
+            "sides": s.sides,
+            "color": s.color,
+            "supplies": supplies,
+        }))
+    }
+
+    pub(crate) fn net_jobs(&self, a: &Args) -> Result<Value> {
+        let target = target(a)?;
+        let completed = match a.opt_str("which")?.unwrap_or("not-completed") {
+            "not-completed" => false,
+            "completed" => true,
+            w => return Err(bad(format!("unknown which {w:?}; use not-completed or completed"))),
+        };
+        let list = net::jobs(&target, completed, a.opt_str("user")?).map_err(|e| failed(e.to_string()))?;
+        let list: Vec<Value> = list.iter().map(job_json).collect();
+        Ok(json!({ "uri": target.uri(), "count": list.len(), "jobs": list }))
+    }
+
+    pub(crate) fn net_job_control(&self, a: &Args, release: bool) -> Result<Value> {
+        let target = target(a)?;
+        let id = a.int("job_id")?;
+        let id = i32::try_from(id).ok().filter(|n| *n > 0).ok_or_else(|| bad("job_id must be a positive job number from net_jobs"))?;
+        let user = a.opt_str("user")?.map(str::to_string).unwrap_or_else(net::default_user);
+        if release { net::release_job(&target, id, &user) } else { net::cancel_job(&target, id, &user) }.map_err(|e| failed(e.to_string()))?;
+        Ok(json!({ "uri": target.uri(), "job_id": id, "done": if release { "released" } else { "canceled" } }))
+    }
+}
+
+fn target(a: &Args) -> Result<net::Target> {
+    net::Target::parse(a.str("uri")?).map_err(|e| bad(e.to_string()))
+}
+
+fn job_json(j: &net::JobStatus) -> Value {
+    json!({ "job_id": j.job_id, "name": j.name, "user": j.user, "state": j.state, "state_reasons": j.state_reasons, "sheets_completed": j.sheets_completed })
+}
+
+fn receipt(r: &net::Receipt) -> Value {
+    json!({ "protocol": r.protocol.scheme(), "job_id": r.job_id, "job_uri": r.job_uri, "state": r.state, "ignored": r.ignored, "bytes": r.bytes })
+}
+
+/// The network job asked for by doc_print's arguments.
+fn net_job(a: &Args, title: String) -> Result<net::NetJob> {
+    let finishings = match a.get("finishings") {
+        None => Vec::new(),
+        Some(Value::Array(list)) => list
+            .iter()
+            .map(|v| v.as_str().and_then(net::Finishing::parse).ok_or_else(|| bad("finishings are \"staple\", \"punch\" or \"fold\"")))
+            .collect::<Result<Vec<_>>>()?,
+        Some(_) => return Err(bad("finishings must be a list such as [\"staple\"]")),
+    };
+    let job = net::NetJob {
+        copies: a.opt_int("copies")?.unwrap_or(1).clamp(1, 999) as u32,
+        collate: a.opt_bool("collate")?.unwrap_or(true),
+        duplex: match a.opt_str("duplex")? {
+            None => None,
+            Some("off") => Some(spool::Duplex::Off),
+            Some("long-edge") => Some(spool::Duplex::LongEdge),
+            Some("short-edge") => Some(spool::Duplex::ShortEdge),
+            Some(d) => return Err(bad(format!("unknown duplex {d:?}"))),
+        },
+        color: match (a.opt_str("color")?, a.opt_bool("grayscale")?) {
+            (Some("color"), _) => net::ColorMode::Color,
+            (Some("monochrome"), _) | (None, Some(true)) => net::ColorMode::Monochrome,
+            (Some("auto") | None, _) => net::ColorMode::Auto,
+            (Some(c), _) => return Err(bad(format!("unknown color {c:?}; use auto, color or monochrome"))),
+        },
+        title,
+        user: a.opt_str("user")?.map(str::to_string).unwrap_or_else(net::default_user),
+        hold: a.opt_bool("hold")?.unwrap_or(false),
+        pin: a.opt_str("pin")?.map(str::to_string),
+        account: a.opt_str("account")?.map(str::to_string),
+        finishings,
+        pjl: a.opt_bool("pjl")?.unwrap_or(true),
+    };
+    job.validate().map_err(|e| bad(e.to_string()))?;
+    Ok(job)
 }

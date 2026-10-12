@@ -70,6 +70,10 @@ fn comment_ref(mut extra: Value) -> Value {
     extra
 }
 
+fn uri_prop() -> Value {
+    json!({ "type": "string", "description": "A network printer: ipp://host[:port]/path, lpd://host/queue or socket://host[:9100] (from net_printers)." })
+}
+
 fn schema(props: Value, required: &[&str]) -> Value {
     json!({ "type": "object", "properties": props, "required": required, "additionalProperties": false })
 }
@@ -465,10 +469,24 @@ pub fn tools() -> Vec<ToolDef> {
         t("printer_options", "List printer options", "A printer driver's own job options (CUPS: from its PPD), such as the paper tray, paper type or finishing: key, label, group, default and choices. Pass chosen values to doc_print as options. Empty on Windows, where the driver's preferences window holds them.")
             .ro()
             .with(schema(json!({ "printer": { "type": "string" } }), &["printer"])),
+        t("net_printers", "Find network printers", "Search the local network for printers (multicast DNS / Bonjour, about `seconds`, default 2): name, uri to print to with doc_print, protocol (ipp, ipps, socket, lpd), address, model, location, and whether it says it takes PDF, prints in colour or two-sided. ipps printers are listed but can't take direct jobs yet.")
+            .ro()
+            .with(schema(json!({ "seconds": { "type": "number", "minimum": 0.2, "maximum": 30 } }), &[])),
+        t("net_printer_status", "Network printer status", "Ask a network printer how it is: state (idle, processing, stopped) and its reasons (e.g. toner-low, media-jam), whether it accepts jobs, queued jobs, toner / ink levels, the document formats it takes, two-sided and colour support. Full detail over IPP; LPD reports the queue's text; a raw socket only whether it answers.")
+            .ro()
+            .with(schema(json!({ "uri": uri_prop() }), &["uri"])),
+        t("net_jobs", "Network printer jobs", "List an IPP printer's jobs: the ones waiting or printing (which not-completed, the default) or the finished ones (completed); user limits it to that user's jobs. Each has job_id, name, user, state (pending, pending-held, processing, completed, canceled, aborted) and sheets completed.")
+            .ro()
+            .with(schema(json!({ "uri": uri_prop(), "which": { "type": "string", "enum": ["not-completed", "completed"] }, "user": { "type": "string" } }), &["uri"])),
+        t("net_job_cancel", "Cancel a network print job", "Cancel a job (job_id from net_jobs or doc_print) at an IPP printer, as user (default: the current user).")
+            .destructive()
+            .with(schema(json!({ "uri": uri_prop(), "job_id": { "type": "integer", "minimum": 1 }, "user": { "type": "string" } }), &["uri", "job_id"])),
+        t("net_job_release", "Release a held network print job", "Release a job printed with hold (or a PIN) at an IPP printer, so it prints now.")
+            .with(schema(json!({ "uri": uri_prop(), "job_id": { "type": "integer", "minimum": 1 }, "user": { "type": "string" } }), &["uri", "job_id"])),
         t(
             "doc_print",
             "Print",
-            "Print with Acrobat's Print dialog options, or save the print-ready PDF. pages: a range such as \"1-3, 6, 9-\" (page labels allowed; default all); subset odd/even; reverse. layout: fit (default), actual, shrink, custom (scale %), multiple (per_sheet 2/4/6/9/16, order, border, auto_rotate; cut-stack order arranges single-sided sheets for cutting into piles and stacking left to right, top to bottom, keeping sheet order within each pile; duplex must be off), booklet (booklet_subset both/front/back, binding left/right), poster (scale %, overlap pt, cut_marks). orientation auto/portrait/landscape; comments_forms document / document-and-markups (default) / document-and-stamps / form-fields-only; paper Letter/Legal/Tabloid, ARCH A/B/C/D/E1/E, ANSI C/D/E, or A0/A1/A2/A3/A4/A5 (short names or full preset labels); use layout actual for 100% in the print-ready PDF; printer drivers may still substitute paper or scale. Then path (save) or printer (a name or \"default\") with copies, collate, duplex off/long-edge/short-edge, grayscale, and options (driver options from printer_options, CUPS).",
+            "Print with Acrobat's Print dialog options, or save the print-ready PDF. pages: a range such as \"1-3, 6, 9-\" (page labels allowed; default all); subset odd/even; reverse. layout: fit (default), actual, shrink, custom (scale %), multiple (per_sheet 2/4/6/9/16, order, border, auto_rotate; cut-stack order arranges single-sided sheets for cutting into piles and stacking left to right, top to bottom, keeping sheet order within each pile; duplex must be off), booklet (booklet_subset both/front/back, binding left/right), poster (scale %, overlap pt, cut_marks). orientation auto/portrait/landscape; comments_forms document / document-and-markups (default) / document-and-stamps / form-fields-only; paper Letter/Legal/Tabloid, ARCH A/B/C/D/E1/E, ANSI C/D/E, or A0/A1/A2/A3/A4/A5 (short names or full preset labels); use layout actual for 100% in the print-ready PDF; printer drivers may still substitute paper or scale. Then path (save) or printer (a name or \"default\") with copies, collate, duplex off/long-edge/short-edge, grayscale, and options (driver options from printer_options, CUPS). Or uri: print straight to a network printer (from net_printers, or typed: ipp://host/ipp/print, lpd://host/queue, socket://host:9100) with copies, collate, duplex, color auto/color/monochrome, hold (keep it at the printer until released), pin (4-10 digits to release it at the panel), account (cost-centre code), finishings staple/punch/fold, user (who it is for), and pjl (default true: LPD and socket jobs carry their options in a PJL header).",
         )
         .with(schema(
             json!({
@@ -496,6 +514,14 @@ pub fn tools() -> Vec<ToolDef> {
                 "duplex": { "type": "string", "enum": ["off", "long-edge", "short-edge"] },
                 "grayscale": { "type": "boolean" },
                 "options": { "type": "object", "additionalProperties": { "type": "string" }, "description": "Printer driver options from printer_options: key → choice value." },
+                "uri": uri_prop(),
+                "color": { "type": "string", "enum": ["auto", "color", "monochrome"] },
+                "hold": { "type": "boolean" },
+                "pin": { "type": "string", "pattern": "^[0-9]{4,10}$" },
+                "account": { "type": "string" },
+                "finishings": { "type": "array", "items": { "type": "string", "enum": ["staple", "punch", "fold"] } },
+                "user": { "type": "string" },
+                "pjl": { "type": "boolean" },
             }),
             &["doc"],
         )),

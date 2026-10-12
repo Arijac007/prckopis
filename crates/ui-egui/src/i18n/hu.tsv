@@ -2331,3 +2331,17 @@ animation effects	Off	Ki
 	The linked PDF opened, but its named destination was not applied.	A hivatkozott PDF megnyílt, de a nevesített cél nem lett alkalmazva.
 	The linked PDF opened, but its page destination was out of range.	A hivatkozott PDF megnyílt, de a céloldal a tartományon kívül esik.
 	Local cross-PDF links require the desktop app	A PDF-ek közötti helyi hivatkozásokhoz az asztali alkalmazás szükséges
+# Network printing (direct IPP / LPD / socket printers in the Print dialog)
+	Network printers	Hálózati nyomtatók
+	Add network printer…	Hálózati nyomtató hozzáadása…
+	Printer address:	Nyomtató címe:
+	Find on network	Keresés a hálózaton
+	Searching the network for printers…	Nyomtatók keresése a hálózaton…
+	No printers answered on the local network.	A helyi hálózaton egy nyomtató sem válaszolt.
+	Hold at printer until released	Visszatartás a nyomtatón a feloldásig
+	Staple	Tűzés
+	Release PIN:	Feloldó PIN:
+	Account code:	Költséghely-kód:
+	Printer status	Nyomtató állapota
+	Status: {status}	Állapot: {status}
+	An ipp://, lpd:// or socket:// address of a printer on your network	Egy hálózati nyomtató ipp://, lpd:// vagy socket:// címe

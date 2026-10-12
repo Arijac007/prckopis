@@ -13,13 +13,15 @@
 //!   with stamps, or form fields only; annotations print only with their Print flag).
 //!
 //! The sheets are written as a new, unencrypted, garbage-collected PDF; [`spool`] hands it to
-//! the system's print spooler (CUPS on macOS and Linux).
+//! the system's print spooler (CUPS on macOS and Linux), and [`net`] sends it straight to a
+//! network printer over IPP, LPD or a raw socket, and finds printers on the local network.
 
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 
 use pdfcraft_content::Matrix;
 use pdfcraft_cos::{Dict, Document, ObjRef, Object, SaveOptions, Stream, write_full};
 
+pub mod net;
 pub mod range;
 pub mod spool;
 #[cfg(test)]

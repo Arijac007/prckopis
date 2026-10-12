@@ -2312,3 +2312,17 @@ animation effects	Off	Wyłączone
 	Local cross-PDF links require the desktop app	Lokalne łącza między plikami PDF wymagają aplikacji komputerowej
 	The existing action will be preserved.	Istniejąca akcja zostanie zachowana.
 	This form's scripts are turned off because one ran too long. Reopen the document to run them again.	Skrypty tego formularza są wyłączone, ponieważ jeden z nich działał zbyt długo. Otwórz dokument ponownie, aby znów je uruchomić.
+# Network printing (direct IPP / LPD / socket printers in the Print dialog)
+	Network printers	Drukarki sieciowe
+	Add network printer…	Dodaj drukarkę sieciową…
+	Printer address:	Adres drukarki:
+	Find on network	Szukaj w sieci
+	Searching the network for printers…	Wyszukiwanie drukarek w sieci…
+	No printers answered on the local network.	Żadna drukarka w sieci lokalnej nie odpowiedziała.
+	Hold at printer until released	Wstrzymaj na drukarce do zwolnienia
+	Staple	Zszyj
+	Release PIN:	PIN zwolnienia:
+	Account code:	Kod centrum kosztów:
+	Printer status	Stan drukarki
+	Status: {status}	Stan: {status}
+	An ipp://, lpd:// or socket:// address of a printer on your network	Adres ipp://, lpd:// lub socket:// drukarki w Twojej sieci

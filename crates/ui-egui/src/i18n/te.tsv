@@ -2245,3 +2245,17 @@ animation effects	Off	ఆఫ్
 	Local cross-PDF links require the desktop app	PDFల మధ్య స్థానిక లింక్‌లకు డెస్క్‌టాప్ యాప్ అవసరం
 	The existing action will be preserved.	ఉన్న చర్య అలాగే ఉంచబడుతుంది.
 	This form's scripts are turned off because one ran too long. Reopen the document to run them again.	ఒక స్క్రిప్ట్ చాలా సేపు నడిచినందున ఈ ఫారమ్ స్క్రిప్ట్‌లు ఆపివేయబడ్డాయి. వాటిని మళ్లీ నడపడానికి పత్రాన్ని మళ్లీ తెరవండి.
+# Network printing (direct IPP / LPD / socket printers in the Print dialog)
+	Network printers	నెట్‌వర్క్ ప్రింటర్లు
+	Add network printer…	నెట్‌వర్క్ ప్రింటర్‌ను జోడించు…
+	Printer address:	ప్రింటర్ చిరునామా:
+	Find on network	నెట్‌వర్క్‌లో వెతుకు
+	Searching the network for printers…	నెట్‌వర్క్‌లో ప్రింటర్ల కోసం వెతుకుతోంది…
+	No printers answered on the local network.	స్థానిక నెట్‌వర్క్‌లో ఏ ప్రింటర్ స్పందించలేదు.
+	Hold at printer until released	విడుదల చేసే వరకు ప్రింటర్ వద్ద నిలిపి ఉంచు
+	Staple	స్టేపుల్ చేయి
+	Release PIN:	విడుదల PIN:
+	Account code:	ఖర్చు కేంద్రం కోడ్:
+	Printer status	ప్రింటర్ స్థితి
+	Status: {status}	స్థితి: {status}
+	An ipp://, lpd:// or socket:// address of a printer on your network	మీ నెట్‌వర్క్‌లోని ప్రింటర్ యొక్క ipp://, lpd:// లేదా socket:// చిరునామా

@@ -2348,3 +2348,17 @@ animation effects	Off	Ανενεργά
 	Local cross-PDF links require the desktop app	Οι τοπικοί σύνδεσμοι μεταξύ PDF απαιτούν την εφαρμογή υπολογιστή
 	The existing action will be preserved.	Η υπάρχουσα ενέργεια θα διατηρηθεί.
 	This form's scripts are turned off because one ran too long. Reopen the document to run them again.	Τα σενάρια αυτής της φόρμας είναι απενεργοποιημένα, επειδή ένα από αυτά εκτελούνταν για πολύ ώρα. Ανοίξτε ξανά το έγγραφο για να εκτελεστούν ξανά.
+# Network printing (direct IPP / LPD / socket printers in the Print dialog)
+	Network printers	Εκτυπωτές δικτύου
+	Add network printer…	Προσθήκη εκτυπωτή δικτύου…
+	Printer address:	Διεύθυνση εκτυπωτή:
+	Find on network	Αναζήτηση στο δίκτυο
+	Searching the network for printers…	Αναζήτηση εκτυπωτών στο δίκτυο…
+	No printers answered on the local network.	Κανένας εκτυπωτής δεν απάντησε στο τοπικό δίκτυο.
+	Hold at printer until released	Αναμονή στον εκτυπωτή μέχρι την αποδέσμευση
+	Staple	Συρραφή
+	Release PIN:	PIN αποδέσμευσης:
+	Account code:	Κωδικός κέντρου κόστους:
+	Printer status	Κατάσταση εκτυπωτή
+	Status: {status}	Κατάσταση: {status}
+	An ipp://, lpd:// or socket:// address of a printer on your network	Διεύθυνση ipp://, lpd:// ή socket:// ενός εκτυπωτή του δικτύου σας

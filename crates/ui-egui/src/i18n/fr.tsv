@@ -2332,3 +2332,17 @@ animation effects	Off	Désactivés
 	The linked PDF opened, but its named destination was not applied.	Le PDF lié s'est ouvert, mais sa destination nommée n'a pas été appliquée.
 	The linked PDF opened, but its page destination was out of range.	Le PDF lié s'est ouvert, mais sa page de destination est hors limites.
 	Local cross-PDF links require the desktop app	Les liens locaux entre PDF nécessitent l'application de bureau
+# Network printing (direct IPP / LPD / socket printers in the Print dialog)
+	Network printers	Imprimantes réseau
+	Add network printer…	Ajouter une imprimante réseau…
+	Printer address:	Adresse de l’imprimante :
+	Find on network	Rechercher sur le réseau
+	Searching the network for printers…	Recherche d’imprimantes sur le réseau…
+	No printers answered on the local network.	Aucune imprimante n’a répondu sur le réseau local.
+	Hold at printer until released	Retenir à l’imprimante jusqu’à libération
+	Staple	Agrafer
+	Release PIN:	Code PIN de libération :
+	Account code:	Code de centre de coûts :
+	Printer status	État de l’imprimante
+	Status: {status}	État : {status}
+	An ipp://, lpd:// or socket:// address of a printer on your network	Adresse ipp://, lpd:// ou socket:// d’une imprimante de votre réseau

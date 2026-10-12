@@ -2206,3 +2206,17 @@ animation effects	Off	關
 	The linked PDF opened, but its page destination was out of range.	已開啟連結的 PDF，但其頁面目的地超出範圍。
 	Local cross-PDF links require the desktop app	PDF 之間的本機連結需要桌面應用程式
 	The existing action will be preserved.	將保留現有動作。
+# Network printing (direct IPP / LPD / socket printers in the Print dialog)
+	Network printers	網路印表機
+	Add network printer…	新增網路印表機…
+	Printer address:	印表機位址：
+	Find on network	在網路中尋找
+	Searching the network for printers…	正在網路中尋找印表機…
+	No printers answered on the local network.	區域網路中沒有印表機回應。
+	Hold at printer until released	在印表機上保留直到釋放
+	Staple	裝訂
+	Release PIN:	釋放 PIN：
+	Account code:	成本中心代碼：
+	Printer status	印表機狀態
+	Status: {status}	狀態：{status}
+	An ipp://, lpd:// or socket:// address of a printer on your network	網路中印表機的 ipp://、lpd:// 或 socket:// 位址

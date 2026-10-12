@@ -2332,3 +2332,17 @@ animation effects	Off	オフ
 	The linked PDF opened, but its named destination was not applied.	リンク先の PDF を開きましたが、名前付き移動先は適用されませんでした。
 	The linked PDF opened, but its page destination was out of range.	リンク先の PDF を開きましたが、移動先のページが範囲外です。
 	Local cross-PDF links require the desktop app	PDF 間のローカルリンクにはデスクトップアプリが必要です
+# Network printing (direct IPP / LPD / socket printers in the Print dialog)
+	Network printers	ネットワークプリンター
+	Add network printer…	ネットワークプリンターを追加…
+	Printer address:	プリンターのアドレス:
+	Find on network	ネットワークで探す
+	Searching the network for printers…	ネットワーク上のプリンターを探しています…
+	No printers answered on the local network.	ローカルネットワーク上で応答したプリンターはありません。
+	Hold at printer until released	解除するまでプリンターで保留
+	Staple	ホチキス留め
+	Release PIN:	解除用 PIN:
+	Account code:	部門コード:
+	Printer status	プリンターの状態
+	Status: {status}	状態: {status}
+	An ipp://, lpd:// or socket:// address of a printer on your network	ネットワーク上のプリンターの ipp://、lpd:// または socket:// アドレス

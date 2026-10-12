@@ -311,3 +311,63 @@ fn a_printer_without_two_sided_printing_points_to_its_properties() {
     h.run_steps(2);
     h.get_by_label_contains(note);
 }
+
+/// A network printer typed into the dialog takes the job directly, with its office options (a
+/// release PIN and an accounting code) in the PJL header of a raw-socket job.
+#[test]
+fn a_network_printer_added_in_the_dialog_takes_the_job_with_its_pin() {
+    use std::io::Read;
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    let port = listener.local_addr().unwrap().port();
+    let (tx, rx) = std::sync::mpsc::channel();
+    std::thread::spawn(move || {
+        let (mut s, _) = listener.accept().unwrap();
+        let mut got = Vec::new();
+        s.read_to_end(&mut got).unwrap();
+        tx.send(got).unwrap();
+    });
+    let mut h = harness();
+    assert!(h.state_mut().execute("print.dialog"));
+    h.run_steps(3);
+
+    // The Add network printer panel refuses what isn't an address, and adds what is.
+    h.state_mut().print_draft.net_adding = true;
+    h.run_steps(2);
+    h.get_by_label("Find on network");
+    let d = &mut h.state_mut().print_draft;
+    assert!(d.add_network_printer(None, "smb://nope/queue").is_err());
+    d.add_network_printer(Some("Front desk"), &format!("socket://127.0.0.1:{port}")).unwrap();
+    d.net_adding = false;
+    h.run_steps(2);
+    assert_eq!(h.state().print_draft.printer.as_deref(), Some(format!("socket://127.0.0.1:{port}").as_str()));
+    // Network options appear only for a network printer.
+    h.get_by_label("Hold at printer until released");
+    h.get_by_label("Release PIN:");
+    h.get_by_label("Account code:");
+    h.state_mut().print_draft.net_pin = "8642".into();
+    h.state_mut().print_draft.net_account = "FIN-12".into();
+    h.state_mut().print_draft.grayscale = true;
+    h.run_steps(1);
+    h.get_all_by_label("Print").last().unwrap().click();
+    h.run_steps(3);
+    assert_eq!(h.state().dialog, None);
+
+    let got = rx.recv_timeout(std::time::Duration::from_secs(10)).expect("the printer got the job");
+    let text = String::from_utf8_lossy(&got);
+    for line in ["@PJL SET HOLDKEY=\"8642\"", "@PJL SET JOBACCT=\"FIN-12\"", "@PJL SET RENDERMODE=GRAYSCALE", "@PJL ENTER LANGUAGE=PDF\r\n%PDF-"] {
+        assert!(text.contains(line), "missing {line:?}");
+    }
+    // The answer arrives as a notice naming the printer.
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(10);
+    while !h.state().toast.as_ref().is_some_and(|(m, _)| m.starts_with("Sent to Front desk")) && std::time::Instant::now() < deadline {
+        h.run_steps(1);
+        std::thread::sleep(std::time::Duration::from_millis(5));
+    }
+    assert!(h.state().toast.as_ref().is_some_and(|(m, _)| m.starts_with("Sent to Front desk")), "{:?}", h.state().toast);
+
+    // A system printer hides the network options again.
+    h.state_mut().print_draft.printer = None;
+    assert!(h.state_mut().execute("print.dialog"));
+    h.run_steps(3);
+    assert!(h.query_by_label("Release PIN:").is_none());
+}
