@@ -1281,9 +1281,9 @@ fn format_tab(ui: &mut egui::Ui, d: &mut FieldDraft, t: &crate::theme::Tokens) {
     if picked != cat {
         d.format = match picked {
             Category::None => Format::None,
-            Category::Number => Format::Number { decimals: 2, sep: 0, neg: 0, currency: String::new(), prepend: true },
-            Category::Percent => Format::Percent { decimals: 2, sep: 0 },
-            Category::Date => Format::Date("mm/dd/yyyy".into()),
+            Category::Number => Format::Number { decimals: 2, sep: 2, neg: 0, currency: "€".into(), prepend: false },
+            Category::Percent => Format::Percent { decimals: 2, sep: 2 },
+            Category::Date => Format::Date("dd.mm.yyyy".into()),
             Category::Time => Format::Time("HH:MM".into()),
             Category::Special => Format::Special(0),
         };
@@ -1354,7 +1354,7 @@ fn format_tab(ui: &mut egui::Ui, d: &mut FieldDraft, t: &crate::theme::Tokens) {
             let presets: Vec<&str> = if matches!(cat, Category::Time) || picked == Category::Time {
                 TIME_PRESETS.to_vec()
             } else {
-                DATE_PRESETS.iter().copied().chain(["m/d/yyyy", "mm/dd/yyyy", "yyyy-mm-dd", "dd/mm/yyyy"]).collect()
+                DATE_PRESETS.iter().copied().chain(["dd.mm.yyyy", "m/d/yyyy", "mm/dd/yyyy", "yyyy-mm-dd", "dd/mm/yyyy"]).collect()
             };
             ui.horizontal(|ui| {
                 ui.label(tl!("Format:"));

@@ -412,7 +412,11 @@ fn edit(args: &[String]) -> Result<(), CliError> {
             }
             "--insert-blank" => {
                 let at: usize = value.parse().map_err(|_| "bad position")?;
-                edits.push(Edit::InsertBlankPage { at: at.checked_sub(1).ok_or("--insert-blank must be at least 1")?, width: 612.0, height: 792.0 });
+                edits.push(Edit::InsertBlankPage {
+                    at: at.checked_sub(1).ok_or("--insert-blank must be at least 1")?,
+                    width: prckopis_engine::DEFAULT_PAGE_SIZE.0,
+                    height: prckopis_engine::DEFAULT_PAGE_SIZE.1,
+                });
             }
             "--title" => edits.push(Edit::SetInfo { key: "Title".into(), value: value.into() }),
             "--author" => edits.push(Edit::SetInfo { key: "Author".into(), value: value.into() }),

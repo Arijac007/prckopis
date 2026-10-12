@@ -259,12 +259,12 @@ fn architectural_page_can_be_matched_at_100_percent() {
     h.run_steps(4);
     assert!(h.state_mut().execute("print.dialog"));
     h.run_steps(3);
-    h.get_by_label("PDF page: 36.00 × 24.00 in");
+    h.get_by_label("PDF page: 914.4 × 609.6 mm");
     h.get_by_label("Match page at 100%").click();
     h.run_steps(3);
     h.get_by_value("ARCH D (24 x 36 in)");
     h.get_by_label("PDF scale: 100.00%");
-    h.get_by_label("36.00 × 24.00 in");
+    h.get_by_label("914.4 × 609.6 mm");
     h.get_by_label("Printer paper and scaling may differ. Check driver settings.");
     let settings = h.state().print_draft.settings(1, &[]).unwrap();
     assert_eq!(settings.paper, (1728.0, 2592.0));

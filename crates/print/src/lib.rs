@@ -231,9 +231,18 @@ pub struct Settings {
 
 impl Default for Settings {
     fn default() -> Self {
-        Settings { pages: Vec::new(), paper: PAPERS[0].1, orientation: Orientation::Auto, layout: Layout::default(), content: Content::default() }
+        Settings {
+            pages: Vec::new(),
+            paper: PAPERS[DEFAULT_PAPER].1,
+            orientation: Orientation::Auto,
+            layout: Layout::default(),
+            content: Content::default(),
+        }
     }
 }
+
+/// The paper used until the user picks one: A4 (Prckopis is set up for Europe).
+pub const DEFAULT_PAPER: usize = 4;
 
 /// Common paper sizes (points, portrait).
 pub const PAPERS: [(&str, (f64, f64)); 18] = [

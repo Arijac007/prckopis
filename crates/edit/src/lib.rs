@@ -52,7 +52,7 @@ pub type Rgb = [f64; 3];
 pub struct HeaderFooter {
     /// Left, centre and right header text, then left, centre and right footer text. Tokens:
     /// `<<1>>` page number, `<<n>>` page count, `<<1 of n>>`, `<<1/n>>`, `<<Page 1>>`,
-    /// `<<Page 1 of n>>`, dates `<<m/d/yyyy>>`, `<<mm/dd/yyyy>>`, `<<d/m/yyyy>>`, `<<yyyy-mm-dd>>`,
+    /// `<<Page 1 of n>>`, dates `<<dd.mm.yyyy.>>`, `<<d.m.yyyy.>>`, `<<m/d/yyyy>>`, `<<mm/dd/yyyy>>`, `<<d/m/yyyy>>`, `<<yyyy-mm-dd>>`,
     /// `<<m/d/yy>>`, `<<mmmm d, yyyy>>`, and Bates numbers `<<Bates Number#6#1#PRE#SUF>>`
     /// (digits, start, prefix, suffix).
     pub text: [String; 6],
@@ -213,6 +213,8 @@ pub fn expand(template: &str, page_number: u32, count: usize, bates: u64, cx: &C
             "d/m/yy" => format!("{d}/{m}/{:02}", y.rem_euclid(100)),
             "d/m/yyyy" => format!("{d}/{m}/{y}"),
             "dd/mm/yyyy" => format!("{d:02}/{m:02}/{y}"),
+            "dd.mm.yyyy." => format!("{d:02}.{m:02}.{y}."),
+            "d.m.yyyy." => format!("{d}.{m}.{y}."),
             "yyyy-mm-dd" => format!("{y}-{m:02}-{d:02}"),
             "mmmm d, yyyy" => format!("{} {d}, {y}", MONTHS[(m.clamp(1, 12) - 1) as usize]),
             t if t.starts_with("Bates Number") => {

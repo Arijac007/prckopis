@@ -143,7 +143,7 @@ fn date_fields_offer_a_calendar() {
     h.get_by_label("15").click();
     h.run_steps(4);
     let (ny, nm) = if m == 12 { (y + 1, 1) } else { (y, m + 1) };
-    assert_eq!(value(&h, "due"), vec![format!("{nm:02}/15/{ny}")], "picked in the field's format");
+    assert_eq!(value(&h, "due"), vec![format!("15.{nm:02}.{ny}")], "picked in the field's format");
 }
 
 /// The value of `name` in a saved PDF, read back by opening it in a fresh app.

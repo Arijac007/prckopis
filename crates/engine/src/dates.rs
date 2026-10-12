@@ -9,11 +9,14 @@
 
 use crate::Session;
 
-/// The format until the user picks one (Acrobat's: US month/day/year).
-pub const DEFAULT_DATE_FORMAT: &str = "m/d/yyyy";
+/// The format until the user picks one: Croatian day.month.year. (Prckopis is set up for Europe;
+/// Acrobat's US month/day/year is the next preset).
+pub const DEFAULT_DATE_FORMAT: &str = "dd.mm.yyyy.";
 
 /// Ready-made formats for Preferences ▸ Date format. Any other valid pattern works too.
-pub const DATE_FORMATS: [&str; 12] = [
+pub const DATE_FORMATS: [&str; 14] = [
+    "dd.mm.yyyy.",
+    "d.m.yyyy.",
     "m/d/yyyy",
     "mm/dd/yyyy",
     "d/m/yyyy",
@@ -537,6 +540,8 @@ mod tests {
         assert_eq!(
             shown,
             [
+                "07.03.2026.",
+                "7.3.2026.",
                 "3/7/2026",
                 "03/07/2026",
                 "7/3/2026",
@@ -600,7 +605,7 @@ mod tests {
         // 2023-11-14 (UTC) on the injected clock.
         let mut s = Session::new().with_clock(|| 1_700_000_000);
         assert_eq!(s.date_format(), DEFAULT_DATE_FORMAT);
-        assert_eq!(s.today_text(None, None).as_deref(), Ok("11/14/2023"));
+        assert_eq!(s.today_text(None, None).as_deref(), Ok("14.11.2023."));
         s.set_date_format("dd.mm.yyyy").unwrap();
         assert_eq!(s.today_text(None, None).as_deref(), Ok("14.11.2023"));
         assert_eq!(s.today_text(Some("yyyy-mm-dd"), None).as_deref(), Ok("2023-11-14"));

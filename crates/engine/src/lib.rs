@@ -123,6 +123,9 @@ pub use prckopis_forms::detect;
 pub use prckopis_optimize as optimize;
 pub use prckopis_preflight as pdfa;
 pub use prckopis_print as print;
+/// The page size of new documents (Create ▸ Blank page, text to PDF, blank pages in an empty
+/// file): A4, as Prckopis is set up for Europe.
+pub const DEFAULT_PAGE_SIZE: (f64, f64) = prckopis_create::A4;
 pub use prckopis_redact::codes::{CODE_SETS as REDACTION_CODE_SETS, CodeSet as RedactionCodeSet};
 pub use prckopis_redact::patterns::{
     MAX_WORDS as REDACT_MAX_WORDS, PATTERNS as REDACT_PATTERNS, Pattern as RedactPattern, find as find_pattern, word_list as redact_word_list,
@@ -2832,16 +2835,15 @@ impl Session {
 
     /// Today's date in local time: (year, month, day). With an injected clock (tests) the clock
     /// is taken as local time.
-    /// A dynamic stamp's second line: "By Ada at 2:14 pm, Oct 02, 2026" (local time).
+    /// A dynamic stamp's second line: "By Ada at 14:14, 02.10.2026." (local time, 24-hour clock,
+    /// European day.month.year.).
     pub fn stamp_by_line(&self, author: &str) -> String {
         let offset = if self.clock.is_some() { 0 } else { local_utc_offset() };
         let d = self.now().map(|t| prckopis_cos::pdf_date(t + offset)).unwrap_or_default();
         let num = |a: usize, b: usize| d.get(a..b).and_then(|s| s.parse::<u32>().ok()).unwrap_or(0);
         let (y, mo, day, hh, mm) = (num(2, 6), num(6, 8), num(8, 10), num(10, 12), num(12, 14));
-        const MONTHS: [&str; 12] = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-        let h12 = if hh % 12 == 0 { 12 } else { hh % 12 };
         let who = if author.trim().is_empty() { String::new() } else { format!("By {} ", author.trim()) };
-        format!("{who}at {h12}:{mm:02} {}, {} {day:02}, {y}", if hh < 12 { "am" } else { "pm" }, MONTHS[(mo.clamp(1, 12) - 1) as usize])
+        format!("{who}at {hh:02}:{mm:02}, {day:02}.{mo:02}.{y}.")
     }
 
     pub fn today(&self) -> (i64, u32, u32) {
@@ -3658,17 +3660,17 @@ impl Session {
         self.write_new(&prckopis_create::from_images_with_resolution(images, resolution)?)
     }
 
-    /// A new document from plain text (US Letter, 11 pt Helvetica). Text Helvetica can't draw is
+    /// A new document from plain text (A4, 11 pt Helvetica). Text Helvetica can't draw is
     /// refused, naming the line and the character (never set as `?`).
     pub fn create_from_text(&self, title: &str, text: &str) -> Result<Arc<Vec<u8>>, EditError> {
-        self.write_new(&prckopis_create::from_text(title, text, prckopis_create::LETTER, 11.0)?)
+        self.write_new(&prckopis_create::from_text(title, text, DEFAULT_PAGE_SIZE, 11.0)?)
     }
 
     /// [`Self::create_from_text`] for a report Prckopis writes from documents (comment summaries,
     /// compare reports), which can quote any language: characters Helvetica can't draw are written
     /// as `[U+XXXX]`, and the report's first line says so, rather than the report being refused.
     fn create_report(&self, title: &str, text: &str) -> Result<Arc<Vec<u8>>, EditError> {
-        let (doc, _escaped) = prckopis_create::from_text_escaped(title, text, prckopis_create::LETTER, 11.0)?;
+        let (doc, _escaped) = prckopis_create::from_text_escaped(title, text, DEFAULT_PAGE_SIZE, 11.0)?;
         self.write_new(&doc)
     }
 

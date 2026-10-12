@@ -553,7 +553,7 @@ pub fn add_field(doc: &mut Document, page: usize, rect: [f64; 4], kind: &NewFiel
         NewField::Date => {
             w.set(b"FT".to_vec(), Object::name("Tx"));
             w.set(b"DA".to_vec(), PdfString::literal(b"/Helv 12 Tf 0 g".to_vec()));
-            // Acrobat's format and keystroke actions for mm/dd/yyyy (run by its JavaScript engine).
+            // Acrobat's format and keystroke actions for dd.mm.yyyy (run by its JavaScript engine).
             let js = |s: &str| {
                 let mut a = Dict::new();
                 a.set(b"S".to_vec(), Object::name("JavaScript"));
@@ -561,8 +561,8 @@ pub fn add_field(doc: &mut Document, page: usize, rect: [f64; 4], kind: &NewFiel
                 Object::Dict(a)
             };
             let mut aa = Dict::new();
-            aa.set(b"F".to_vec(), js("AFDate_FormatEx(\"mm/dd/yyyy\");"));
-            aa.set(b"K".to_vec(), js("AFDate_KeystrokeEx(\"mm/dd/yyyy\");"));
+            aa.set(b"F".to_vec(), js("AFDate_FormatEx(\"dd.mm.yyyy\");"));
+            aa.set(b"K".to_vec(), js("AFDate_KeystrokeEx(\"dd.mm.yyyy\");"));
             w.set(b"AA".to_vec(), Object::Dict(aa));
         }
         NewField::CheckBox => {

@@ -11,7 +11,7 @@ fn bad(m: impl Into<String>) -> ToolError {
     ToolError::InvalidArgs(m.into())
 }
 
-/// `{"type": "number", "decimals": 2, "currency": "$"}`, `{"type": "date", "pattern": "mm/dd/yyyy"}`,
+/// `{"type": "number", "decimals": 2, "currency": "$"}`, `{"type": "date", "pattern": "dd.mm.yyyy"}`,
 /// `{"type": "phone"}`, `{"type": "mask", "mask": "AA-9999"}`, `"none"`…
 fn format_arg(v: &Value) -> Result<Format> {
     if v.as_str() == Some("none") {
@@ -24,13 +24,13 @@ fn format_arg(v: &Value) -> Result<Format> {
         "none" => Format::None,
         "number" => Format::Number {
             decimals: num("decimals", 2),
-            sep: num("separator", 0).min(4),
+            sep: num("separator", 2).min(4),
             neg: num("negative", 0).min(3),
             currency: s("currency").unwrap_or_default(),
             prepend: !o.get("currency_after").and_then(Value::as_bool).unwrap_or(false),
         },
-        "percent" => Format::Percent { decimals: num("decimals", 2), sep: num("separator", 0).min(4) },
-        "date" => Format::Date(s("pattern").unwrap_or_else(|| "mm/dd/yyyy".into())),
+        "percent" => Format::Percent { decimals: num("decimals", 2), sep: num("separator", 2).min(4) },
+        "date" => Format::Date(s("pattern").unwrap_or_else(|| "dd.mm.yyyy".into())),
         "time" => Format::Time(s("pattern").unwrap_or_else(|| "HH:MM".into())),
         "zip" => Format::Special(0),
         "zip4" => Format::Special(1),

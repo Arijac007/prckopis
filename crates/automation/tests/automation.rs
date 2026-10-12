@@ -2208,10 +2208,10 @@ fn fill_and_sign_through_tools() {
         Err(ToolError::InvalidArgs(_))
     ));
     let texts = page_text(&mut a, doc);
-    assert!(texts[0].contains("Ada Lovelace") && texts[0].contains("11/14/2023"), "{texts:?}");
+    assert!(texts[0].contains("Ada Lovelace") && texts[0].contains("14.11.2023."), "{texts:?}");
     // Preferences ▸ Date format, and a one-off pattern.
     let f = ok(&mut a, "fill_sign_date_format", json!({}));
-    assert_eq!((f["format"].as_str(), f["today"].as_str()), (Some("m/d/yyyy"), Some("11/14/2023")), "{f}");
+    assert_eq!((f["format"].as_str(), f["today"].as_str()), (Some("dd.mm.yyyy."), Some("14.11.2023.")), "{f}");
     assert_eq!(ok(&mut a, "fill_sign_date_format", json!({ "format": "yyyy.mm.dd." }))["today"], "2023.11.14.");
     ok(&mut a, "fill_sign_add", json!({ "doc": doc, "page": 1, "type": "date", "at": [20, 220] }));
     ok(&mut a, "fill_sign_add", json!({ "doc": doc, "page": 1, "type": "date", "at": [20, 240], "format": "d \\de mmmm" }));
@@ -3087,9 +3087,9 @@ fn form_formats_and_calculations_through_tools() {
     ok(&mut a, "form_fill", json!({ "doc": doc, "values": { "Price": "19.99", "Qty": "3" } }));
     let f = ok(&mut a, "form_fields", json!({ "doc": doc }));
     let total = f["fields"].as_array().unwrap().iter().find(|x| x["name"] == "Total").unwrap().clone();
-    assert_eq!((total["value"].as_str(), total["display"].as_str()), (Some("59.97"), Some("$59.97")), "{total}");
+    assert_eq!((total["value"].as_str(), total["display"].as_str()), (Some("59.97"), Some("$59,97")), "{total}");
     assert_eq!(total["calculate"]["notation"], "Price * Qty");
-    assert!(page_text(&mut a, doc)[0].contains("$59.97"));
+    assert!(page_text(&mut a, doc)[0].contains("$59,97"));
     let err = a.call("form_fill", &json!({ "doc": doc, "values": { "Price": "-5" } })).unwrap_err();
     assert!(err.to_string().contains("greater than or equal to 0"), "{err}");
     assert!(matches!(

@@ -120,7 +120,7 @@ fn text_marks_and_date() {
     let v = items(&h);
     assert_eq!(v.len(), 4, "{v:?}");
     assert!(v.iter().any(|(t, c)| t == "FreeText" && c.as_deref() == Some("Ada Lovelace")));
-    assert!(v.iter().any(|(t, c)| t == "FreeText" && c.as_deref().is_some_and(|c| c.matches('/').count() == 2)), "a date: {v:?}");
+    assert!(v.iter().any(|(t, c)| t == "FreeText" && c.as_deref().is_some_and(|c| c.matches('.').count() == 3)), "a date: {v:?}");
     assert!(v.iter().any(|(t, _)| t == "Stamp"));
 }
 

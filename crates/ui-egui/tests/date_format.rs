@@ -40,7 +40,7 @@ fn fill_and_sign_dates_follow_the_date_format_preference_and_it_is_remembered() 
         app
     });
     h.run_steps(4);
-    assert_eq!(h.state().session.date_format(), "m/d/yyyy");
+    assert_eq!(h.state().session.date_format(), "dd.mm.yyyy.");
     // A valid pattern applies as it's typed, with a preview of today.
     retype(&mut h, "d \\de mmmm yyyy");
     assert_eq!(h.state().session.date_format(), "d \\de mmmm yyyy");
@@ -93,7 +93,7 @@ fn fill_and_sign_dates_follow_the_date_format_preference_and_it_is_remembered() 
     let mut fresh = PrckopisApp::new();
     fresh.restore(&format!(r#"{{"date_format": "{}"}}"#, "d".repeat(10_000)));
     fresh.restore(r#"{"date_format": "HH:MM"}"#);
-    assert_eq!(fresh.session.date_format(), "m/d/yyyy");
+    assert_eq!(fresh.session.date_format(), "dd.mm.yyyy.");
     assert!(fresh.set_option("date-format", "Year").is_err());
     fresh.set_option("date-format", "dd/mm/yyyy").unwrap();
     assert_eq!(fresh.session.date_format(), "dd/mm/yyyy");

@@ -174,7 +174,7 @@ mod one_based_arguments {
         assert!(out.stdout.is_empty() && out.stderr.is_empty());
         let info = prckopis_render::inspect(std::sync::Arc::new(std::fs::read(dir.0.join("edited.pdf")).unwrap()), None).unwrap();
         assert_eq!(info.pages.len(), 2);
-        assert_eq!((info.pages[0].width, info.pages[0].height, info.pages[0].rotation), (612.0, 792.0, 0));
+        assert_eq!((info.pages[0].width, info.pages[0].height, info.pages[0].rotation), (595.28, 841.89, 0));
         assert_eq!((info.pages[1].width, info.pages[1].height, info.pages[1].rotation), (300.0, 200.0, 90));
         assert_eq!(std::fs::read(dir.0.join("input.pdf")).unwrap(), source);
     }
