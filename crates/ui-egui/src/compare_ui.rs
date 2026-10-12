@@ -1,6 +1,7 @@
 //! Compare files: choose the older version, then the Compare panel lists the differences
 //! (replaced blue, inserted green, deleted red), shades them on the newer document's pages, and
-//! offers a report or the differences as comments.
+//! offers a report or the differences as comments. Side by side, the older document is shown
+//! beside the newer one, its own changes shaded, the two scrolling together page for page.
 
 use egui::{Align, Color32, Layout};
 use pdfcraft_engine::DocId;
@@ -17,6 +18,8 @@ pub struct CompareState {
     /// Regions that look different (page, user-space box), page n against page n.
     pub visual: Vec<(usize, [f64; 4])>,
     pub selected: Option<usize>,
+    /// Show the older document beside the newer one (synchronised scrolling).
+    pub side_by_side: bool,
 }
 
 /// Visual differences are shaded orange.
@@ -28,6 +31,7 @@ pub enum PanelAction {
     Mark,
     Report,
     Clear,
+    SideBySide(bool),
 }
 
 pub fn colour(kind: Kind) -> Color32 {
@@ -110,6 +114,14 @@ pub(crate) fn panel(ui: &mut egui::Ui, t: &Tokens, state: &Option<CompareState>,
             action = Some(PanelAction::Clear);
         }
     });
+    let mut side = s.side_by_side;
+    if ui
+        .add(widgets::checkbox(&mut side, tl!("Side by side")))
+        .on_hover_text(tl!("Show the old file beside the new one, scrolling together"))
+        .changed()
+    {
+        action = Some(PanelAction::SideBySide(side));
+    }
     ui.separator();
     for (i, ch) in c.changes.iter().enumerate().take(2000) {
         let text = match ch.kind {
@@ -166,8 +178,16 @@ impl PdfCraftApp {
                         self.views[i].compare_marks.push((*p, r, VISUAL));
                     }
                 }
+                if let Some(v) = self.views.iter_mut().find(|v| v.id == old) {
+                    v.compare_marks = result
+                        .changes
+                        .iter()
+                        .flat_map(|ch| ch.old.rects.iter().map(move |r| (ch.old.page, r.map(|v| v as f32), colour(ch.kind))))
+                        .collect();
+                }
                 let n = result.changes.len();
-                self.compare = Some(crate::compare_ui::CompareState { old, new, result, visual, selected: None });
+                let side_by_side = self.compare.as_ref().is_some_and(|c| c.side_by_side);
+                self.compare = Some(crate::compare_ui::CompareState { old, new, result, visual, selected: None, side_by_side });
                 self.right = Some(RightPanel::Compare);
                 self.notify(if n == 0 {
                     tl!("The text is the same").to_string()
@@ -190,6 +210,10 @@ impl PdfCraftApp {
                 let Some(ch) = s.result.changes.get(i) else { return };
                 let rect = ch.new.rects.first().copied().or(ch.new.near).unwrap_or_default();
                 let page = ch.new.page;
+                if let Some(v) = self.views.iter_mut().find(|v| v.id == old) {
+                    let old_rect = ch.old.rects.first().copied().or(ch.old.near).unwrap_or_default();
+                    v.flash = Some((ch.old.page, old_rect.map(|x| x as f32), 0.0));
+                }
                 let v = &mut self.views[index];
                 v.go_to_page(page);
                 v.flash = Some((page, rect.map(|x| x as f32), 0.0));
@@ -218,8 +242,64 @@ impl PdfCraftApp {
             PanelAction::Clear => {
                 self.compare = None;
                 self.views[index].compare_marks.clear();
+                if let Some(v) = self.views.iter_mut().find(|v| v.id == old) {
+                    v.compare_marks.clear();
+                }
                 self.right = None;
             }
+            PanelAction::SideBySide(on) => s.side_by_side = on,
         }
+    }
+
+    /// The older document's view when the active one is shown side by side with it.
+    pub(crate) fn compare_companion(&self, index: usize) -> Option<usize> {
+        let s = self.compare.as_ref().filter(|s| s.side_by_side)?;
+        let active = self.views.get(index)?;
+        if active.id != s.new {
+            return None;
+        }
+        self.views.iter().position(|v| v.id == s.old && self.session.get(v.id).is_some())
+    }
+
+    /// The Canvas with Compare side by side: the older document on the left, the newer one
+    /// (fully editable) on the right, each following the other's scrolling page for page.
+    pub(crate) fn compare_split(&mut self, index: usize, old: usize, ui: &mut egui::Ui) {
+        let Some(s) = self.compare.as_ref() else { return };
+        let (Some(old_doc), Some(new_doc)) = (self.session.get(s.old), self.session.get(s.new)) else { return };
+        let (old_info, old_pages, new_pages) = (old_doc.info.clone(), old_doc.info.pages.len(), new_doc.info.pages.len());
+        let (old_name, new_name) = (old_doc.name.clone(), new_doc.name.clone());
+        // What the newer side showed last frame, as an old page and the point to keep in the middle.
+        let follow = self.views[index].reading_position().and_then(|(p, f)| s.result.old_page_for(p, old_pages).map(|o| (o, f)));
+        let zoom = self.views[index].zoom;
+        let t = Tokens::get(ui.ctx());
+        let whole = ui.available_rect_before_wrap();
+        // Which side is which, above each half.
+        const CAPTION: f32 = 24.0;
+        let full = egui::Rect::from_min_max(egui::pos2(whole.min.x, whole.min.y + CAPTION), whole.max);
+        let half = (full.width() / 2.0).floor();
+        for (x, label) in [
+            (whole.min.x, crate::i18n::fmt(tl!("Old: {name}"), &[("name", &old_name)])),
+            (whole.min.x + half, crate::i18n::fmt(tl!("New: {name}"), &[("name", &new_name)])),
+        ] {
+            let cell = egui::Rect::from_min_size(egui::pos2(x, whole.min.y), egui::vec2(half, CAPTION));
+            ui.painter().rect_filled(cell, 0.0, t.panel);
+            let galley = ui.painter().layout(label, theme::regular(12.5), t.text_muted, (half - 24.0).max(40.0));
+            ui.painter().galley(egui::pos2(cell.min.x + 12.0, cell.center().y - galley.size().y / 2.0), galley, t.text_muted);
+        }
+        let left = egui::Rect::from_min_size(full.min, egui::vec2(half - 1.0, full.height()));
+        let right = egui::Rect::from_min_max(egui::pos2(full.min.x + half + 1.0, full.min.y), full.max);
+        ui.painter().vline(full.min.x + half, whole.y_range(), egui::Stroke::new(1.0, t.border));
+        let scrolled = ui
+            .scope_builder(egui::UiBuilder::new().max_rect(left).id_salt("compare-old-side"), |ui| {
+                crate::canvas::compare_side_pane(&mut self.views[old], &old_info, zoom, follow, ui)
+            })
+            .inner;
+        if let Some((p, f)) = scrolled
+            && let Some(s) = self.compare.as_ref()
+            && let Some(n) = s.result.new_page_for(p, new_pages)
+        {
+            self.views[index].centre_on(n, f);
+        }
+        ui.scope_builder(egui::UiBuilder::new().max_rect(right).id_salt("compare-new-side"), |ui| crate::canvas::document_area(self, index, ui));
     }
 }

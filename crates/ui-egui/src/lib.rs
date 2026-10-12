@@ -2614,17 +2614,22 @@ impl PdfCraftApp {
         self.combine_thumbs_frame(ctx);
         // Retire hidden documents before admitting the visible document's textures, so the
         // three cache limits apply to the application, regardless of how many tabs are open.
+        // Compare side by side shows a second document: it renders too.
+        let companion = self.active.and_then(|i| self.compare_companion(i));
         for (i, view) in self.views.iter_mut().enumerate() {
             if Some(i) != self.active
+                && Some(i) != companion
                 && let Some(doc) = self.session.get(view.id)
             {
                 view.suspend_rendering(&doc.renderer);
             }
         }
-        if let Some(view) = self.active.and_then(|i| self.views.get_mut(i))
-            && let Some(doc) = self.session.get(view.id)
-        {
-            view.finish_render_frame(ctx, &doc.info, &doc.renderer);
+        for i in self.active.into_iter().chain(companion) {
+            if let Some(view) = self.views.get_mut(i)
+                && let Some(doc) = self.session.get(view.id)
+            {
+                view.finish_render_frame(ctx, &doc.info, &doc.renderer);
+            }
         }
     }
 }

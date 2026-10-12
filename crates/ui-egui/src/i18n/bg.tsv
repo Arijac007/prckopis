@@ -2343,3 +2343,8 @@ animation effects	Off	Изключени
 	only the first results are shown	показани са само първите резултати
 	Open at this page	Отваряне на тази страница
 	Not searched	Не са претърсени
+	Side by side	Един до друг
+	Show the old file beside the new one, scrolling together	Показване на стария файл до новия със съвместно превъртане
+	Old: {name}	Стар: {name}
+	New: {name}	Нов: {name}
+	Rendering…	Изобразяване…

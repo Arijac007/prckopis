@@ -2380,3 +2380,8 @@ animation effects	Off	Désactivés
 	only the first results are shown	seuls les premiers résultats sont affichés
 	Open at this page	Ouvrir à cette page
 	Not searched	Non analysés
+	Side by side	Côte à côte
+	Show the old file beside the new one, scrolling together	Afficher l’ancien fichier à côté du nouveau, avec défilement synchronisé
+	Old: {name}	Ancien : {name}
+	New: {name}	Nouveau : {name}
+	Rendering…	Rendu en cours…

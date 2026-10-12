@@ -2344,3 +2344,8 @@ animation effects	Off	关
 	only the first results are shown	仅显示前面的结果
 	Open at this page	在此页打开
 	Not searched	未搜索
+	Side by side	并排
+	Show the old file beside the new one, scrolling together	将旧文件显示在新文件旁边，同步滚动
+	Old: {name}	旧：{name}
+	New: {name}	新：{name}
+	Rendering…	正在渲染…

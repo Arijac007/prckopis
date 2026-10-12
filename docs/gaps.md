@@ -1,5 +1,6 @@
 # Where PdfCraft falls short of Acrobat Pro
 
+> **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-12 · **Change:** minor (gap 21: side-by-side compare with synchronised scrolling shipped) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
 > **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-12 · **Change:** minor (gap 10: timestamp servers, signature timestamps and document timestamps over HTTP) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
 > **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-12 · **Change:** minor (gap 13: large-file memory measured, edits keep two copies instead of three, file-backed input blocked on gap 2) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
 > **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-11 · **Change:** minor (gap 1 closed by #836; fixed issues removed from gaps 3, 6 and 16) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
@@ -42,7 +43,7 @@ update the numbers.
 | 18 | Print production tools absent | feature | 25–45 | [target-app-parity.md](target-app-parity.md) |
 | 19 | Preferences mostly missing | UI/UX | 15–25 | [ui-parity.md](ui-parity.md) |
 | 20 | Scanners, GPU page rendering, pen pressure, Read Out Loud | hardware | 25–50 | [hardware-parity.md](hardware-parity.md) |
-| 21 | Compare: no side-by-side view or filters | feature | 10–20 | [target-app-parity.md](target-app-parity.md) |
+| 21 | Compare: no filters or page ranges | feature | 6–12 | [target-app-parity.md](target-app-parity.md) |
 | 22 | PDF 2.0 extras, linearization, Arlington validation | spec | 20–35 | [pdf-spec-parity.md](pdf-spec-parity.md) |
 | 23 | Local AI provider (summarize, ask, alt text, redaction suggestions) | AI | 20–40 | [target-app-parity.md](target-app-parity.md) |
 | 24 | Checklist not diffed against Acrobat's own menus | measurement | 4–8 | [target-app-parity.md](target-app-parity.md) |
@@ -278,11 +279,12 @@ update the numbers.
   the CPU and uploaded); pressure-sensitive ink; platform text-to-speech.
 - **Estimate:** 25–50 h; scanners need hardware. **Doc:** [hardware-parity.md](hardware-parity.md).
 
-### 21. Compare: no side-by-side view or filters
+### 21. Compare: no filters or page ranges
 
-- **Missing:** synchronised side-by-side view, filters by change type, page ranges, scanned
-  documents.
-- **Estimate:** 10–20 h. **Doc:** [target-app-parity.md](target-app-parity.md).
+- **Shipped:** side-by-side view with synchronised scrolling, aligned on unchanged text
+  (`misc.compare-side-by-side`).
+- **Missing:** filters by change type, page ranges, scanned documents; separate zoom per side.
+- **Estimate:** 6–12 h. **Doc:** [target-app-parity.md](target-app-parity.md).
 
 ### 22. PDF 2.0 extras, linearization, Arlington validation
 

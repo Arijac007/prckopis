@@ -2293,3 +2293,8 @@ animation effects	Off	Выкл
 	only the first results are shown	показаны только первые результаты
 	Open at this page	Открыть на этой странице
 	Not searched	Не просмотрены
+	Side by side	Рядом
+	Show the old file beside the new one, scrolling together	Показать старый файл рядом с новым с совместной прокруткой
+	Old: {name}	Старый: {name}
+	New: {name}	Новый: {name}
+	Rendering…	Отрисовка…

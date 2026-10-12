@@ -61,9 +61,41 @@ pub struct Comparison {
     /// Words in each document.
     pub old_words: usize,
     pub new_words: usize,
+    /// Pages whose text lines up: `(new page, old page)` for each run of unchanged words, in
+    /// document order (0-based, both sides increasing). Drives the side-by-side view.
+    pub pages: Vec<(usize, usize)>,
 }
 
 impl Comparison {
+    /// The old page showing what is on `new_page`: where the first unchanged word on it is in
+    /// the old document, or, for a page with none (all inserted, or no text), the page after the
+    /// nearest earlier one, kept below `old_pages`. `None` only when `old_pages` is 0.
+    pub fn old_page_for(&self, new_page: usize, old_pages: usize) -> Option<usize> {
+        Self::follow(self.pages.iter().map(|&(n, o)| (n, o)), new_page, old_pages)
+    }
+
+    /// The new page showing what is on `old_page` (the reverse of [`Self::old_page_for`]).
+    pub fn new_page_for(&self, old_page: usize, new_pages: usize) -> Option<usize> {
+        Self::follow(self.pages.iter().map(|&(n, o)| (o, n)), old_page, new_pages)
+    }
+
+    /// `pairs` is `(from, to)` with both increasing.
+    fn follow(pairs: impl Iterator<Item = (usize, usize)>, from: usize, pages: usize) -> Option<usize> {
+        let last = pages.checked_sub(1)?;
+        let mut before: Option<(usize, usize)> = None;
+        for (f, t) in pairs {
+            if f == from {
+                return Some(t.min(last));
+            }
+            if f > from {
+                break;
+            }
+            before = Some((f, t));
+        }
+        // No unchanged word on this page: as many pages on from the last page that has one.
+        Some(before.map_or(from, |(f, t)| t.saturating_add(from - f)).min(last))
+    }
+
     pub fn count(&self, kind: Kind) -> usize {
         self.changes.iter().filter(|c| c.kind == kind).count()
     }
@@ -258,10 +290,19 @@ pub fn compare(old: &[Word], new: &[Word]) -> Comparison {
     diff(&a, &b, &mut ops, 0);
 
     let mut changes = Vec::new();
+    let mut pages: Vec<(usize, usize)> = Vec::new();
     let (mut i, mut j) = (0usize, 0usize);
     let mut k = 0;
     while k < ops.len() {
         if ops[k] == Op::Equal {
+            if let (Some(o), Some(n)) = (old.get(i), new.get(j)) {
+                // One pair per new page: the first unchanged word on it. Kept increasing on both
+                // sides, so a word read out of order can't send the other pane backwards.
+                let fits = pages.last().is_none_or(|&(ln, lo)| n.page > ln && o.page >= lo);
+                if fits {
+                    pages.push((n.page, o.page));
+                }
+            }
             i += 1;
             j += 1;
             k += 1;
@@ -291,7 +332,7 @@ pub fn compare(old: &[Word], new: &[Word]) -> Comparison {
         let new_near = new.get(j).or_else(|| new.last());
         changes.push(Change { kind, old: side(&del, old_near), new: side(&ins, new_near) });
     }
-    Comparison { changes, old_words: old.len(), new_words: new.len() }
+    Comparison { changes, old_words: old.len(), new_words: new.len(), pages }
 }
 
 /// The compare report's text: a summary, then each change with its pages.
@@ -362,6 +403,30 @@ mod tests {
         assert_eq!(c.changes[1].new.page, 1);
         let r = report(&c, "v1.pdf", "v2.pdf");
         assert!(r.contains("2 changes: 0 replaced, 0 inserted, 2 deleted.") && r.contains("Old: epsilon"), "{r}");
+    }
+
+    #[test]
+    fn pages_line_up_across_an_inserted_page() {
+        // The new version has a page inserted at the front and the old page 3 removed.
+        let mut old = words("intro words here", 0);
+        old.extend(words("middle part text", 1));
+        old.extend(words("dropped page", 2));
+        old.extend(words("closing remarks end", 3));
+        let mut new = words("brand new cover", 0);
+        new.extend(words("intro words here", 1));
+        new.extend(words("middle part text", 2));
+        new.extend(words("closing remarks end", 3));
+        let c = compare(&old, &new);
+        assert_eq!(c.pages, [(1, 0), (2, 1), (3, 3)]);
+        // The inserted cover has no counterpart: it shows the old first page.
+        let shown: Vec<Option<usize>> = (0..4).map(|p| c.old_page_for(p, 4)).collect();
+        assert_eq!(shown, [Some(0), Some(0), Some(1), Some(3)]);
+        let back: Vec<Option<usize>> = (0..4).map(|p| c.new_page_for(p, 4)).collect();
+        assert_eq!(back, [Some(1), Some(2), Some(3), Some(3)]);
+        // Past either end, and with no pages at all.
+        assert_eq!(c.old_page_for(9, 4), Some(3));
+        assert_eq!(c.old_page_for(0, 0), None);
+        assert_eq!(compare(&[], &[]).old_page_for(2, 3), Some(2));
     }
 
     #[test]

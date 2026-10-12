@@ -2380,3 +2380,8 @@ animation effects	Off	オフ
 	only the first results are shown	最初の結果のみ表示しています
 	Open at this page	このページで開く
 	Not searched	検索できなかったファイル
+	Side by side	並べて表示
+	Show the old file beside the new one, scrolling together	古いファイルを新しいファイルの横に表示し、一緒にスクロールします
+	Old: {name}	旧: {name}
+	New: {name}	新: {name}
+	Rendering…	描画中…

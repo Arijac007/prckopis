@@ -2360,3 +2360,7 @@ animation effects	Off	Wyłączone
 	only the first results are shown	pokazano tylko pierwsze wyniki
 	Open at this page	Otwórz na tej stronie
 	Not searched	Nie przeszukano
+	Side by side	Obok siebie
+	Show the old file beside the new one, scrolling together	Pokaż stary plik obok nowego, przewijając je razem
+	Old: {name}	Stary: {name}
+	New: {name}	Nowy: {name}

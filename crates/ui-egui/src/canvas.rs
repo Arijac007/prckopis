@@ -4416,6 +4416,170 @@ fn organize_grid(view: &mut DocView, info: &DocInfo, editable: bool, dirty: bool
     }
 }
 
+impl DocView {
+    /// The page being read and the point on it to keep in the middle of a window beside this
+    /// one: how far down the page the middle of this window is (0 at its top, 1 at its bottom),
+    /// or the page's middle when the window's middle is on another page (as at the end of the
+    /// document, where the last page is current but the scroll can't bring it to the middle).
+    /// `None` before the view has been drawn.
+    pub(crate) fn reading_position(&self) -> Option<(usize, f32)> {
+        let mid = self.viewport_screen.center().y;
+        let (_, r) = self.screen_rects.iter().find(|(p, _)| *p == self.current)?;
+        let frac = if r.y_range().contains(mid) && r.height() > 0.0 { (mid - r.min.y) / r.height() } else { 0.5 };
+        Some((self.current, frac.clamp(0.0, 1.0)))
+    }
+
+    /// Scroll so the point `frac` down `page` is in the middle of the window.
+    pub(crate) fn centre_on(&mut self, page: usize, frac: f32) {
+        self.goto = Some((page, 0.0));
+        self.goto_point = Some((page, None, Some(frac.clamp(0.0, 1.0)), vec2(0.0, self.viewport_h / 2.0)));
+    }
+}
+
+/// The older document beside the newer one in Compare's side-by-side view. Read only: one
+/// continuous column of whole-page rasters at `zoom` (a page too large for a texture is shown
+/// at the backdrop resolution), with the old side of each change shaded. `follow` (page,
+/// fraction) scrolls it to show that point in the middle unless the pointer is over it. Returns
+/// the point in its own middle when the pointer scrolled it this frame, for the newer side.
+pub(crate) fn compare_side_pane(
+    view: &mut DocView,
+    info: &DocInfo,
+    zoom: f32,
+    follow: Option<(usize, f32)>,
+    ui: &mut egui::Ui,
+) -> Option<(usize, f32)> {
+    let t = Tokens::get(ui.ctx());
+    view.begin_render_frame();
+    if info.pages.is_empty() {
+        ui.centered_and_justified(|ui| ui.label(tl!("This document has no pages.")));
+        return None;
+    }
+    let avail = ui.available_rect_before_wrap();
+    let zoom = if zoom.is_finite() { zoom.clamp(0.08, 64.0) } else { 1.0 };
+    let s = zoom * PT;
+    let sizes: Vec<Vec2> = info
+        .pages
+        .iter()
+        .map(|p| {
+            let (w, h) = view.display_size(p);
+            vec2(w.max(1.0) * s, h.max(1.0) * s)
+        })
+        .collect();
+    let content_w = (sizes.iter().map(|v| v.x).fold(0.0, f32::max) + 2.0 * SIDE).max(avail.width());
+    let mut rects = Vec::with_capacity(sizes.len());
+    let mut y = MARGIN;
+    for size in &sizes {
+        rects.push(Rect::from_min_size(pos2(((content_w - size.x) / 2.0).max(SIDE), y), *size));
+        y += size.y + GAP;
+    }
+    let content_h = y - GAP + MARGIN;
+    let hovered = ui.rect_contains_pointer(avail);
+    let mut scroll = egui::ScrollArea::both().auto_shrink([false, false]).id_salt(("compare-side", view.id));
+    if let Some((page, frac)) = follow.filter(|_| !hovered)
+        && let Some(r) = rects.get(page.min(rects.len() - 1))
+    {
+        let max_y = (content_h - avail.height()).max(0.0);
+        let point = r.top() + frac.clamp(0.0, 1.0) * r.height() - avail.height() / 2.0;
+        scroll = scroll.vertical_scroll_offset(point.clamp(0.0, max_y));
+    }
+    let ppp = ui.ctx().pixels_per_point();
+    let max_side = ui.ctx().input(|i| i.max_texture_side) as f32;
+    let out = scroll.show_viewport(ui, |ui, viewport| {
+        let (content, _) = ui.allocate_exact_size(vec2(content_w, content_h), Sense::hover());
+        let painter = ui.painter();
+        let visible = viewport.translate(content.min.to_vec2());
+        let mut wanted = Vec::new();
+        let mut shown = Vec::new();
+        for (i, (page, r)) in info.pages.iter().zip(&rects).enumerate() {
+            let r = snap_to_pixels(r.translate(content.min.to_vec2()), ppp);
+            if !r.intersects(visible.expand(400.0)) {
+                continue;
+            }
+            if r.intersects(visible) {
+                shown.push(i);
+            }
+            let (pw, ph) = (page.width.max(1.0), page.height.max(1.0));
+            let xf = PageXform { rect: r, rot: view.rotation, pw, ph };
+            painter.add(egui::epaint::Shadow { offset: [0, 3], blur: 14, spread: 0, color: t.page_shadow }.as_shape(r, CornerRadius::ZERO));
+            painter.rect_filled(r, CornerRadius::ZERO, Color32::WHITE);
+            let sharp = zoom * PT * ppp;
+            let fits = pw.max(ph) * sharp <= TILE_THRESHOLD.min(max_side);
+            let scale = if fits { sharp } else { BASE_SIDE.min(max_side) / pw.max(ph) };
+            let tag = scale_tag(scale);
+            if let Some(err) = view.errors.get(&i) {
+                let message = crate::i18n::fmt(tl!("This page couldn't be displayed.\n{e}"), &[("e", err)]);
+                let msg =
+                    ui.fonts_mut(|f| f.layout(message, theme::regular(12.5), Color32::from_rgb(0x6A, 0x2A, 0x2A), (r.width() - 40.0).max(80.0)));
+                painter.galley(pos2(r.center().x - msg.size().x / 2.0, r.center().y), msg, Color32::BLACK);
+            } else {
+                wanted.push(RenderRequest { page: i, kind: RequestKind::Pixels, tile: None, scale, tag, preview: !fits });
+                match view.pages.get(&i) {
+                    Some(p) if fits && p.tag == tag => xf.texel_aligned(p.tex.size(), ppp).paint_image(painter, p.tex.id(), 0.0, 0.0, 1.0, 1.0),
+                    Some(p) => xf.paint_image(painter, p.tex.id(), 0.0, 0.0, 1.0, 1.0),
+                    None => {
+                        painter.text(r.center(), Align2::CENTER_CENTER, tl!("Rendering…"), theme::regular(12.0), t.text_faint);
+                    }
+                }
+            }
+            for (mp, mr, mc) in &view.compare_marks {
+                if *mp == i {
+                    painter.rect_filled(xf.user_rect(info, i, *mr).expand(1.5), CornerRadius::same(2), mc.gamma_multiply(0.28));
+                }
+            }
+            if let Some((fp, fr, t0)) = view.flash
+                && fp == i
+            {
+                let now = ui.input(|inp| inp.time);
+                let t0 = if t0 == 0.0 { now } else { t0 };
+                let age = (now - t0) as f32;
+                if age < 1.6 {
+                    view.flash = Some((fp, fr, t0));
+                    let a = ((1.6 - age) / 1.6 * 255.0) as u8;
+                    let stroke = Stroke::new(2.5, Color32::from_rgba_unmultiplied(0x1B, 0x63, 0xE0, a));
+                    painter.rect_stroke(xf.user_rect(info, i, fr).expand(4.0), CornerRadius::same(3), stroke, egui::StrokeKind::Outside);
+                    ui.ctx().request_repaint();
+                } else {
+                    view.flash = None;
+                }
+            }
+            painter.rect_stroke(r, CornerRadius::ZERO, Stroke::new(0.5, t.border.gamma_multiply(0.8)), egui::StrokeKind::Outside);
+        }
+        (wanted, shown)
+    });
+    let (wanted, shown) = out.inner;
+    // The current page: the one followed while it shows; else, as in the main view, a page
+    // still wholly in the window stays current, and otherwise the one showing most (topmost).
+    let (top, height) = (out.state.offset.y, out.inner_rect.height());
+    let showing = |r: &Rect| (r.max.y.min(top + height) - r.min.y.max(top)).max(0.0);
+    let followed = follow.filter(|_| !hovered).map(|(p, _)| p.min(rects.len() - 1)).filter(|p| shown.contains(p));
+    let whole = rects.get(view.current).is_some_and(|r| shown.contains(&view.current) && showing(r) >= r.height() - 0.5);
+    if let Some(p) = followed {
+        view.current = p;
+    } else if !whole {
+        let mut best = 0.0;
+        for &i in &shown {
+            let seen = rects.get(i).map_or(0.0, showing);
+            if seen > best + 0.5 {
+                best = seen;
+                view.current = i;
+            }
+        }
+    }
+    view.frame_queue = wanted;
+    view.frame_visible = shown.into_iter().collect();
+    view.viewport_screen = out.inner_rect;
+    let offset = out.state.offset;
+    let moved = (offset - view.last_scroll).length() > 0.5;
+    view.last_scroll = offset;
+    if !(hovered && moved) {
+        return None;
+    }
+    let mid = top + height / 2.0;
+    let r = rects.get(view.current)?;
+    let frac = if r.y_range().contains(mid) { (mid - r.min.y) / r.height().max(1.0) } else { 0.5 };
+    Some((view.current, frac.clamp(0.0, 1.0)))
+}
+
 /// A rendered raster as texture data. Its words are premultiplied RGBA bytes, exactly
 /// `Color32`s, so the renderer's buffer becomes the image without a copy on the UI thread.
 pub(crate) fn texture_image(size: [usize; 2], pixels: pdfcraft_render::Pixels) -> egui::ColorImage {

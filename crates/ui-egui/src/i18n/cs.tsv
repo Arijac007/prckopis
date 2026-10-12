@@ -2454,3 +2454,7 @@ animation effects	Off	Vypnuto
 	only the first results are shown	zobrazeny jsou jen první výsledky
 	Open at this page	Otevřít na této stránce
 	Not searched	Neprohledáno
+	Side by side	Vedle sebe
+	Show the old file beside the new one, scrolling together	Zobrazit starý soubor vedle nového se společným posouváním
+	Old: {name}	Starý: {name}
+	New: {name}	Nový: {name}

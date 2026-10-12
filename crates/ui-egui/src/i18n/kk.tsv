@@ -2378,3 +2378,8 @@ animation effects	Off	Өшірулі
 	only the first results are shown	тек алғашқы нәтижелер көрсетілген
 	Open at this page	Осы бетте ашу
 	Not searched	Ізделмеді
+	Side by side	Қатар
+	Show the old file beside the new one, scrolling together	Ескі файлды жаңасының жанында бірге айналдыра көрсету
+	Old: {name}	Ескі: {name}
+	New: {name}	Жаңа: {name}
+	Rendering…	Көрсетілуде…

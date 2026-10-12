@@ -4185,6 +4185,20 @@ fn comparing_documents_through_tools() {
 }
 
 #[test]
+fn comparing_aligns_pages_for_the_side_by_side_view() {
+    let dir = workdir("compare-pages");
+    let mut a = auto(&dir);
+    let text = "Introduction to the lease\u{c}Payment terms and dates\u{c}Signatures of both parties";
+    let v1 = ok(&mut a, "doc_create", json!({ "from": "text", "text": text }))["doc"].as_u64().unwrap();
+    let v2 = ok(&mut a, "doc_create", json!({ "from": "text", "text": format!("A new cover page\u{c}{text}") }))["doc"].as_u64().unwrap();
+    let r = ok(&mut a, "doc_compare", json!({ "doc": v2, "other": v1 }));
+    let pages: Vec<(u64, u64)> =
+        r["pages"].as_array().unwrap().iter().map(|p| (p["new_page"].as_u64().unwrap(), p["old_page"].as_u64().unwrap())).collect();
+    // The inserted cover sits beside the old first page; every later page beside its own.
+    assert_eq!(pages, [(1, 1), (2, 1), (3, 2), (4, 3)], "{r}");
+}
+
+#[test]
 fn actions_through_tools() {
     let dir = workdir("actions");
     let mut a = auto(&dir);

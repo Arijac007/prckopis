@@ -9129,11 +9129,11 @@ title = "Side-by-side compare view with synchronised scrolling"
 area = "N"
 tier = "P1"
 milestone = "M12"
-status = "planned"
-commands = []
-tools = []
-evidence = []
-notes = ""
+status = "shipped"
+commands = ["doc.compare"]
+tools = ["doc_compare"]
+evidence = ["crates/compare/src/lib.rs::pages_line_up_across_an_inserted_page", "crates/automation/tests/automation.rs::comparing_aligns_pages_for_the_side_by_side_view", "crates/ui-egui/tests/compare.rs::side_by_side_scrolls_both_versions_together"]
+notes = "Compare panel > Side by side: the old file left (read only, its side of each change shaded), the new file right; they scroll together page for page, aligned on unchanged text so inserted and deleted pages don't throw them out of step. doc_compare returns the alignment (pages). One zoom for both; no filters by change type yet (gap 21)."
 
 [[feature]]
 id = "misc.compare-report"

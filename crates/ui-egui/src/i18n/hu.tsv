@@ -2379,3 +2379,8 @@ animation effects	Off	Ki
 	only the first results are shown	csak az első találatok látszanak
 	Open at this page	Megnyitás ezen az oldalon
 	Not searched	Nem átkutatott
+	Side by side	Egymás mellett
+	Show the old file beside the new one, scrolling together	A régi fájl megjelenítése az új mellett, együtt görgetve
+	Old: {name}	Régi: {name}
+	New: {name}	Új: {name}
+	Rendering…	Megjelenítés…

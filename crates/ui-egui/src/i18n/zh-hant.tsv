@@ -2254,3 +2254,7 @@ animation effects	Off	關
 	only the first results are shown	僅顯示前面的結果
 	Open at this page	在此頁開啟
 	Not searched	未搜尋
+	Side by side	並排
+	Show the old file beside the new one, scrolling together	將舊檔案顯示在新檔案旁邊，同步捲動
+	Old: {name}	舊：{name}
+	New: {name}	新：{name}

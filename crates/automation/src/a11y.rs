@@ -727,8 +727,14 @@ impl Automation {
         } else {
             Vec::new()
         };
+        // The side-by-side view's alignment: which old page shows what is on each new page.
+        let count = |id| self.session.get(id).map_or(0, |d| d.info.pages.len());
+        let old_pages = count(old);
+        let pages: Vec<Value> =
+            (0..count(new)).filter_map(|p| c.old_page_for(p, old_pages).map(|o| json!({ "new_page": p + 1, "old_page": o + 1 }))).collect();
         Ok(json!({
             "visual": visual,
+            "pages": pages,
             "identical": c.identical(),
             "replaced": c.count(Kind::Replaced),
             "inserted": c.count(Kind::Inserted),

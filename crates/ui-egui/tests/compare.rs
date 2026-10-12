@@ -41,6 +41,41 @@ fn compare_two_versions() {
     assert_eq!(h.state().session.get(h.state().active_ids().unwrap().1).unwrap().name, "Compare Report.pdf");
 }
 
+#[test]
+fn side_by_side_scrolls_both_versions_together() {
+    let s = Session::new();
+    let text = "Introduction to the lease\u{c}Payment terms and dates\u{c}Signatures of both parties";
+    let v1 = s.create_from_text("t", text).unwrap().to_vec();
+    let v2 = s.create_from_text("t", &format!("A new cover page\u{c}{}", text.replace("dates", "deadlines"))).unwrap().to_vec();
+    let mut h = Harness::builder().with_size(egui::vec2(1400.0, 900.0)).build_eframe(move |_cc| {
+        let mut app = PdfCraftApp::new();
+        app.set_option("language", "en").unwrap();
+        app.open_bytes("v1.pdf", None, v1.clone()).unwrap();
+        app.open_bytes("v2.pdf", None, v2.clone()).unwrap();
+        app
+    });
+    h.run_steps(4);
+    h.state_mut().compare_old = h.state().views.first().map(|v| v.id);
+    h.state_mut().run_compare();
+    h.run_steps(2);
+    h.get_by_label("Side by side").click();
+    h.run_steps(4);
+    let (new, old) = (h.state().active_ids().unwrap().0, 0);
+    assert!(h.state().compare.as_ref().unwrap().side_by_side);
+    assert!(!h.state().views[old].compare_marks.is_empty(), "the old side shades its changes");
+    // Scrolling the new version to its last page brings the old version to the same text.
+    h.state_mut().views[new].go_to_page(3);
+    for _ in 0..6 {
+        h.run_steps(2);
+    }
+    assert_eq!(h.state().views[new].current, 3);
+    assert_eq!(h.state().views[old].current, 2, "the old side follows to its matching page");
+    // Turning it off shows the newer document alone again.
+    h.get_by_label("Side by side").click();
+    h.run_steps(3);
+    assert!(!h.state().compare.as_ref().unwrap().side_by_side);
+}
+
 /// Writes a screenshot of the Compare panel when PDFCRAFT_SHOT is set (for review).
 #[test]
 fn compare_panel_screenshot() {

@@ -2293,3 +2293,7 @@ animation effects	Off	ఆఫ్
 	only the first results are shown	మొదటి ఫలితాలు మాత్రమే చూపబడ్డాయి
 	Open at this page	ఈ పేజీలో తెరువు
 	Not searched	వెతకలేదు
+	Side by side	పక్కపక్కనే
+	Show the old file beside the new one, scrolling together	పాత ఫైల్‌ను కొత్త దాని పక్కన చూపించి, కలిసి స్క్రోల్ చేయండి
+	Old: {name}	పాతది: {name}
+	New: {name}	కొత్తది: {name}

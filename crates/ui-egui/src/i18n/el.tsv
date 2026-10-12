@@ -2396,3 +2396,7 @@ animation effects	Off	Ανενεργά
 	only the first results are shown	εμφανίζονται μόνο τα πρώτα αποτελέσματα
 	Open at this page	Άνοιγμα σε αυτή τη σελίδα
 	Not searched	Δεν αναζητήθηκαν
+	Side by side	Δίπλα-δίπλα
+	Show the old file beside the new one, scrolling together	Εμφάνιση του παλιού αρχείου δίπλα στο νέο, με κοινή κύλιση
+	Old: {name}	Παλιό: {name}
+	New: {name}	Νέο: {name}

@@ -2401,3 +2401,8 @@ animation effects	Off	معطّلة
 	only the first results are shown	تُعرض النتائج الأولى فقط
 	Open at this page	فتح عند هذه الصفحة
 	Not searched	لم يُبحث فيها
+	Side by side	جنبًا إلى جنب
+	Show the old file beside the new one, scrolling together	عرض الملف القديم بجانب الملف الجديد مع التمرير معًا
+	Old: {name}	القديم: {name}
+	New: {name}	الجديد: {name}
+	Rendering…	جارٍ العرض…
