@@ -2315,3 +2315,14 @@ animation effects	Off	关
 	No printers answered. A printer in another subnet: add its range under Also search, or type its address.	没有打印机响应。其他子网中的打印机：在“同时搜索”中添加其范围，或输入其地址。
 	No printers answered. A VPN is connected: it may send the local network through its tunnel. Allow local network access in the VPN, or disconnect it, and search again.	没有打印机响应。已连接 VPN，它可能将本地网络也通过隧道发送。请在 VPN 中允许访问本地网络或断开 VPN，然后重新搜索。
 	This printer says it doesn't read PDF, so a direct job may be refused or print as text. It needs its PDF option (on Canon: PDF Direct Print), or install it in the system with its driver.	此打印机表示不能读取 PDF，直接发送的作业可能被拒绝或以文本形式打印。它需要 PDF 选件（佳能为 PDF 直接打印），或者用其驱动程序将其安装到系统中。
+	Timestamp document	为文档添加时间戳
+	Add a timestamp from {server}	添加来自 {server} 的时间戳
+	Add a timestamp server first (Preferences > Timestamp servers).	请先添加时间戳服务器（首选项 > 时间戳服务器）。
+	Timestamped by {server} and saved to {path}	已由 {server} 添加时间戳并保存到 {path}
+	Timestamp servers	时间戳服务器
+	Signatures and document timestamps get their time from the first server. Only http:// addresses; timestamp replies are signed, so that is safe. Passwords are kept until PdfCraft closes.	签名和文档时间戳从第一个服务器获取时间。仅支持 http:// 地址；时间戳回复带有签名，因此是安全的。密码仅保留到 PdfCraft 关闭。
+	Use this server by default	默认使用此服务器
+	Server address	服务器地址
+	User name	用户名
+	Add server	添加服务器
+	At most 32 timestamp servers.	最多 32 个时间戳服务器。

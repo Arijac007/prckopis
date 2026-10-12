@@ -5448,3 +5448,109 @@ fn private_crops_with_nested_state_resize_save_reopen_through_tools() {
         assert_eq!(ok(&mut a, "page_images", json!({"doc":doc,"page":1})), original);
     }
 }
+
+/// A timestamp server on loopback: answers RFC 3161 queries with a token signed by a test
+/// digital ID, over plain HTTP as public authorities do. Returns its port.
+fn fake_tsa(answers: usize) -> u16 {
+    use pdfcraft_engine::sign::{DigestAlg, Time, pkcs12, timestamp};
+    use std::io::{BufRead, BufReader, Read, Write};
+    let id = pkcs12::open(&std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/../sign/tests/data/rsa-aes.p12")).unwrap(), "test").unwrap();
+    let l = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    let port = l.local_addr().unwrap().port();
+    std::thread::spawn(move || {
+        for serial in 0..answers {
+            let Ok((s, _)) = l.accept() else { return };
+            let mut r = BufReader::new(s);
+            let mut len = 0usize;
+            let mut auth = false;
+            loop {
+                let mut line = String::new();
+                r.read_line(&mut line).unwrap();
+                if let Some(v) = line.to_ascii_lowercase().strip_prefix("content-length:") {
+                    len = v.trim().parse().unwrap();
+                }
+                auth |= line.starts_with("Authorization: Basic ");
+                if line == "\r\n" {
+                    break;
+                }
+            }
+            let mut body = vec![0; len];
+            r.read_exact(&mut body).unwrap();
+            let q = timestamp::parse_request(&body).unwrap();
+            let time = Time { year: 2026, month: 10, day: 12, hour: 9, minute: 0, second: 0 };
+            let reply = timestamp::respond(&id.key, &id.certificate, &id.chain, DigestAlg::Sha256, &q, "1.2.3.4.5", time, serial as u64 + 1).unwrap();
+            let mut s = r.into_inner();
+            write!(s, "HTTP/1.1 200 OK\r\nContent-Type: application/timestamp-reply\r\nX-Auth: {auth}\r\nContent-Length: {}\r\n\r\n", reply.len())
+                .unwrap();
+            s.write_all(&reply).unwrap();
+        }
+    });
+    port
+}
+
+/// Timestamp servers are configured like Acrobat's Preferences ▸ Security ▸ Timestamp Servers,
+/// a signature takes a timestamp from the default one (PAdES B-T), and a document timestamp is
+/// appended over the signed file; both validate after reopening.
+#[test]
+fn timestamp_servers_stamp_signatures_and_documents() {
+    let dir = workdir("timestamp-servers");
+    let port = fake_tsa(2);
+    let url = format!("http://127.0.0.1:{port}/tsa");
+    let mut a = auto(&dir);
+    ok(&mut a, "sign_id_create", json!({ "name": "Ada Lovelace", "key": "p256", "password": "secret1", "path": "ada.p12" }));
+    let doc = ok(&mut a, "doc_open", json!({ "path": "a.pdf" }))["doc"].as_u64().unwrap();
+
+    // Nothing configured: true has no server to use.
+    assert!(matches!(
+        a.call("sign_document", &json!({ "doc": doc, "id": "ada.p12", "password": "secret1", "out": "x.pdf", "timestamp": true })),
+        Err(ToolError::InvalidArgs(m)) if m.contains("no timestamp server")
+    ));
+    let list = ok(&mut a, "sign_timestamp_servers", json!({ "add": { "url": "http://timestamp.example/", "name": "Other" } }));
+    assert_eq!(list["servers"][0]["name"], "Other");
+    let list = ok(
+        &mut a,
+        "sign_timestamp_servers",
+        json!({ "add": { "url": url, "name": "Office TSA", "username": "ana", "password": "pw" }, "default": true }),
+    );
+    assert_eq!((list["servers"][0]["name"].as_str(), list["servers"][0]["default"].as_bool()), (Some("Office TSA"), Some(true)));
+    assert_eq!(list["servers"][0]["has_password"], true);
+    assert!(!list.to_string().contains("\"pw\""), "passwords never come back: {list}");
+    for bad in [
+        json!({ "add": { "url": "https://tsa.example/" } }),
+        json!({ "add": { "url": "tsa.example" } }),
+        json!({ "add": { "url": "http://tsa.example/", "username": "a:b" } }),
+        json!({ "remove": "Nope" }),
+        json!({ "set_default": "Nope" }),
+    ] {
+        assert!(matches!(a.call("sign_timestamp_servers", &bad), Err(ToolError::InvalidArgs(_))), "{bad}");
+    }
+
+    let r = ok(&mut a, "sign_document", json!({ "doc": doc, "id": "ada.p12", "password": "secret1", "out": "signed.pdf", "timestamp": true }));
+    assert_eq!(r["signature"]["signer"], "Ada Lovelace", "{r}");
+    let signed = std::fs::read(dir.join("signed.pdf")).unwrap();
+    let r = ok(&mut a, "sign_timestamp_document", json!({ "doc": doc, "out": "stamped.pdf" }));
+    assert_eq!(r["server"], "Office TSA");
+    let stamped = std::fs::read(dir.join("stamped.pdf")).unwrap();
+    assert!(stamped.starts_with(&signed), "the document timestamp is an incremental update");
+
+    let mut b = auto(&dir);
+    let re = ok(&mut b, "doc_open", json!({ "path": "stamped.pdf" }))["doc"].as_u64().unwrap();
+    std::fs::copy(concat!(env!("CARGO_MANIFEST_DIR"), "/../sign/tests/data/rsa-aes.p12"), dir.join("tsa.p12")).unwrap();
+    ok(&mut b, "sign_trust", json!({ "paths": ["ada.p12"], "password": "secret1" }));
+    ok(&mut b, "sign_trust", json!({ "paths": ["tsa.p12"], "password": "test" }));
+    let list = ok(&mut b, "sign_list", json!({ "doc": re }));
+    let sigs = list["signatures"].as_array().unwrap();
+    assert_eq!(sigs.len(), 2, "{list}");
+    assert_eq!((sigs[0]["status"].as_str(), sigs[0]["timestamp"].as_bool()), (Some("valid"), Some(true)), "a B-T signature: {list}");
+    assert_eq!((sigs[1]["sub_filter"].as_str(), sigs[1]["status"].as_str()), (Some("ETSI.RFC3161"), Some("valid")), "{list}");
+    assert_eq!(sigs[1]["timestamp_time"], "2026.10.12 09:00:00 UTC", "the authority's time");
+    assert_eq!(list["all_valid"], true);
+
+    // A server that isn't there is a clear failure, not a hang or a crash.
+    let gone = std::net::TcpListener::bind("127.0.0.1:0").unwrap().local_addr().unwrap().port();
+    match b.call("sign_timestamp_document", &json!({ "doc": re, "server": format!("http://127.0.0.1:{gone}/"), "out": "never.pdf" })) {
+        Err(ToolError::Failed(m)) => assert!(m.contains("couldn't reach the timestamp server"), "{m}"),
+        other => panic!("{other:?}"),
+    }
+    assert!(!dir.join("never.pdf").exists());
+}

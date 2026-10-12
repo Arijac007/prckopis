@@ -7,6 +7,16 @@ use pdfcraft_engine::{SignOptions, SignatureInfo, SignatureStatus};
 use serde_json::{Value, json};
 
 use crate::{Args, Automation, Result, ToolError, failed, write_atomic};
+use pdfcraft_platform::tsa::TimestampServer;
+
+/// A timestamp server reached over HTTP: the transport the sign crate leaves to its caller.
+pub(crate) struct HttpTsa(pub(crate) TimestampServer);
+
+impl sign::TimestampAuthority for HttpTsa {
+    fn timestamp(&self, request: &[u8]) -> std::result::Result<Vec<u8>, sign::SignError> {
+        pdfcraft_platform::tsa::post_query(&self.0, request, pdfcraft_platform::tsa::DEFAULT_TIMEOUT).map_err(sign::SignError::Crypto)
+    }
+}
 
 fn bad(m: impl Into<String>) -> ToolError {
     ToolError::InvalidArgs(m.into())
@@ -189,7 +199,12 @@ impl Automation {
             graphic,
             ..SignOptions::default()
         };
-        let signed = self.session.sign(doc_id, &id, opts).map_err(|e| match e {
+        let tsa = self.timestamp_server(a.get("timestamp"))?;
+        let signed = match &tsa {
+            Some(server) => self.session.sign_with_timestamp(doc_id, &id, opts, &HttpTsa(server.clone())),
+            None => self.session.sign(doc_id, &id, opts),
+        };
+        let signed = signed.map_err(|e| match e {
             // A graphic the signer refuses is the caller's to fix.
             pdfcraft_engine::EditError::Sign(m) if m.starts_with("the signature graphic") => bad(m),
             e => failed(e),
@@ -235,6 +250,114 @@ impl Automation {
             return Ok(sign::Graphic::Strokes(strokes));
         }
         Err(bad(kinds))
+    }
+
+    /// `timestamp`: absent, false or null: none; true: the default server; a string: a
+    /// configured server's name, or an http:// address.
+    fn timestamp_server(&self, v: Option<&Value>) -> Result<Option<TimestampServer>> {
+        match v {
+            None | Some(Value::Null) | Some(Value::Bool(false)) => Ok(None),
+            Some(Value::Bool(true)) => self.timestamp_servers.first().cloned().map(Some).ok_or_else(|| {
+                bad("no timestamp server is configured: add one with sign_timestamp_servers, or pass its http:// address as timestamp")
+            }),
+            Some(Value::String(s)) => match self.timestamp_servers.iter().find(|t| t.name.eq_ignore_ascii_case(s.trim())) {
+                Some(t) => Ok(Some(t.clone())),
+                None => TimestampServer::new(s).map(Some).map_err(bad),
+            },
+            Some(other) => Err(bad(format!("timestamp must be true, a server name or an http:// address, not {other}"))),
+        }
+    }
+
+    fn servers_json(&self) -> Value {
+        let list: Vec<Value> = self
+            .timestamp_servers
+            .iter()
+            .enumerate()
+            .map(|(i, t)| {
+                json!({
+                    "name": t.name,
+                    "url": t.url,
+                    "username": t.username,
+                    "has_password": t.password.as_deref().is_some_and(|p| !p.is_empty()),
+                    "default": i == 0,
+                })
+            })
+            .collect();
+        json!({ "servers": list })
+    }
+
+    /// Acrobat: Preferences > Security > Timestamp Servers. Add (or replace by name), remove,
+    /// make default; returns the list (passwords never come back).
+    pub(crate) fn sign_timestamp_servers(&mut self, a: &Args) -> Result<Value> {
+        if let Some(add) = a.get("add") {
+            let o = add.as_object().ok_or_else(|| bad("add must be an object with url (and name, username, password)"))?;
+            let text = |k: &str| -> Result<Option<String>> {
+                match o.get(k) {
+                    None | Some(Value::Null) => Ok(None),
+                    Some(Value::String(s)) => Ok(Some(s.trim().to_string()).filter(|s| !s.is_empty())),
+                    Some(_) => Err(bad(format!("add.{k} must be a string"))),
+                }
+            };
+            let url = text("url")?.ok_or_else(|| bad("add.url is required"))?;
+            let mut server = TimestampServer::new(&url).map_err(bad)?;
+            if let Some(name) = text("name")? {
+                if name.chars().count() > 100 || name.chars().any(char::is_control) {
+                    return Err(bad("add.name is too long or has control characters"));
+                }
+                server.name = name;
+            }
+            server.username = text("username")?;
+            server.password = text("password")?;
+            server.validate().map_err(bad)?;
+            let make_default = a.opt_bool("default")?.unwrap_or(false);
+            match self.timestamp_servers.iter().position(|t| t.name.eq_ignore_ascii_case(&server.name)) {
+                Some(i) => {
+                    self.timestamp_servers.remove(i);
+                    let at = if make_default { 0 } else { i };
+                    self.timestamp_servers.insert(at.min(self.timestamp_servers.len()), server);
+                }
+                None if self.timestamp_servers.len() >= 32 => return Err(bad("at most 32 timestamp servers")),
+                None if make_default => self.timestamp_servers.insert(0, server),
+                None => self.timestamp_servers.push(server),
+            }
+        }
+        if let Some(name) = a.opt_str("remove")? {
+            let before = self.timestamp_servers.len();
+            self.timestamp_servers.retain(|t| !t.name.eq_ignore_ascii_case(name.trim()));
+            if self.timestamp_servers.len() == before {
+                return Err(bad(format!("no timestamp server is named {name:?}")));
+            }
+        }
+        if let Some(name) = a.opt_str("set_default")? {
+            let i = self
+                .timestamp_servers
+                .iter()
+                .position(|t| t.name.eq_ignore_ascii_case(name.trim()))
+                .ok_or_else(|| bad(format!("no timestamp server is named {name:?}")))?;
+            let t = self.timestamp_servers.remove(i);
+            self.timestamp_servers.insert(0, t);
+        }
+        Ok(self.servers_json())
+    }
+
+    /// Acrobat: Use a certificate > Timestamp. Appends a document timestamp (/ETSI.RFC3161)
+    /// from a timestamp server over the whole file and saves it to `out`.
+    pub(crate) fn sign_timestamp_document(&mut self, a: &Args) -> Result<Value> {
+        let server = match a.get("server") {
+            None | Some(Value::Null) => self.timestamp_server(Some(&Value::Bool(true)))?,
+            Some(v @ Value::String(_)) => self.timestamp_server(Some(v))?,
+            Some(_) => return Err(bad("server must be a configured server's name or an http:// address")),
+        }
+        .ok_or_else(|| bad("server must be a configured server's name or an http:// address"))?;
+        let doc_id = self.doc(a)?.id;
+        let out = self.resolve(a.str("out")?, true)?;
+        let stamped = self.session.timestamp_document(doc_id, &HttpTsa(server.clone()), String::new()).map_err(failed)?;
+        write_atomic(&out, &stamped)?;
+        let path = out.to_string_lossy().into_owned();
+        self.session.mark_signed(doc_id, stamped.clone(), Some(path.clone())).map_err(failed)?;
+        let doc = self.doc(a)?;
+        let newest = doc.signatures.iter().filter(|s| s.signed).max_by_key(|s| s.revision).cloned();
+        Ok(json!({ "path": path, "bytes": stamped.len(), "server": server.name, "timestamp": newest.map(|s| self.sig_json(a, &s)).transpose()? }))
     }
 
     pub(crate) fn sign_trust(&mut self, a: &Args) -> Result<Value> {

@@ -1722,57 +1722,8 @@ fn sign_inner(
         }
         None => {
             let page = *pages.get(opts.page).ok_or_else(|| SignError::Pdf(format!("page {} does not exist", opts.page + 1)))?;
-            let taken: HashSet<String> = sig_fields(&doc).into_iter().map(|f| f.name).collect();
-            let fname = opts
-                .new_field_name
-                .clone()
-                .unwrap_or_else(|| (1..).map(|i| format!("Signature{i}")).find(|n| !taken.contains(n)).unwrap_or_default());
             let rect = opts.rect.unwrap_or([0.0; 4]);
-            let mut w = Dict::new();
-            w.set(b"Type".to_vec(), Object::name("Annot"));
-            w.set(b"Subtype".to_vec(), Object::name("Widget"));
-            w.set(b"FT".to_vec(), Object::name("Sig"));
-            w.set(b"T".to_vec(), PdfString::text(&fname));
-            w.set(b"V".to_vec(), Object::Ref(sig));
-            w.set(b"Rect".to_vec(), Object::Array(rect.iter().map(|x| Object::Real(*x)).collect()));
-            w.set(b"P".to_vec(), Object::Ref(page));
-            // Print + Locked.
-            w.set(b"F".to_vec(), Object::Int(4 | 128));
-            let wr = doc.add(Object::Dict(w));
-            // Page /Annots (indirect arrays are updated in place).
-            let pd = doc.get(page).as_dict().cloned().unwrap_or_default();
-            match pd.get(b"Annots") {
-                Some(Object::Ref(ar)) => {
-                    let mut a = doc.get(*ar).as_array().cloned().unwrap_or_default();
-                    a.push(Object::Ref(wr));
-                    doc.set(*ar, Object::Array(a));
-                }
-                other => {
-                    let mut a = other.and_then(|o| o.as_array().cloned()).unwrap_or_default();
-                    a.push(Object::Ref(wr));
-                    doc.update_dict(page, |d| d.set(b"Annots".to_vec(), Object::Array(a)))?;
-                }
-            }
-            // AcroForm /Fields and /SigFlags (signatures exist, append only).
-            let catalog = doc.get(root).as_dict().cloned().unwrap_or_default();
-            let (af_ref, mut af) = match catalog.get(b"AcroForm") {
-                Some(Object::Ref(r)) => (Some(*r), doc.get(*r).as_dict().cloned().unwrap_or_default()),
-                Some(Object::Dict(d)) => (None, d.clone()),
-                _ => (None, Dict::new()),
-            };
-            let mut fields = match af.get(b"Fields") {
-                Some(Object::Ref(r)) => doc.get(*r).as_array().cloned().unwrap_or_default(),
-                Some(Object::Array(a)) => a.clone(),
-                _ => Vec::new(),
-            };
-            fields.push(Object::Ref(wr));
-            af.set(b"Fields".to_vec(), Object::Array(fields));
-            af.set(b"SigFlags".to_vec(), Object::Int(3));
-            match af_ref {
-                Some(r) => doc.set(r, Object::Dict(af)),
-                // Inline (or new) AcroForms stay in the catalog.
-                None => doc.update_dict(root, |c| c.set(b"AcroForm".to_vec(), Object::Dict(af)))?,
-            }
+            let wr = add_signature_field(&mut doc, root, page, sig, rect, opts.new_field_name.clone(), "Signature")?;
             (wr, rect)
         }
     };
@@ -1827,6 +1778,67 @@ fn sign_inner(
     Ok(out)
 }
 
+/// Add a signature field whose widget is on `page` at `rect` (all zeros: invisible) with `/V`
+/// `sig`: the page's /Annots, AcroForm /Fields and /SigFlags 3 (signatures exist, append only).
+/// Unnamed fields are called `<prefix>1`, `<prefix>2`, … (the first free name).
+fn add_signature_field(
+    doc: &mut Document,
+    root: ObjRef,
+    page: ObjRef,
+    sig: ObjRef,
+    rect: [f64; 4],
+    name: Option<String>,
+    prefix: &str,
+) -> Result<ObjRef, SignError> {
+    let taken: HashSet<String> = sig_fields(doc).into_iter().map(|f| f.name).collect();
+    let fname = name.unwrap_or_else(|| (1..).map(|i| format!("{prefix}{i}")).find(|n| !taken.contains(n)).unwrap_or_default());
+    let mut w = Dict::new();
+    w.set(b"Type".to_vec(), Object::name("Annot"));
+    w.set(b"Subtype".to_vec(), Object::name("Widget"));
+    w.set(b"FT".to_vec(), Object::name("Sig"));
+    w.set(b"T".to_vec(), PdfString::text(&fname));
+    w.set(b"V".to_vec(), Object::Ref(sig));
+    w.set(b"Rect".to_vec(), Object::Array(rect.iter().map(|x| Object::Real(*x)).collect()));
+    w.set(b"P".to_vec(), Object::Ref(page));
+    // Print + Locked.
+    w.set(b"F".to_vec(), Object::Int(4 | 128));
+    let wr = doc.add(Object::Dict(w));
+    // Page /Annots (indirect arrays are updated in place).
+    let pd = doc.get(page).as_dict().cloned().unwrap_or_default();
+    match pd.get(b"Annots") {
+        Some(Object::Ref(ar)) => {
+            let mut a = doc.get(*ar).as_array().cloned().unwrap_or_default();
+            a.push(Object::Ref(wr));
+            doc.set(*ar, Object::Array(a));
+        }
+        other => {
+            let mut a = other.and_then(|o| o.as_array().cloned()).unwrap_or_default();
+            a.push(Object::Ref(wr));
+            doc.update_dict(page, |d| d.set(b"Annots".to_vec(), Object::Array(a)))?;
+        }
+    }
+    let catalog = doc.get(root).as_dict().cloned().unwrap_or_default();
+    let (af_ref, mut af) = match catalog.get(b"AcroForm") {
+        Some(Object::Ref(r)) => (Some(*r), doc.get(*r).as_dict().cloned().unwrap_or_default()),
+        Some(Object::Dict(d)) => (None, d.clone()),
+        _ => (None, Dict::new()),
+    };
+    let mut fields = match af.get(b"Fields") {
+        Some(Object::Ref(r)) => doc.get(*r).as_array().cloned().unwrap_or_default(),
+        Some(Object::Array(a)) => a.clone(),
+        _ => Vec::new(),
+    };
+    fields.push(Object::Ref(wr));
+    af.set(b"Fields".to_vec(), Object::Array(fields));
+    af.set(b"SigFlags".to_vec(), Object::Int(3));
+    match af_ref {
+        Some(r) => doc.set(r, Object::Dict(af)),
+        // Inline (or new) AcroForms stay in the catalog.
+        None => doc.update_dict(root, |c| c.set(b"AcroForm".to_vec(), Object::Dict(af)))?,
+    }
+    Ok(wr)
+}
+
 /// Append a document timestamp (ISO 32000-2 §12.8.2.2): a standalone signature dictionary
 /// whose `/Contents` is an RFC 3161 token covering the whole current file (`/ETSI.RFC3161`).
 /// The transport is the caller's; a rejected or malformed token produces no file.
@@ -1854,7 +1866,21 @@ pub fn timestamp_document(doc: &Document, tsa: &dyn crate::timestamp::TimestampA
     let mut build = Dict::new();
     build.set(b"App".to_vec(), Object::Dict(app));
     v.set(b"Prop_Build".to_vec(), Object::Dict(build));
-    doc.add(Object::Dict(v));
+    let sig = doc.add(Object::Dict(v));
+    // Like any signature, the timestamp hangs off a field (an invisible one on page 1), so
+    // other readers find it and a full save keeps it.
+    let root = doc.root().ok_or_else(|| SignError::Pdf("the document has no catalog".into()))?;
+    let pages = pdfcraft_annot::page_refs(&doc).map_err(|e| SignError::Pdf(e.to_string()))?;
+    let page = *pages.first().ok_or_else(|| SignError::Pdf("the document has no pages".into()))?;
+    let widget = add_signature_field(&mut doc, root, page, sig, [0.0; 4], None, "Timestamp")?;
+    let mut d = Dict::new();
+    d.set(b"Type".to_vec(), Object::name("XObject"));
+    d.set(b"Subtype".to_vec(), Object::name("Form"));
+    d.set(b"BBox".to_vec(), Object::Array(vec![Object::Real(0.0); 4]));
+    let ap_ref = doc.add(Object::Stream(Stream::flate(d, b"")));
+    let mut apd = Dict::new();
+    apd.set(b"N".to_vec(), Object::Ref(ap_ref));
+    doc.update_dict(widget, |w| w.set(b"AP".to_vec(), Object::Dict(apd)))?;
     let save = SaveOptions { mod_date: Some(date.to_string()), object_streams: false, ..SaveOptions::default() };
     let mut out = pdfcraft_cos::write_incremental(&doc, &save)?;
     let (br_at, gap) = locate(&out, TOKEN_RESERVE)?;

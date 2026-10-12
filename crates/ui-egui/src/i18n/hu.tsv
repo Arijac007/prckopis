@@ -2350,3 +2350,14 @@ animation effects	Off	Ki
 	No printers answered. A printer in another subnet: add its range under Also search, or type its address.	Egy nyomtató sem válaszolt. Más alhálózatban lévő nyomtató: adja meg a tartományát a „Keresés itt is” mezőben, vagy írja be a címét.
 	No printers answered. A VPN is connected: it may send the local network through its tunnel. Allow local network access in the VPN, or disconnect it, and search again.	Egy nyomtató sem válaszolt. VPN kapcsolódik, amely a helyi hálózatot is a saját alagútján keresztül küldheti. Engedélyezze a VPN-ben a helyi hálózat elérését, vagy bontsa a kapcsolatot, és keressen újra.
 	This printer says it doesn't read PDF, so a direct job may be refused or print as text. It needs its PDF option (on Canon: PDF Direct Print), or install it in the system with its driver.	Ez a nyomtató azt jelzi, hogy nem olvas PDF-et, így a közvetlen feladatot elutasíthatja vagy szövegként nyomtathatja ki. Szüksége van a PDF-opciójára (Canonnál: PDF Direct Print), vagy telepítse a rendszerbe az illesztőprogramjával.
+	Timestamp document	Időbélyegző hozzáadása a dokumentumhoz
+	Add a timestamp from {server}	Időbélyegző hozzáadása innen: {server}
+	Add a timestamp server first (Preferences > Timestamp servers).	Először adjon hozzá egy időbélyegző-kiszolgálót (Beállítások > Időbélyegző-kiszolgálók).
+	Timestamped by {server} and saved to {path}	Időbélyegző innen: {server}, mentve ide: {path}
+	Timestamp servers	Időbélyegző-kiszolgálók
+	Signatures and document timestamps get their time from the first server. Only http:// addresses; timestamp replies are signed, so that is safe. Passwords are kept until PdfCraft closes.	Az aláírások és a dokumentum-időbélyegzők az első kiszolgálótól kapják az időt. Csak http:// címek; a válaszok alá vannak írva, így ez biztonságos. A jelszavakat a PdfCraft bezárásáig őrzi.
+	Use this server by default	Ez legyen az alapértelmezett kiszolgáló
+	Server address	Kiszolgáló címe
+	User name	Felhasználónév
+	Add server	Kiszolgáló hozzáadása
+	At most 32 timestamp servers.	Legfeljebb 32 időbélyegző-kiszolgáló.

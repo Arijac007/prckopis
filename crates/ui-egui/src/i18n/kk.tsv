@@ -2349,3 +2349,14 @@ animation effects	Off	Өшірулі
 	No printers answered. A printer in another subnet: add its range under Also search, or type its address.	Ешбір принтер жауап бермеді. Басқа ішкі желідегі принтер үшін оның ауқымын «Сонымен қатар іздеу» өрісіне қосыңыз немесе мекенжайын енгізіңіз.
 	No printers answered. A VPN is connected: it may send the local network through its tunnel. Allow local network access in the VPN, or disconnect it, and search again.	Ешбір принтер жауап бермеді. Қосылған VPN жергілікті желіні өз туннелі арқылы жіберуі мүмкін. VPN-де жергілікті желіге қатынауға рұқсат беріңіз немесе оны ажыратып, қайта іздеңіз.
 	This printer says it doesn't read PDF, so a direct job may be refused or print as text. It needs its PDF option (on Canon: PDF Direct Print), or install it in the system with its driver.	Бұл принтер PDF оқымайтынын хабарлайды, сондықтан тікелей тапсырма қабылданбауы немесе мәтін ретінде басылуы мүмкін. Оған PDF опциясы керек (Canon-да: PDF Direct Print) немесе оны драйверімен жүйеге орнатыңыз.
+	Timestamp document	Құжатқа уақыт белгісін қою
+	Add a timestamp from {server}	{server} серверінен уақыт белгісін қосу
+	Add a timestamp server first (Preferences > Timestamp servers).	Алдымен уақыт белгісі серверін қосыңыз (Параметрлер > Уақыт белгісі серверлері).
+	Timestamped by {server} and saved to {path}	{server} уақыт белгісін қойды, {path} ішіне сақталды
+	Timestamp servers	Уақыт белгісі серверлері
+	Signatures and document timestamps get their time from the first server. Only http:// addresses; timestamp replies are signed, so that is safe. Passwords are kept until PdfCraft closes.	Қолтаңбалар мен құжат уақыт белгілері уақытты бірінші серверден алады. Тек http:// мекенжайлары; жауаптар қол қойылған, сондықтан бұл қауіпсіз. Құпия сөздер PdfCraft жабылғанға дейін сақталады.
+	Use this server by default	Бұл серверді әдепкі ретінде пайдалану
+	Server address	Сервер мекенжайы
+	User name	Пайдаланушы аты
+	Add server	Сервер қосу
+	At most 32 timestamp servers.	Ең көбі 32 уақыт белгісі сервері.

@@ -2352,3 +2352,14 @@ animation effects	Off	Aus
 	No printers answered. A printer in another subnet: add its range under Also search, or type its address.	Kein Drucker hat geantwortet. Für einen Drucker in einem anderen Subnetz: Bereich unter „Auch durchsuchen“ angeben oder seine Adresse eingeben.
 	No printers answered. A VPN is connected: it may send the local network through its tunnel. Allow local network access in the VPN, or disconnect it, and search again.	Kein Drucker hat geantwortet. Ein VPN ist verbunden und leitet das lokale Netzwerk möglicherweise durch seinen Tunnel. Erlauben Sie im VPN den Zugriff auf das lokale Netzwerk oder trennen Sie es, und suchen Sie erneut.
 	This printer says it doesn't read PDF, so a direct job may be refused or print as text. It needs its PDF option (on Canon: PDF Direct Print), or install it in the system with its driver.	Dieser Drucker gibt an, kein PDF zu lesen; ein direkter Auftrag kann abgelehnt oder als Text gedruckt werden. Er braucht seine PDF-Option (bei Canon: PDF Direct Print), oder installieren Sie ihn mit seinem Treiber im System.
+	Timestamp document	Dokument mit Zeitstempel versehen
+	Add a timestamp from {server}	Zeitstempel von {server} hinzufügen
+	Add a timestamp server first (Preferences > Timestamp servers).	Fügen Sie zuerst einen Zeitstempelserver hinzu (Voreinstellungen > Zeitstempelserver).
+	Timestamped by {server} and saved to {path}	Zeitstempel von {server} hinzugefügt und unter {path} gespeichert
+	Timestamp servers	Zeitstempelserver
+	Signatures and document timestamps get their time from the first server. Only http:// addresses; timestamp replies are signed, so that is safe. Passwords are kept until PdfCraft closes.	Signaturen und Dokument-Zeitstempel erhalten ihre Zeit vom ersten Server. Nur http://-Adressen; Zeitstempelantworten sind signiert, daher ist das sicher. Kennwörter bleiben nur bis zum Schließen von PdfCraft gespeichert.
+	Use this server by default	Diesen Server standardmäßig verwenden
+	Server address	Serveradresse
+	User name	Benutzername
+	Add server	Server hinzufügen
+	At most 32 timestamp servers.	Höchstens 32 Zeitstempelserver.

@@ -444,3 +444,76 @@ fn an_unusable_id_is_shown_with_its_reason_and_cannot_be_chosen() {
     h.run_steps(3);
     assert_eq!(h.state().sign_draft.as_ref().unwrap().selected, Some(1));
 }
+
+/// A timestamp server on loopback, answering with tokens signed by a test digital ID.
+fn fake_tsa(answers: usize) -> u16 {
+    use pdfcraft_engine::sign::{DigestAlg, Time, pkcs12, timestamp};
+    use std::io::{BufRead, BufReader, Read, Write};
+    let id = pkcs12::open(&std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/../sign/tests/data/rsa-aes.p12")).unwrap(), "test").unwrap();
+    let l = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    let port = l.local_addr().unwrap().port();
+    std::thread::spawn(move || {
+        for serial in 0..answers {
+            let Ok((s, _)) = l.accept() else { return };
+            let mut r = BufReader::new(s);
+            let mut len = 0usize;
+            loop {
+                let mut line = String::new();
+                r.read_line(&mut line).unwrap();
+                if let Some(v) = line.to_ascii_lowercase().strip_prefix("content-length:") {
+                    len = v.trim().parse().unwrap();
+                }
+                if line == "\r\n" {
+                    break;
+                }
+            }
+            let mut body = vec![0; len];
+            r.read_exact(&mut body).unwrap();
+            let q = timestamp::parse_request(&body).unwrap();
+            let time = Time { year: 2026, month: 10, day: 12, hour: 9, minute: 0, second: 0 };
+            let reply = timestamp::respond(&id.key, &id.certificate, &id.chain, DigestAlg::Sha256, &q, "1.2.3.4.5", time, serial as u64 + 1).unwrap();
+            let mut s = r.into_inner();
+            write!(s, "HTTP/1.1 200 OK\r\nContent-Type: application/timestamp-reply\r\nContent-Length: {}\r\n\r\n", reply.len()).unwrap();
+            s.write_all(&reply).unwrap();
+        }
+    });
+    port
+}
+
+/// Use a certificate ▸ Timestamp: with no server, Preferences open to add one; with one, the
+/// document gets a document timestamp from it and is saved as a copy. Servers are remembered
+/// across launches, their passwords are not.
+#[test]
+fn timestamping_a_document_from_a_configured_server() {
+    use pdfcraft_platform::tsa::TimestampServer;
+    let dir = dir();
+    let mut h = harness(dir.clone());
+    assert!(h.state_mut().execute("sign.timestamp"));
+    h.run_steps(2);
+    assert_eq!(h.state().dialog, Some(Dialog::Preferences), "no server yet: Preferences open");
+    h.get_by_label("Timestamp servers");
+    h.state_mut().dialog = None;
+    h.run_steps(1);
+
+    let port = fake_tsa(1);
+    let mut server = TimestampServer::new(&format!("http://127.0.0.1:{port}/tsa")).unwrap();
+    server.name = "Office TSA".into();
+    server.username = Some("ana".into());
+    server.password = Some("pw".into());
+    h.state_mut().timestamp_servers = vec![server];
+    assert!(h.state_mut().execute("sign.timestamp"));
+    h.run_steps(4);
+    let stamped = std::fs::read(dir.join("contract_signed.pdf")).unwrap_or_else(|e| panic!("{e}: {:?}", h.state().toast));
+    assert!(stamped.windows(12).any(|w| w == b"ETSI.RFC3161"), "a document timestamp");
+    let doc = h.state().session.get(h.state().views[0].id).unwrap();
+    assert_eq!(doc.signatures.len(), 1);
+    assert!(doc.signatures[0].signed);
+    assert_eq!(h.state().right, Some(RightPanel::Signatures));
+
+    let saved = h.state().persist();
+    assert!(saved.contains("Office TSA") && saved.contains("\"ana\"") && !saved.contains("\"pw\""), "{saved}");
+    let mut fresh = PdfCraftApp::new();
+    fresh.restore(&saved);
+    assert_eq!(fresh.timestamp_servers.len(), 1);
+    assert_eq!((fresh.timestamp_servers[0].name.as_str(), fresh.timestamp_servers[0].password.as_deref()), ("Office TSA", None));
+}

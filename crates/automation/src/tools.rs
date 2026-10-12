@@ -730,9 +730,23 @@ pub fn tools() -> Vec<ToolDef> {
                         "maxProperties": 1,
                     },
                     "out": { "type": "string", "description": "Where to save the signed document." },
+                    "timestamp": { "type": ["boolean", "string"], "description": "Embed a timestamp from a timestamp server (PAdES B-T): true for the default server, or a configured server's name or an http:// address." },
                 }),
                 &["doc", "id", "out"],
             )),
+        t("sign_timestamp_servers", "Configure timestamp servers", "Timestamp servers (RFC 3161 authorities) for signature timestamps and document timestamps (Acrobat: Preferences ▸ Security ▸ Timestamp Servers). add {url, name?, username?, password?} adds or replaces a server by name (with default: true it goes first); remove takes a name; set_default makes a server the default. Returns the list; passwords are never returned. Only http:// addresses (timestamp replies are signed, so plain HTTP is safe); most authorities answer that way, e.g. http://timestamp.digicert.com.").with(schema(
+            json!({
+                "add": { "type": "object", "properties": { "url": { "type": "string" }, "name": { "type": "string" }, "username": { "type": "string" }, "password": { "type": "string" } }, "required": ["url"] },
+                "default": { "type": "boolean", "description": "With add: make the new server the default." },
+                "remove": { "type": "string" },
+                "set_default": { "type": "string" },
+            }),
+            &[],
+        )),
+        t("sign_timestamp_document", "Timestamp a document", "Add a document timestamp (RFC 3161, /ETSI.RFC3161) from a timestamp server over the whole file and save it to `out` (Acrobat: Use a certificate ▸ Timestamp). server: a configured server's name or an http:// address (default: the default server). Returns the timestamp's validation (the server's certificate is trusted only once added with sign_trust).").with(schema(
+            json!({ "doc": doc(), "server": { "type": "string" }, "out": { "type": "string" } }),
+            &["doc", "out"],
+        )),
         t("sign_trust", "Trust certificates", "Add certificates (.cer/.crt/.pem/.der, or the certificates in a .p12 with `password`) to the trusted certificates used to validate signatures, or clear the list (clear: true). Every open document is revalidated. Returns the trusted list.").with(schema(
             json!({ "paths": { "type": "array", "items": { "type": "string" } }, "password": { "type": "string" }, "clear": { "type": "boolean" } }),
             &[],

@@ -1,6 +1,6 @@
 # Where PdfCraft falls short of Acrobat Pro
 
-> **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-12 · **Change:** gap 4 closed: the web build prints through the browser's print dialog; exclusive image-crop resize follow-up; minor (Word invoice regression coverage, #773; Office fidelity still partial; gap 2: hayro patch counts after the native-gradient backport) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
+> **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-12 · **Change:** minor (gap 10: timestamp servers, signature timestamps and document timestamps over HTTP) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
 > **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-12 · **Change:** minor (gap 13: large-file memory measured, edits keep two copies instead of three, file-backed input blocked on gap 2) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
 > **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-11 · **Change:** minor (gap 1 closed by #836; fixed issues removed from gaps 3, 6 and 16) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
 > **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-11 · **Change:** minor (document-font subset completion and curved/shared image clips in the contributor fork; gap 2: hayro patch counts after the native-gradient backport) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
@@ -31,7 +31,7 @@ update the numbers.
 | 7 | OCR reads only unaccented Latin | feature | 40–75 | [file-format-parity.md](file-format-parity.md) |
 | 8 | Office export weak, Office import absent | file format | 55–100 | [file-format-parity.md](file-format-parity.md) |
 | 9 | No Preflight; PDF/A partial; PDF/X and PDF/UA absent | standards | 65–115 | [pdf-spec-parity.md](pdf-spec-parity.md) |
-| 10 | Signatures: no PKCS #11, timestamp servers or online revocation | feature, hardware | 40–70 | [pdf-spec-parity.md](pdf-spec-parity.md) |
+| 10 | Signatures: no PKCS #11 or online revocation; timestamp servers HTTP only | feature, hardware | 40–70 | [pdf-spec-parity.md](pdf-spec-parity.md) |
 | 11 | Accessibility: checker only, no tagging tools | feature | 40–70 | [target-app-parity.md](target-app-parity.md) |
 | 12 | No measured fidelity harness against Acrobat | quality | (in 2) | [target-app-parity.md](target-app-parity.md) |
 | 13 | Performance budgets and lazy loading of very large files | performance | 25–45 | this file |
@@ -167,14 +167,14 @@ update the numbers.
 - **Impact:** blocks print shops, archives and accessibility compliance work.
 - **Estimate:** 65–115 h. **Doc:** [pdf-spec-parity.md](pdf-spec-parity.md).
 
-### 10. Signatures: no PKCS #11, timestamp servers or online revocation
+### 10. Signatures: no PKCS #11 or online revocation; timestamp servers HTTP only
 
-- **Missing:** PKCS #11 tokens and smart cards on macOS and Linux; timestamp-server preferences;
-  fetching OCSP/CRL online for LTV; FieldMDP and locking fields on signing; the OS trust store; EU
+- **Missing:** PKCS #11 tokens and smart cards on macOS and Linux; HTTPS timestamp servers
+  (timestamp servers, signature timestamps and document timestamps work over http://); fetching OCSP/CRL online for LTV; FieldMDP and locking fields on signing; the OS trust store; EU
   Trusted Lists; signature graphics and saved appearances; compare signed version; signing in the
   browser.
-- **Evidence:** `sign.pkcs11`, `sign.timestamp-servers`, `sign.field-mdp`, `sign.os-trust`,
-  `sign.eutl` planned; `sign.pades-bt`, `sign.ltv`, `sign.ocsp-crl` partial (caller-supplied
+- **Evidence:** `sign.pkcs11`, `sign.field-mdp`, `sign.os-trust`, `sign.eutl` planned;
+  `sign.ltv`, `sign.ocsp-crl` partial (caller-supplied
   evidence). Users ask for Acrobat-like validation
   ([#824](https://github.com/storytold/pdfcraft/issues/824),
   [#775](https://github.com/storytold/pdfcraft/issues/775),

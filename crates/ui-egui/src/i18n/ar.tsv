@@ -2372,3 +2372,14 @@ animation effects	Off	معطّلة
 	No printers answered. A printer in another subnet: add its range under Also search, or type its address.	لم تستجب أي طابعة. لطابعة في شبكة فرعية أخرى: أضف نطاقها في «البحث أيضًا في» أو اكتب عنوانها.
 	No printers answered. A VPN is connected: it may send the local network through its tunnel. Allow local network access in the VPN, or disconnect it, and search again.	لم تستجب أي طابعة. هناك VPN متصل قد يمرر الشبكة المحلية عبر نفقه. اسمح بالوصول إلى الشبكة المحلية في VPN أو افصله، ثم ابحث مرة أخرى.
 	This printer says it doesn't read PDF, so a direct job may be refused or print as text. It needs its PDF option (on Canon: PDF Direct Print), or install it in the system with its driver.	تفيد هذه الطابعة بأنها لا تقرأ PDF، لذا قد يُرفض الطلب المباشر أو يُطبع كنص. تحتاج إلى خيار PDF الخاص بها (في Canon: PDF Direct Print)، أو ثبّتها في النظام مع برنامج التشغيل الخاص بها.
+	Timestamp document	ختم المستند بالوقت
+	Add a timestamp from {server}	إضافة ختم زمني من {server}
+	Add a timestamp server first (Preferences > Timestamp servers).	أضف خادم ختم زمني أولًا (التفضيلات > خوادم الختم الزمني).
+	Timestamped by {server} and saved to {path}	خُتم بالوقت من {server} وحُفظ في {path}
+	Timestamp servers	خوادم الختم الزمني
+	Signatures and document timestamps get their time from the first server. Only http:// addresses; timestamp replies are signed, so that is safe. Passwords are kept until PdfCraft closes.	تأخذ التوقيعات والأختام الزمنية للمستند الوقت من الخادم الأول. عناوين http:// فقط؛ الردود موقّعة، لذا هذا آمن. تُحفظ كلمات المرور حتى إغلاق PdfCraft.
+	Use this server by default	استخدام هذا الخادم افتراضيًا
+	Server address	عنوان الخادم
+	User name	اسم المستخدم
+	Add server	إضافة خادم
+	At most 32 timestamp servers.	32 خادم ختم زمني كحد أقصى.

@@ -1439,38 +1439,14 @@ fn a_windows_store_identity_signs_with_its_issuers() {
 /// Documenso-style: an AcroForm signature field `Timestamp_1` whose `/V` is the document
 /// timestamp dictionary (`/Type /DocTimeStamp`, `/SubFilter /ETSI.RFC3161`).
 fn fixture_timestamped_in_a_field(tsa: &TestTsa) -> Vec<u8> {
-    let mut value_num = 0;
-    let base = edit_after(&fixture(), |doc| {
-        let field = doc.add(Object::Null);
-        // `timestamp_document` adds its dictionary next.
-        value_num = field.num + 1;
-        let at = |num| Object::Ref(pdfcraft_cos::ObjRef { num, generation: 0 });
-        let mut widget = pdfcraft_cos::Dict::new();
-        for (k, v) in [
-            ("Type", Object::name("Annot")),
-            ("Subtype", Object::name("Widget")),
-            ("FT", Object::name("Sig")),
-            ("T", Object::String(PdfString::text("Timestamp_1"))),
-            ("Rect", Object::Array(vec![Object::Int(0), Object::Int(0), Object::Int(0), Object::Int(0)])),
-            ("P", at(3)),
-            ("F", Object::Int(132)),
-            ("V", at(value_num)),
-        ] {
-            widget.set(k.as_bytes().to_vec(), v);
-        }
-        doc.set(field, Object::Dict(widget));
-        let root = doc.root().unwrap();
-        doc.update_dict(root, |c| {
-            if let Some(Object::Dict(form)) = c.get_mut(b"AcroForm")
-                && let Some(Object::Array(fields)) = form.get_mut(b"Fields")
-            {
-                fields.push(Object::Ref(field));
-            }
-        })
-        .unwrap();
-    });
-    let stamped = pdfcraft_sign::timestamp_document(&open(&base), tsa, "D:20261006120000Z").unwrap();
-    let held = open(&stamped).get(pdfcraft_cos::ObjRef { num: value_num, generation: 0 });
+    let stamped = pdfcraft_sign::timestamp_document(&open(&fixture()), tsa, "D:20261006120000Z").unwrap();
+    let doc = open(&stamped);
+    let fields = doc.root().and_then(|r| doc.get(r).as_dict().cloned()).and_then(|c| c.get(b"AcroForm").cloned()).unwrap();
+    let fields = doc.resolve(&fields).as_dict().and_then(|f| f.get(b"Fields").cloned()).unwrap();
+    let last = doc.resolve(&fields).as_array().and_then(|a| a.last().cloned()).unwrap();
+    let widget = doc.resolve(&last).as_dict().cloned().unwrap();
+    assert_eq!(widget.get(b"T").and_then(|t| t.as_string()).map(|t| t.bytes.clone()), Some(b"Timestamp1".to_vec()));
+    let held = doc.resolve(widget.get(b"V").unwrap());
     assert_eq!(held.as_dict().and_then(|d| d.name(b"Type")), Some(&b"DocTimeStamp"[..]), "the field holds the timestamp");
     stamped
 }
@@ -1487,7 +1463,7 @@ fn a_document_timestamp_held_by_a_signature_field_is_checked_as_a_timestamp() {
     let stamps: Vec<_> = all.iter().filter(|s| s.signed).collect();
     assert_eq!(stamps.len(), 1, "listed once, not as field and as standalone: {:?}", all.iter().map(|s| &s.field).collect::<Vec<_>>());
     let s = stamps[0];
-    assert_eq!(s.field, "Timestamp_1");
+    assert_eq!(s.field, "Timestamp1");
     assert!(s.doc_timestamp && s.timestamp);
     assert_eq!(s.sub_filter.as_deref(), Some("ETSI.RFC3161"));
     assert_eq!(s.timestamp_time, Some(tsa.time));

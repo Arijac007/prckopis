@@ -2481,3 +2481,14 @@ animation effects	Off	Desactivados
 	No printers answered. A printer in another subnet: add its range under Also search, or type its address.	Ninguna impresora respondió. Para una impresora de otra subred: añada su rango en «Buscar también» o escriba su dirección.
 	No printers answered. A VPN is connected: it may send the local network through its tunnel. Allow local network access in the VPN, or disconnect it, and search again.	Ninguna impresora respondió. Hay una VPN conectada que puede enviar la red local por su túnel. Permita el acceso a la red local en la VPN, o desconéctela, y vuelva a buscar.
 	This printer says it doesn't read PDF, so a direct job may be refused or print as text. It needs its PDF option (on Canon: PDF Direct Print), or install it in the system with its driver.	Esta impresora indica que no lee PDF, así que un trabajo directo puede rechazarse o imprimirse como texto. Necesita su opción de PDF (en Canon: PDF Direct Print), o instálela en el sistema con su controlador.
+	Timestamp document	Sellar el documento con fecha y hora
+	Add a timestamp from {server}	Añadir un sello de tiempo de {server}
+	Add a timestamp server first (Preferences > Timestamp servers).	Primero añada un servidor de sellado de tiempo (Preferencias > Servidores de sellado de tiempo).
+	Timestamped by {server} and saved to {path}	Sellado por {server} y guardado en {path}
+	Timestamp servers	Servidores de sellado de tiempo
+	Signatures and document timestamps get their time from the first server. Only http:// addresses; timestamp replies are signed, so that is safe. Passwords are kept until PdfCraft closes.	Las firmas y los sellos de tiempo del documento toman la hora del primer servidor. Solo direcciones http://; las respuestas de sellado están firmadas, así que es seguro. Las contraseñas se conservan hasta que se cierra PdfCraft.
+	Use this server by default	Usar este servidor de forma predeterminada
+	Server address	Dirección del servidor
+	User name	Nombre de usuario
+	Add server	Añadir servidor
+	At most 32 timestamp servers.	Como máximo 32 servidores de sellado de tiempo.

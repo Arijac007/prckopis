@@ -2314,3 +2314,14 @@ animation effects	Off	Изключени
 	No printers answered. A printer in another subnet: add its range under Also search, or type its address.	Никой принтер не отговори. За принтер в друга подмрежа: добавете диапазона му в „Търсене също в“ или въведете адреса му.
 	No printers answered. A VPN is connected: it may send the local network through its tunnel. Allow local network access in the VPN, or disconnect it, and search again.	Никой принтер не отговори. Свързана е VPN, която може да пренасочва локалната мрежа през своя тунел. Разрешете във VPN достъпа до локалната мрежа или я прекъснете и потърсете отново.
 	This printer says it doesn't read PDF, so a direct job may be refused or print as text. It needs its PDF option (on Canon: PDF Direct Print), or install it in the system with its driver.	Този принтер съобщава, че не чете PDF, така че директно задание може да бъде отказано или отпечатано като текст. Нужна е опцията му за PDF (при Canon: PDF Direct Print) или го инсталирайте в системата с драйвера му.
+	Timestamp document	Добавяне на времеви печат към документа
+	Add a timestamp from {server}	Добавяне на времеви печат от {server}
+	Add a timestamp server first (Preferences > Timestamp servers).	Първо добавете сървър за времеви печати (Предпочитания > Сървъри за времеви печати).
+	Timestamped by {server} and saved to {path}	Времеви печат от {server}, записано в {path}
+	Timestamp servers	Сървъри за времеви печати
+	Signatures and document timestamps get their time from the first server. Only http:// addresses; timestamp replies are signed, so that is safe. Passwords are kept until PdfCraft closes.	Подписите и времевите печати на документа получават часа от първия сървър. Само адреси http://; отговорите са подписани, затова това е безопасно. Паролите се пазят до затварянето на PdfCraft.
+	Use this server by default	Използвай този сървър по подразбиране
+	Server address	Адрес на сървъра
+	User name	Потребителско име
+	Add server	Добавяне на сървър
+	At most 32 timestamp servers.	Най-много 32 сървъра за времеви печати.

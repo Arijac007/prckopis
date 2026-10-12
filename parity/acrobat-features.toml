@@ -6077,11 +6077,11 @@ title = "Add a document timestamp (RFC 3161)"
 area = "H"
 tier = "P1"
 milestone = "M9"
-status = "partial"
-commands = []
-tools = []
-evidence = ["crates/sign/tests/pdf.rs::a_document_timestamp_covers_the_file_and_validates"]
-notes = "timestamp_document appends a standalone /ETSI.RFC3161 signature dictionary over the whole file; validation discovers and verifies these (imprint, token signature, TSA cert validity) and reports the trusted time. Missing: automation tool and timestamp-server configuration (transport is caller-injected)."
+status = "shipped"
+commands = ["sign.timestamp"]
+tools = ["sign_timestamp_document"]
+evidence = ["crates/sign/tests/pdf.rs::a_document_timestamp_covers_the_file_and_validates", "crates/sign/tests/pdf.rs::a_document_timestamp_held_by_a_signature_field_is_checked_as_a_timestamp", "crates/automation/tests/automation.rs::timestamp_servers_stamp_signatures_and_documents", "crates/ui-egui/tests/signing.rs::timestamping_a_document_from_a_configured_server"]
+notes = "Use a certificate > Timestamp (sign.timestamp, tool sign_timestamp_document) asks the default timestamp server for an RFC 3161 token over the whole file and saves a copy: an /ETSI.RFC3161 signature dictionary held by an invisible signature field (Timestamp1, …) on page 1, so other readers find it; validation verifies imprint, token signature and TSA certificate validity and reports the trusted time. Not yet: checked only against PdfCraft's own validator, not pyHanko or Acrobat; the request runs on the UI thread (bounded by a 20 s timeout)."
 
 [[feature]]
 id = "sign.timestamp-servers"
@@ -6089,11 +6089,11 @@ title = "Configure timestamp servers"
 area = "H"
 tier = "P1"
 milestone = "M9"
-status = "planned"
+status = "shipped"
 commands = []
-tools = []
-evidence = []
-notes = ""
+tools = ["sign_timestamp_servers"]
+evidence = ["crates/platform/src/tsa.rs::a_query_is_posted_and_the_reply_returned", "crates/platform/src/tsa.rs::chunked_replies_redirects_and_errors", "crates/automation/tests/automation.rs::timestamp_servers_stamp_signatures_and_documents", "crates/ui-egui/tests/signing.rs::timestamping_a_document_from_a_configured_server"]
+notes = "Preferences > Timestamp servers: a list (the first is the default) with name, http:// address, user name and password (HTTP Basic); remembered across launches without passwords, which last until PdfCraft closes. The transport (pdfcraft-platform tsa) POSTs application/timestamp-query, follows up to 3 http redirects, caps headers and replies, and explains 401/404/web-page answers. Not yet: HTTPS authorities (the error suggests their http address; replies are signed, so HTTP is safe), the OS proxy settings, editing a server in place."
 
 [[feature]]
 id = "sign.pades-bt"
@@ -6101,11 +6101,11 @@ title = "PAdES B-T (signature timestamp)"
 area = "H"
 tier = "P1"
 milestone = "M9"
-status = "partial"
+status = "shipped"
 commands = []
-tools = []
-evidence = ["crates/sign/tests/pdf.rs::signing_with_a_timestamp_embeds_a_verified_rfc3161_token"]
-notes = "Sign with an embedded RFC 3161 token (sign_with_timestamp): imprint and TSA signature verified at signing and validation time, trusted time reported. Missing: timestamp-server configuration and a fetcher (transport is caller-injected), the standalone document timestamp, automation tool."
+tools = ["sign_document"]
+evidence = ["crates/sign/tests/pdf.rs::signing_with_a_timestamp_embeds_a_verified_rfc3161_token", "crates/automation/tests/automation.rs::timestamp_servers_stamp_signatures_and_documents"]
+notes = "Sign with an embedded RFC 3161 token from the default timestamp server (Sign as > Add a timestamp from <server>; sign_document timestamp: true, a server name or an http:// address): imprint and TSA signature verified at signing and validation time, trusted time reported. Not yet: HTTPS authorities; checked only against PdfCraft's own validator, not pyHanko or Acrobat."
 
 [[feature]]
 id = "sign.ltv"

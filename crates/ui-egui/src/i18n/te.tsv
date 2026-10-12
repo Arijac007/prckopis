@@ -2264,3 +2264,14 @@ animation effects	Off	ఆఫ్
 	No printers answered. A printer in another subnet: add its range under Also search, or type its address.	ఏ ప్రింటర్ స్పందించలేదు. వేరే సబ్‌నెట్‌లోని ప్రింటర్ కోసం: దాని పరిధిని "అదనంగా వెతకాల్సినవి"లో చేర్చండి లేదా దాని చిరునామాను టైప్ చేయండి.
 	No printers answered. A VPN is connected: it may send the local network through its tunnel. Allow local network access in the VPN, or disconnect it, and search again.	ఏ ప్రింటర్ స్పందించలేదు. ఒక VPN కనెక్ట్ అయి ఉంది; అది స్థానిక నెట్‌వర్క్‌ను కూడా తన టన్నెల్ ద్వారా పంపవచ్చు. VPN‌లో స్థానిక నెట్‌వర్క్ యాక్సెస్‌ను అనుమతించండి లేదా దాన్ని డిస్‌కనెక్ట్ చేసి మళ్లీ వెతకండి.
 	This printer says it doesn't read PDF, so a direct job may be refused or print as text. It needs its PDF option (on Canon: PDF Direct Print), or install it in the system with its driver.	ఈ ప్రింటర్ PDF చదవదని చెబుతోంది, కాబట్టి నేరుగా పంపిన పని తిరస్కరించబడవచ్చు లేదా వచనంగా ముద్రించబడవచ్చు. దానికి PDF ఎంపిక అవసరం (Canon‌లో: PDF Direct Print), లేదా దాని డ్రైవర్‌తో సిస్టమ్‌లో ఇన్‌స్టాల్ చేయండి.
+	Timestamp document	పత్రానికి టైమ్‌స్టాంప్ వేయి
+	Add a timestamp from {server}	{server} నుండి టైమ్‌స్టాంప్ జోడించు
+	Add a timestamp server first (Preferences > Timestamp servers).	ముందుగా ఒక టైమ్‌స్టాంప్ సర్వర్‌ను జోడించండి (ప్రాధాన్యతలు > టైమ్‌స్టాంప్ సర్వర్లు).
+	Timestamped by {server} and saved to {path}	{server} టైమ్‌స్టాంప్ వేసి {path}లో సేవ్ చేసింది
+	Timestamp servers	టైమ్‌స్టాంప్ సర్వర్లు
+	Signatures and document timestamps get their time from the first server. Only http:// addresses; timestamp replies are signed, so that is safe. Passwords are kept until PdfCraft closes.	సంతకాలు, పత్ర టైమ్‌స్టాంప్‌లు సమయాన్ని మొదటి సర్వర్ నుండి తీసుకుంటాయి. http:// చిరునామాలు మాత్రమే; సమాధానాలకు సంతకం ఉంటుంది కాబట్టి ఇది సురక్షితం. PdfCraft మూసే వరకు పాస్‌వర్డ్‌లు ఉంచబడతాయి.
+	Use this server by default	ఈ సర్వర్‌ను డిఫాల్ట్‌గా ఉపయోగించు
+	Server address	సర్వర్ చిరునామా
+	User name	వినియోగదారు పేరు
+	Add server	సర్వర్ జోడించు
+	At most 32 timestamp servers.	గరిష్ఠంగా 32 టైమ్‌స్టాంప్ సర్వర్లు.

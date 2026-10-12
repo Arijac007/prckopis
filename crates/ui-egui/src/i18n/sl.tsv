@@ -2356,3 +2356,14 @@ animation effects	Off	Izklopljeni
 	No printers answered. A printer in another subnet: add its range under Also search, or type its address.	Noben tiskalnik se ni odzval. Za tiskalnik v drugem podomrežju: dodajte njegov obseg v polje Išči tudi ali vpišite njegov naslov.
 	No printers answered. A VPN is connected: it may send the local network through its tunnel. Allow local network access in the VPN, or disconnect it, and search again.	Noben tiskalnik se ni odzval. Povezan je VPN, ki morda pošilja lokalno omrežje skozi svoj tunel. V VPN-ju dovolite dostop do lokalnega omrežja ali ga prekinite in znova poiščite.
 	This printer says it doesn't read PDF, so a direct job may be refused or print as text. It needs its PDF option (on Canon: PDF Direct Print), or install it in the system with its driver.	Ta tiskalnik sporoča, da ne bere PDF-jev, zato je lahko neposredno opravilo zavrnjeno ali natisnjeno kot besedilo. Potrebuje svojo možnost PDF (pri Canonu PDF Direct Print) ali pa ga namestite v sistem z gonilnikom.
+	Timestamp document	Dokumentu dodaj časovni žig
+	Add a timestamp from {server}	Dodaj časovni žig strežnika {server}
+	Add a timestamp server first (Preferences > Timestamp servers).	Najprej dodajte strežnik za časovne žige (Nastavitve > Strežniki za časovne žige).
+	Timestamped by {server} and saved to {path}	Časovni žig strežnika {server} shranjen v {path}
+	Timestamp servers	Strežniki za časovne žige
+	Signatures and document timestamps get their time from the first server. Only http:// addresses; timestamp replies are signed, so that is safe. Passwords are kept until PdfCraft closes.	Podpisi in časovni žigi dokumenta dobijo čas od prvega strežnika. Samo naslovi http://; odgovori so podpisani, zato je to varno. Gesla se hranijo, dokler ne zaprete PdfCrafta.
+	Use this server by default	Ta strežnik uporabljaj privzeto
+	Server address	Naslov strežnika
+	User name	Uporabniško ime
+	Add server	Dodaj strežnik
+	At most 32 timestamp servers.	Največ 32 strežnikov za časovne žige.

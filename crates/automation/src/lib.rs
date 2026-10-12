@@ -106,6 +106,8 @@ pub struct Automation {
     renderers: HashMap<DocId, (Arc<Vec<u8>>, PageRenderer)>,
     /// Extracted page text per document version (the working bytes it was taken from).
     texts: HashMap<DocId, TextCache>,
+    /// Timestamp authorities for signatures and document timestamps (the first is the default).
+    timestamp_servers: Vec<pdfcraft_platform::tsa::TimestampServer>,
 }
 
 impl Default for Automation {
@@ -116,7 +118,7 @@ impl Default for Automation {
 
 impl Automation {
     pub fn new() -> Self {
-        Self { session: Session::new(), root: None, renderers: HashMap::new(), texts: HashMap::new() }
+        Self { session: Session::new(), root: None, renderers: HashMap::new(), texts: HashMap::new(), timestamp_servers: Vec::new() }
     }
 
     /// Confine every path the tools read or write to `root` (relative paths resolve inside it).
@@ -754,6 +756,8 @@ impl Automation {
             "accessibility_move_tag" => self.accessibility_move_tag(&a)?,
             "sign_id_create" => self.sign_id_create(&a)?,
             "sign_document" => self.sign_document(&a)?,
+            "sign_timestamp_servers" => self.sign_timestamp_servers(&a)?,
+            "sign_timestamp_document" => self.sign_timestamp_document(&a)?,
             "sign_keychain_ids" => {
                 #[cfg(target_os = "macos")]
                 let ids: Vec<Value> = pdfcraft_engine::sign::keychain::identities(None)

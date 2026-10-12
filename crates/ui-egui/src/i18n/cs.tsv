@@ -2425,3 +2425,14 @@ animation effects	Off	Vypnuto
 	No printers answered. A printer in another subnet: add its range under Also search, or type its address.	Žádná tiskárna neodpověděla. Tiskárna v jiné podsíti: přidejte její rozsah do pole Hledat také nebo zadejte její adresu.
 	No printers answered. A VPN is connected: it may send the local network through its tunnel. Allow local network access in the VPN, or disconnect it, and search again.	Žádná tiskárna neodpověděla. Je připojena VPN, která může posílat místní síť svým tunelem. Povolte ve VPN přístup k místní síti nebo ji odpojte a hledejte znovu.
 	This printer says it doesn't read PDF, so a direct job may be refused or print as text. It needs its PDF option (on Canon: PDF Direct Print), or install it in the system with its driver.	Tato tiskárna uvádí, že nečte PDF, takže přímá úloha může být odmítnuta nebo vytištěna jako text. Potřebuje svou volbu PDF (u Canonu PDF Direct Print), nebo ji nainstalujte do systému s jejím ovladačem.
+	Timestamp document	Opatřit dokument časovým razítkem
+	Add a timestamp from {server}	Přidat časové razítko z {server}
+	Add a timestamp server first (Preferences > Timestamp servers).	Nejprve přidejte server časových razítek (Předvolby > Servery časových razítek).
+	Timestamped by {server} and saved to {path}	Časové razítko z {server} uloženo do {path}
+	Timestamp servers	Servery časových razítek
+	Signatures and document timestamps get their time from the first server. Only http:// addresses; timestamp replies are signed, so that is safe. Passwords are kept until PdfCraft closes.	Podpisy a časová razítka dokumentu berou čas z prvního serveru. Pouze adresy http://; odpovědi jsou podepsané, takže je to bezpečné. Hesla se uchovávají jen do zavření PdfCraftu.
+	Use this server by default	Používat tento server jako výchozí
+	Server address	Adresa serveru
+	User name	Uživatelské jméno
+	Add server	Přidat server
+	At most 32 timestamp servers.	Nejvýše 32 serverů časových razítek.

@@ -2373,3 +2373,14 @@ animation effects	Off	Вимкнено
 	No printers answered. A printer in another subnet: add its range under Also search, or type its address.	Жоден принтер не відповів. Принтер в іншій підмережі: додайте його діапазон у поле «Шукати також» або введіть його адресу.
 	No printers answered. A VPN is connected: it may send the local network through its tunnel. Allow local network access in the VPN, or disconnect it, and search again.	Жоден принтер не відповів. Підключено VPN, який може спрямовувати локальну мережу через свій тунель. Дозвольте у VPN доступ до локальної мережі або відключіть його й пошукайте знову.
 	This printer says it doesn't read PDF, so a direct job may be refused or print as text. It needs its PDF option (on Canon: PDF Direct Print), or install it in the system with its driver.	Цей принтер повідомляє, що не читає PDF, тож пряме завдання може бути відхилене або надруковане як текст. Потрібна його опція PDF (у Canon — PDF Direct Print) або встановіть його в системі з драйвером.
+	Timestamp document	Додати мітку часу до документа
+	Add a timestamp from {server}	Додати мітку часу з {server}
+	Add a timestamp server first (Preferences > Timestamp servers).	Спочатку додайте сервер міток часу (Параметри > Сервери міток часу).
+	Timestamped by {server} and saved to {path}	Мітка часу від {server}, збережено в {path}
+	Timestamp servers	Сервери міток часу
+	Signatures and document timestamps get their time from the first server. Only http:// addresses; timestamp replies are signed, so that is safe. Passwords are kept until PdfCraft closes.	Підписи й мітки часу документа отримують час від першого сервера. Лише адреси http://; відповіді підписані, тож це безпечно. Паролі зберігаються до закриття PdfCraft.
+	Use this server by default	Використовувати цей сервер за замовчуванням
+	Server address	Адреса сервера
+	User name	Ім’я користувача
+	Add server	Додати сервер
+	At most 32 timestamp servers.	Не більше 32 серверів міток часу.

@@ -2331,3 +2331,14 @@ animation effects	Off	Wyłączone
 	No printers answered. A printer in another subnet: add its range under Also search, or type its address.	Żadna drukarka nie odpowiedziała. Drukarka w innej podsieci: dodaj jej zakres w polu „Szukaj także” lub wpisz jej adres.
 	No printers answered. A VPN is connected: it may send the local network through its tunnel. Allow local network access in the VPN, or disconnect it, and search again.	Żadna drukarka nie odpowiedziała. Połączona jest sieć VPN, która może kierować sieć lokalną przez swój tunel. Zezwól w VPN na dostęp do sieci lokalnej lub rozłącz ją i wyszukaj ponownie.
 	This printer says it doesn't read PDF, so a direct job may be refused or print as text. It needs its PDF option (on Canon: PDF Direct Print), or install it in the system with its driver.	Ta drukarka podaje, że nie czyta plików PDF, więc bezpośrednie zadanie może zostać odrzucone lub wydrukowane jako tekst. Potrzebuje opcji PDF (w Canonie: PDF Direct Print) albo zainstaluj ją w systemie z jej sterownikiem.
+	Timestamp document	Oznacz dokument znacznikiem czasu
+	Add a timestamp from {server}	Dodaj znacznik czasu z {server}
+	Add a timestamp server first (Preferences > Timestamp servers).	Najpierw dodaj serwer znaczników czasu (Preferencje > Serwery znaczników czasu).
+	Timestamped by {server} and saved to {path}	Znacznik czasu z {server} zapisany w {path}
+	Timestamp servers	Serwery znaczników czasu
+	Signatures and document timestamps get their time from the first server. Only http:// addresses; timestamp replies are signed, so that is safe. Passwords are kept until PdfCraft closes.	Podpisy i znaczniki czasu dokumentu pobierają czas z pierwszego serwera. Tylko adresy http://; odpowiedzi są podpisane, więc to bezpieczne. Hasła są przechowywane do zamknięcia PdfCraft.
+	Use this server by default	Używaj tego serwera domyślnie
+	Server address	Adres serwera
+	User name	Nazwa użytkownika
+	Add server	Dodaj serwer
+	At most 32 timestamp servers.	Najwyżej 32 serwery znaczników czasu.

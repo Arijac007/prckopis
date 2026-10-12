@@ -2,6 +2,7 @@
 //! click an empty signature field), the Sign with a Digital ID / Configure New Digital ID /
 //! Sign as dialogs, the Signatures panel, and the signature message bar.
 
+use pdfcraft_platform::tsa::TimestampServer;
 use std::path::PathBuf;
 
 use egui::{Align, Color32, CornerRadius, Layout, Pos2, Rect, Stroke, vec2};
@@ -111,6 +112,8 @@ pub struct SignDraft {
     pub image: Option<SignatureImage>,
     pub new_id: NewIdDraft,
     pub error: Option<String>,
+    /// Embed a timestamp from the default timestamp server (PAdES B-T).
+    pub timestamp: bool,
 }
 
 impl SignDraft {
@@ -132,6 +135,7 @@ impl SignDraft {
             image: None,
             new_id: NewIdDraft::default(),
             error: None,
+            timestamp: false,
         }
     }
 }
@@ -401,6 +405,7 @@ impl PdfCraftApp {
             _ => None,
         };
         let choice = d.graphic.clone();
+        let tsa = if d.timestamp { self.timestamp_servers.first().cloned().map(HttpTsa) } else { None };
         let opts = SignOptions {
             field: d.field.clone(),
             page: d.page,
@@ -422,7 +427,11 @@ impl PdfCraftApp {
             if !app.commit_typing_in(doc_id) {
                 return Err(String::new());
             }
-            let signed = app.session.sign(doc_id, &id, opts).map_err(|e| e.to_string())?;
+            let signed = match &tsa {
+                Some(tsa) => app.session.sign_with_timestamp(doc_id, &id, opts, tsa),
+                None => app.session.sign(doc_id, &id, opts),
+            }
+            .map_err(|e| e.to_string())?;
             crate::editing::write_atomically(&path.to_string_lossy(), signed.as_slice()).map_err(|e| format!("Could not save: {e}"))?;
             // Our own write is not a change on disk to reload (#431).
             #[cfg(not(target_arch = "wasm32"))]
@@ -812,6 +821,7 @@ fn preview(
 
 fn sign_as(ui: &mut egui::Ui, app: &mut PdfCraftApp, t: &Tokens) -> bool {
     let ids = app.digital_ids.clone();
+    let default_server = app.timestamp_servers.first().map(|s| s.name.clone());
     let Some(d) = app.sign_draft.as_mut() else { return true };
     let Some(entry) = d.selected.and_then(|i| ids.get(i)).cloned() else {
         d.step = SignStep::Choose;
@@ -882,6 +892,11 @@ fn sign_as(ui: &mut egui::Ui, app: &mut PdfCraftApp, t: &Tokens) -> bool {
                 }
             });
             d.certify = Some(p);
+            ui.end_row();
+        }
+        if let Some(server) = &default_server {
+            ui.label(tl!("Timestamp"));
+            ui.add(widgets::checkbox(&mut d.timestamp, &crate::i18n::fmt(tl!("Add a timestamp from {server}"), &[("server", server)])));
             ui.end_row();
         }
         let l = ui.label(tl!("Reason"));
@@ -1290,6 +1305,161 @@ pub(crate) fn cert_viewer(ui: &mut egui::Ui, v: &mut CertViewer, trusted: &[Cert
 /// The text of an exported certificate (`.cer`, PEM).
 pub fn certificate_pem(c: &Certificate) -> String {
     sign::x509::to_pem(c)
+}
+
+/// A timestamp server reached over HTTP: the transport the sign crate leaves to its caller.
+/// The request runs on the calling thread, bounded by the transport's timeout.
+pub(crate) struct HttpTsa(pub(crate) TimestampServer);
+
+impl sign::TimestampAuthority for HttpTsa {
+    fn timestamp(&self, request: &[u8]) -> Result<Vec<u8>, sign::SignError> {
+        pdfcraft_platform::tsa::post_query(&self.0, request, pdfcraft_platform::tsa::DEFAULT_TIMEOUT).map_err(sign::SignError::Crypto)
+    }
+}
+
+/// The servers as the settings file keeps them: no passwords.
+pub(crate) fn servers_to_json(servers: &[TimestampServer]) -> serde_json::Value {
+    servers.iter().map(|s| serde_json::json!({ "name": s.name, "url": s.url, "username": s.username })).collect()
+}
+
+/// Servers from the settings file; anything malformed is skipped.
+pub(crate) fn servers_from_json(v: &serde_json::Value) -> Vec<TimestampServer> {
+    let Some(list) = v.as_array() else { return Vec::new() };
+    list.iter()
+        .take(32)
+        .filter_map(|e| {
+            let s = TimestampServer {
+                name: e["name"].as_str()?.chars().take(100).collect(),
+                url: e["url"].as_str()?.to_string(),
+                username: e["username"].as_str().map(str::to_string).filter(|u| !u.is_empty()),
+                password: None,
+            };
+            (s.validate().is_ok() && !s.name.trim().is_empty()).then_some(s)
+        })
+        .collect()
+}
+
+impl PdfCraftApp {
+    /// Use a certificate > Timestamp: a document timestamp from the default server, saved as
+    /// a copy as Acrobat does. With no server configured, Preferences open at that section.
+    pub fn timestamp_document(&mut self) {
+        let Some((_, doc_id)) = self.active_ids() else { return };
+        let Some(server) = self.timestamp_servers.first().cloned() else {
+            self.dialog = Some(crate::Dialog::Preferences);
+            self.notify_tr("Add a timestamp server first (Preferences > Timestamp servers).");
+            return;
+        };
+        let name = self.session.get(doc_id).map(|d| d.name.clone()).unwrap_or_default();
+        let stem = name.trim_end_matches(".pdf").trim_end_matches(".PDF").to_string();
+        let stamp_and_save = move |app: &mut Self, path: PathBuf| -> Result<(), String> {
+            let stamped = app.session.timestamp_document(doc_id, &HttpTsa(server.clone()), String::new()).map_err(|e| e.to_string())?;
+            crate::editing::write_atomically(&path.to_string_lossy(), stamped.as_slice()).map_err(|e| format!("Could not save: {e}"))?;
+            #[cfg(not(target_arch = "wasm32"))]
+            app.watch.known_now(doc_id, &path.to_string_lossy());
+            app.session.mark_signed(doc_id, stamped, Some(path.to_string_lossy().into_owned())).map_err(|e| e.to_string())?;
+            if let Some(view) = app.views.iter_mut().find(|v| v.id == doc_id) {
+                view.invalidate_content();
+            }
+            app.right = Some(crate::RightPanel::Signatures);
+            app.notify_fmt("Timestamped by {server} and saved to {path}", &[("server", &server.name), ("path", &path.display().to_string())]);
+            Ok(())
+        };
+        match self.save_override.clone() {
+            Some(p) => {
+                if let Err(e) = stamp_and_save(self, PathBuf::from(p)) {
+                    self.notify(e);
+                }
+            }
+            #[cfg(not(target_arch = "wasm32"))]
+            None => {
+                let dialog = rfd::AsyncFileDialog::new().add_filter("PDF", &["pdf"]).set_file_name(format!("{stem}_timestamped.pdf"));
+                self.ask_one(crate::pickers::Ask::Save(dialog), Some(doc_id), move |app, path| {
+                    if let Err(e) = stamp_and_save(app, path) {
+                        app.notify(e);
+                    }
+                });
+            }
+            #[cfg(target_arch = "wasm32")]
+            None => {
+                let _ = (stem, stamp_and_save);
+            }
+        }
+    }
+}
+
+/// Preferences > Timestamp servers: the list (the first is the default), and a row to add one.
+pub(crate) fn timestamp_servers_section(ui: &mut egui::Ui, app: &mut PdfCraftApp, t: &Tokens) {
+    ui.label(egui::RichText::new(tl!("Timestamp servers")).font(theme::semibold(13.0)));
+    ui.label(
+        egui::RichText::new(tl!("Signatures and document timestamps get their time from the first server. Only http:// addresses; timestamp replies are signed, so that is safe. Passwords are kept until PdfCraft closes."))
+            .small()
+            .color(t.text_muted),
+    );
+    let mut remove = None;
+    let mut first = None;
+    for (i, s) in app.timestamp_servers.iter().enumerate() {
+        ui.horizontal(|ui| {
+            if ui.add(widgets::radio(i == 0, &s.name)).on_hover_text(tl!("Use this server by default")).clicked() {
+                first = Some(i);
+            }
+            ui.label(egui::RichText::new(&s.url).small().color(t.text_muted));
+            if ui.small_button(tl!("Remove")).clicked() {
+                remove = Some(i);
+            }
+        });
+    }
+    if let Some(i) = first.filter(|&i| i > 0 && i < app.timestamp_servers.len()) {
+        let s = app.timestamp_servers.remove(i);
+        app.timestamp_servers.insert(0, s);
+    }
+    if let Some(i) = remove.filter(|&i| i < app.timestamp_servers.len()) {
+        app.timestamp_servers.remove(i);
+    }
+    let n = &mut app.timestamp_new;
+    let mut add = false;
+    egui::Grid::new("tsa-new").num_columns(2).spacing([12.0, 6.0]).show(ui, |ui| {
+        let l = ui.label(tl!("Server address"));
+        ui.add(crate::widgets::line(&mut n.url).hint_text("http://timestamp.digicert.com").desired_width(280.0).char_limit(2048)).labelled_by(l.id);
+        ui.end_row();
+        let l = ui.label(tl!("Name"));
+        ui.add(crate::widgets::line(&mut n.name).hint_text(tl!("Optional")).desired_width(200.0).char_limit(100)).labelled_by(l.id);
+        ui.end_row();
+        let l = ui.label(tl!("User name"));
+        let mut user = n.username.clone().unwrap_or_default();
+        ui.add(crate::widgets::line(&mut user).hint_text(tl!("Optional")).desired_width(200.0).char_limit(256)).labelled_by(l.id);
+        n.username = Some(user).filter(|u| !u.is_empty());
+        ui.end_row();
+        let l = ui.label(tl!("Password"));
+        let mut pw = n.password.clone().unwrap_or_default();
+        ui.add(crate::widgets::line(&mut pw).password(true).desired_width(200.0).char_limit(256)).labelled_by(l.id);
+        n.password = Some(pw).filter(|p| !p.is_empty());
+        ui.end_row();
+    });
+    if widgets::pill_button(ui, tl!("Add server"), false).clicked() {
+        add = true;
+    }
+    if add {
+        let draft = app.timestamp_new.clone();
+        match TimestampServer::new(&draft.url) {
+            Ok(mut s) => {
+                if !draft.name.trim().is_empty() {
+                    s.name = draft.name.trim().to_string();
+                }
+                s.username = draft.username;
+                s.password = draft.password;
+                if let Err(e) = s.validate() {
+                    app.notify(e);
+                } else if app.timestamp_servers.len() >= 32 {
+                    app.notify_tr("At most 32 timestamp servers.");
+                } else {
+                    app.timestamp_servers.retain(|o| !o.name.eq_ignore_ascii_case(&s.name));
+                    app.timestamp_servers.push(s);
+                    app.timestamp_new = TimestampServer::default();
+                }
+            }
+            Err(e) => app.notify(e),
+        }
+    }
 }
 
 #[cfg(test)]

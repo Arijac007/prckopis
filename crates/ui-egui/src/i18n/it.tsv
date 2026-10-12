@@ -2360,3 +2360,14 @@ animation effects	Off	Disattivati
 	No printers answered. A printer in another subnet: add its range under Also search, or type its address.	Nessuna stampante ha risposto. Per una stampante di un’altra sottorete: aggiungi il suo intervallo in «Cerca anche» o digita il suo indirizzo.
 	No printers answered. A VPN is connected: it may send the local network through its tunnel. Allow local network access in the VPN, or disconnect it, and search again.	Nessuna stampante ha risposto. È connessa una VPN che potrebbe instradare la rete locale nel suo tunnel. Consenti l’accesso alla rete locale nella VPN, o disconnettila, e cerca di nuovo.
 	This printer says it doesn't read PDF, so a direct job may be refused or print as text. It needs its PDF option (on Canon: PDF Direct Print), or install it in the system with its driver.	Questa stampante dichiara di non leggere il PDF, quindi un lavoro diretto può essere rifiutato o stampato come testo. Serve la sua opzione PDF (su Canon: PDF Direct Print), oppure installala nel sistema con il suo driver.
+	Timestamp document	Aggiungi marca temporale al documento
+	Add a timestamp from {server}	Aggiungi una marca temporale da {server}
+	Add a timestamp server first (Preferences > Timestamp servers).	Aggiungi prima un server di marca temporale (Preferenze > Server di marca temporale).
+	Timestamped by {server} and saved to {path}	Marca temporale di {server} aggiunta e salvata in {path}
+	Timestamp servers	Server di marca temporale
+	Signatures and document timestamps get their time from the first server. Only http:// addresses; timestamp replies are signed, so that is safe. Passwords are kept until PdfCraft closes.	Le firme e le marche temporali del documento prendono l’ora dal primo server. Solo indirizzi http://; le risposte sono firmate, quindi è sicuro. Le password restano in memoria fino alla chiusura di PdfCraft.
+	Use this server by default	Usa questo server come predefinito
+	Server address	Indirizzo del server
+	User name	Nome utente
+	Add server	Aggiungi server
+	At most 32 timestamp servers.	Al massimo 32 server di marca temporale.

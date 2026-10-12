@@ -2347,3 +2347,14 @@ animation effects	Off	Kapalı
 	No printers answered. A printer in another subnet: add its range under Also search, or type its address.	Hiçbir yazıcı yanıt vermedi. Başka bir alt ağdaki yazıcı için aralığını “Şurada da ara” alanına ekleyin veya adresini yazın.
 	No printers answered. A VPN is connected: it may send the local network through its tunnel. Allow local network access in the VPN, or disconnect it, and search again.	Hiçbir yazıcı yanıt vermedi. Bağlı bir VPN yerel ağı kendi tüneline yönlendiriyor olabilir. VPN'de yerel ağ erişimine izin verin veya bağlantıyı kesin ve yeniden arayın.
 	This printer says it doesn't read PDF, so a direct job may be refused or print as text. It needs its PDF option (on Canon: PDF Direct Print), or install it in the system with its driver.	Bu yazıcı PDF okumadığını bildiriyor; doğrudan bir iş reddedilebilir veya metin olarak yazdırılabilir. PDF seçeneği gerekir (Canon'da: PDF Direct Print) ya da yazıcıyı sürücüsüyle sisteme kurun.
+	Timestamp document	Belgeye zaman damgası ekle
+	Add a timestamp from {server}	{server} sunucusundan zaman damgası ekle
+	Add a timestamp server first (Preferences > Timestamp servers).	Önce bir zaman damgası sunucusu ekleyin (Tercihler > Zaman damgası sunucuları).
+	Timestamped by {server} and saved to {path}	{server} tarafından damgalandı ve {path} konumuna kaydedildi
+	Timestamp servers	Zaman damgası sunucuları
+	Signatures and document timestamps get their time from the first server. Only http:// addresses; timestamp replies are signed, so that is safe. Passwords are kept until PdfCraft closes.	İmzalar ve belge zaman damgaları saati ilk sunucudan alır. Yalnızca http:// adresleri; yanıtlar imzalı olduğundan bu güvenlidir. Parolalar PdfCraft kapanana kadar saklanır.
+	Use this server by default	Bu sunucuyu varsayılan olarak kullan
+	Server address	Sunucu adresi
+	User name	Kullanıcı adı
+	Add server	Sunucu ekle
+	At most 32 timestamp servers.	En fazla 32 zaman damgası sunucusu.

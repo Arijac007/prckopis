@@ -2351,3 +2351,14 @@ animation effects	Off	オフ
 	No printers answered. A printer in another subnet: add its range under Also search, or type its address.	応答したプリンターはありません。別のサブネットのプリンターは、「追加の検索範囲」に範囲を追加するか、アドレスを入力してください。
 	No printers answered. A VPN is connected: it may send the local network through its tunnel. Allow local network access in the VPN, or disconnect it, and search again.	応答したプリンターはありません。VPN が接続されており、ローカルネットワークの通信もトンネル経由になっている可能性があります。VPN でローカルネットワークへのアクセスを許可するか切断してから、もう一度検索してください。
 	This printer says it doesn't read PDF, so a direct job may be refused or print as text. It needs its PDF option (on Canon: PDF Direct Print), or install it in the system with its driver.	このプリンターは PDF を読めないと報告しています。直接送信したジョブは拒否されるか、テキストとして印刷される場合があります。PDF オプション(Canon では PDF ダイレクトプリント)が必要です。またはドライバーと一緒にシステムにインストールしてください。
+	Timestamp document	文書にタイムスタンプを付ける
+	Add a timestamp from {server}	{server} のタイムスタンプを付ける
+	Add a timestamp server first (Preferences > Timestamp servers).	先にタイムスタンプサーバーを追加してください(環境設定 > タイムスタンプサーバー)。
+	Timestamped by {server} and saved to {path}	{server} のタイムスタンプを付けて {path} に保存しました
+	Timestamp servers	タイムスタンプサーバー
+	Signatures and document timestamps get their time from the first server. Only http:// addresses; timestamp replies are signed, so that is safe. Passwords are kept until PdfCraft closes.	署名と文書タイムスタンプは先頭のサーバーから時刻を取得します。http:// アドレスのみです。応答には署名があるため安全です。パスワードは PdfCraft を閉じるまで保持されます。
+	Use this server by default	このサーバーを既定で使用
+	Server address	サーバーのアドレス
+	User name	ユーザー名
+	Add server	サーバーを追加
+	At most 32 timestamp servers.	タイムスタンプサーバーは最大 32 件です。

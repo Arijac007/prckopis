@@ -2367,3 +2367,14 @@ animation effects	Off	Ανενεργά
 	No printers answered. A printer in another subnet: add its range under Also search, or type its address.	Κανένας εκτυπωτής δεν απάντησε. Για εκτυπωτή σε άλλο υποδίκτυο: προσθέστε το εύρος του στο «Αναζήτηση και σε» ή πληκτρολογήστε τη διεύθυνσή του.
 	No printers answered. A VPN is connected: it may send the local network through its tunnel. Allow local network access in the VPN, or disconnect it, and search again.	Κανένας εκτυπωτής δεν απάντησε. Είναι συνδεδεμένο VPN που ίσως στέλνει το τοπικό δίκτυο μέσα από τη σήραγγά του. Επιτρέψτε την πρόσβαση στο τοπικό δίκτυο στο VPN ή αποσυνδέστε το και αναζητήστε ξανά.
 	This printer says it doesn't read PDF, so a direct job may be refused or print as text. It needs its PDF option (on Canon: PDF Direct Print), or install it in the system with its driver.	Αυτός ο εκτυπωτής δηλώνει ότι δεν διαβάζει PDF, οπότε μια απευθείας εργασία μπορεί να απορριφθεί ή να τυπωθεί ως κείμενο. Χρειάζεται την επιλογή PDF του (στην Canon: PDF Direct Print) ή εγκαταστήστε τον στο σύστημα με το πρόγραμμα οδήγησής του.
+	Timestamp document	Χρονοσήμανση εγγράφου
+	Add a timestamp from {server}	Προσθήκη χρονοσήμανσης από {server}
+	Add a timestamp server first (Preferences > Timestamp servers).	Προσθέστε πρώτα έναν διακομιστή χρονοσήμανσης (Προτιμήσεις > Διακομιστές χρονοσήμανσης).
+	Timestamped by {server} and saved to {path}	Χρονοσήμανση από {server}, αποθηκεύτηκε στο {path}
+	Timestamp servers	Διακομιστές χρονοσήμανσης
+	Signatures and document timestamps get their time from the first server. Only http:// addresses; timestamp replies are signed, so that is safe. Passwords are kept until PdfCraft closes.	Οι υπογραφές και οι χρονοσημάνσεις εγγράφου παίρνουν την ώρα από τον πρώτο διακομιστή. Μόνο διευθύνσεις http://· οι απαντήσεις είναι υπογεγραμμένες, άρα είναι ασφαλές. Οι κωδικοί φυλάσσονται μέχρι να κλείσει το PdfCraft.
+	Use this server by default	Χρήση αυτού του διακομιστή από προεπιλογή
+	Server address	Διεύθυνση διακομιστή
+	User name	Όνομα χρήστη
+	Add server	Προσθήκη διακομιστή
+	At most 32 timestamp servers.	Έως 32 διακομιστές χρονοσήμανσης.

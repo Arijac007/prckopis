@@ -2351,3 +2351,14 @@ animation effects	Off	Désactivés
 	No printers answered. A printer in another subnet: add its range under Also search, or type its address.	Aucune imprimante n’a répondu. Pour une imprimante d’un autre sous-réseau : ajoutez sa plage dans « Rechercher aussi » ou saisissez son adresse.
 	No printers answered. A VPN is connected: it may send the local network through its tunnel. Allow local network access in the VPN, or disconnect it, and search again.	Aucune imprimante n’a répondu. Un VPN est connecté et fait peut-être passer le réseau local par son tunnel. Autorisez l’accès au réseau local dans le VPN, ou déconnectez-le, puis relancez la recherche.
 	This printer says it doesn't read PDF, so a direct job may be refused or print as text. It needs its PDF option (on Canon: PDF Direct Print), or install it in the system with its driver.	Cette imprimante indique qu’elle ne lit pas le PDF : un travail direct peut être refusé ou imprimé comme du texte. Il lui faut son option PDF (chez Canon : PDF Direct Print), ou installez-la dans le système avec son pilote.
+	Timestamp document	Horodater le document
+	Add a timestamp from {server}	Ajouter un horodatage de {server}
+	Add a timestamp server first (Preferences > Timestamp servers).	Ajoutez d’abord un serveur d’horodatage (Préférences > Serveurs d’horodatage).
+	Timestamped by {server} and saved to {path}	Horodaté par {server} et enregistré dans {path}
+	Timestamp servers	Serveurs d’horodatage
+	Signatures and document timestamps get their time from the first server. Only http:// addresses; timestamp replies are signed, so that is safe. Passwords are kept until PdfCraft closes.	Les signatures et les horodatages de document prennent leur heure sur le premier serveur. Adresses http:// uniquement ; les réponses d’horodatage sont signées, c’est donc sûr. Les mots de passe sont conservés jusqu’à la fermeture de PdfCraft.
+	Use this server by default	Utiliser ce serveur par défaut
+	Server address	Adresse du serveur
+	User name	Nom d’utilisateur
+	Add server	Ajouter un serveur
+	At most 32 timestamp servers.	32 serveurs d’horodatage au maximum.

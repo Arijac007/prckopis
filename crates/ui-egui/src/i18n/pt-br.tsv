@@ -2365,3 +2365,14 @@ animation effects	Off	Desativados
 	No printers answered. A printer in another subnet: add its range under Also search, or type its address.	Nenhuma impressora respondeu. Para uma impressora em outra sub-rede: adicione o intervalo em “Procurar também” ou digite o endereço dela.
 	No printers answered. A VPN is connected: it may send the local network through its tunnel. Allow local network access in the VPN, or disconnect it, and search again.	Nenhuma impressora respondeu. Há uma VPN conectada que pode enviar a rede local pelo túnel dela. Permita o acesso à rede local na VPN, ou desconecte-a, e procure de novo.
 	This printer says it doesn't read PDF, so a direct job may be refused or print as text. It needs its PDF option (on Canon: PDF Direct Print), or install it in the system with its driver.	Esta impressora informa que não lê PDF; um trabalho direto pode ser recusado ou impresso como texto. Ela precisa da opção de PDF (na Canon: PDF Direct Print), ou instale-a no sistema com o driver dela.
+	Timestamp document	Carimbar data e hora no documento
+	Add a timestamp from {server}	Adicionar carimbo de data e hora de {server}
+	Add a timestamp server first (Preferences > Timestamp servers).	Adicione primeiro um servidor de carimbo de data e hora (Preferências > Servidores de carimbo de data e hora).
+	Timestamped by {server} and saved to {path}	Carimbado por {server} e salvo em {path}
+	Timestamp servers	Servidores de carimbo de data e hora
+	Signatures and document timestamps get their time from the first server. Only http:// addresses; timestamp replies are signed, so that is safe. Passwords are kept until PdfCraft closes.	Assinaturas e carimbos do documento recebem a hora do primeiro servidor. Somente endereços http://; as respostas são assinadas, então é seguro. As senhas ficam guardadas até o PdfCraft ser fechado.
+	Use this server by default	Usar este servidor por padrão
+	Server address	Endereço do servidor
+	User name	Nome de usuário
+	Add server	Adicionar servidor
+	At most 32 timestamp servers.	No máximo 32 servidores de carimbo de data e hora.

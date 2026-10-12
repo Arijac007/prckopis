@@ -28,14 +28,16 @@ for s in signatures(&doc, &bytes, &trust) {                                // li
 - **Timestamps (PAdES B-T):** the `timestamp` module builds and parses RFC 3161 requests,
   responses and TSTInfo tokens (size-capped, imprint- and signature-checked). `sign_with_timestamp`
   attaches the TSA's token as an unsigned attribute over the signature value; the transport is
-  the caller's (`TimestampAuthority` — this crate never opens a socket). Validation verifies
+  the caller's (`TimestampAuthority` — this crate never opens a socket; the app and the
+  automation tools use the HTTP transport in `pdfcraft-platform::tsa`). Validation verifies
   embedded tokens; when the TSA chains to the trust store it reports the trusted time in
   `SignatureInfo::timestamp_time`, which then anchors certificate-validity and revocation
   checks. An untrusted TSA's time is reported as an unverified timestamp and never used as the
   validation time (the signer's claimed time is). `timestamp::respond` is the TSA-side signer behind the
   deterministic test authority.
-- **Document timestamps and LTV:** `timestamp_document` appends a standalone RFC 3161
-  document timestamp (`/ETSI.RFC3161`) covering the whole file; validation discovers and
+- **Document timestamps and LTV:** `timestamp_document` appends an RFC 3161 document
+  timestamp (`/ETSI.RFC3161`) covering the whole file, held by an invisible signature field
+  (`Timestamp1`, …) on page 1 so other readers find it; validation discovers and
   verifies these dictionaries (imprint over the signed bytes, token signature, TSA cert
   validity). `dss::embed` merges revocation evidence into the catalog's `/DSS` with `/VRI`
   entries keyed per signature (uppercase-hex SHA-1 of `/Contents`), deduplicating

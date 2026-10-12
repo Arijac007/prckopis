@@ -291,6 +291,7 @@ pub const COMMANDS: &[CommandSpec] = &[
     c("form.add.signature", "Add a digital signature field", None, None, Modification, "signature"),
     c("sign.digital", "Digitally sign", None, None, Document, "signature"),
     c("sign.certify", "Certify (visible signature)", None, None, Document, "badge-check"),
+    c("sign.timestamp", "Timestamp document", None, None, Document, "clock-3"),
     c("sign.certify_invisible", "Certify (invisible signature)", None, None, Document, "badge-check"),
     c("sign.validate", "Validate all signatures", None, None, Document, "badge-check"),
     c("sign.panel", "Signatures panel", VIEW, None, Document, "signature"),
