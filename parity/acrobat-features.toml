@@ -1439,11 +1439,11 @@ title = "Search all PDFs in a folder"
 area = "B"
 tier = "P1"
 milestone = "M12"
-status = "planned"
-commands = []
-tools = []
-evidence = []
-notes = ""
+status = "shipped"
+commands = ["edit.search_folder"]
+tools = ["text_find_folder"]
+evidence = ["crates/engine/src/folder_search.rs::finds_matches_in_every_pdf_under_the_folder", "crates/engine/src/folder_search.rs::cancelling_stops_and_bad_input_is_refused", "crates/automation/tests/automation.rs::searching_a_folder_finds_text_in_every_pdf", "crates/ui-egui/tests/folder_search.rs::searching_a_folder_lists_matches_and_opens_one_at_its_page"]
+notes = "Edit > Search a folder: every PDF under a folder (subfolders optional; hidden files and links skipped) searched in the background with whole-word and case options; results grouped by file with the line around each match; a result opens the file at its page with the phrase found; Stop; files that couldn't be searched listed with the reason. Not yet: an index (catalog) for fast repeat searches, searching document properties, bookmarks or comments, password-protected files, OCR of scans without text, the web app (no folders there). Caps: 5000 files, 5000 matches."
 
 [[feature]]
 id = "view.search-boolean"

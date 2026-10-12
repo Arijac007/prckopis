@@ -2366,3 +2366,15 @@ animation effects	Off	Өшірулі
 	No other files were numbered: {e}	Басқа файлдар нөмірленбеді: {e}
 	Numbered {n} more files, up to {last}, in {dir}.	Тағы {n} файл {last} дейін нөмірленді, орны: {dir}.
 	Not numbered: {e}	Нөмірленбеді: {e}
+	Search a folder…	Бумадан іздеу…
+	Search a folder	Бумадан іздеу
+	Look in	Іздеу орны
+	Include subfolders	Ішкі бумаларды қосу
+	Stop	Тоқтату
+	Searching {name} ({d} of {n} files)…	{name} ішінен іздеу ({d}/{n} файл)…
+	1 instance in {f} of {t} files	{t} файлдың {f} ішінде 1 сәйкестік
+	{n} instances in {f} of {t} files	{t} файлдың {f} ішінде {n} сәйкестік
+	stopped	тоқтатылды
+	only the first results are shown	тек алғашқы нәтижелер көрсетілген
+	Open at this page	Осы бетте ашу
+	Not searched	Ізделмеді

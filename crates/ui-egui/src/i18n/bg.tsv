@@ -2331,3 +2331,15 @@ animation effects	Off	Изключени
 	No other files were numbered: {e}	Не са номерирани други файлове: {e}
 	Numbered {n} more files, up to {last}, in {dir}.	Номерирани са още файлове: {n}, до {last}, в {dir}.
 	Not numbered: {e}	Не са номерирани: {e}
+	Search a folder…	Търсене в папка…
+	Search a folder	Търсене в папка
+	Look in	Търсене в
+	Include subfolders	Включително подпапки
+	Stop	Спиране
+	Searching {name} ({d} of {n} files)…	Търсене в {name} ({d} от {n} файла)…
+	1 instance in {f} of {t} files	1 съвпадение в {f} от {t} файла
+	{n} instances in {f} of {t} files	Съвпадения: {n} в {f} от {t} файла
+	stopped	спряно
+	only the first results are shown	показани са само първите резултати
+	Open at this page	Отваряне на тази страница
+	Not searched	Не са претърсени

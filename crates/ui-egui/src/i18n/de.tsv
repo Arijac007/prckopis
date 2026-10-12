@@ -2369,3 +2369,15 @@ animation effects	Off	Aus
 	No other files were numbered: {e}	Keine weiteren Dateien nummeriert: {e}
 	Numbered {n} more files, up to {last}, in {dir}.	{n} weitere Dateien bis {last} nummeriert, in {dir}.
 	Not numbered: {e}	Nicht nummeriert: {e}
+	Search a folder…	Ordner durchsuchen…
+	Search a folder	Ordner durchsuchen
+	Look in	Suchen in
+	Include subfolders	Unterordner einbeziehen
+	Stop	Stopp
+	Searching {name} ({d} of {n} files)…	Durchsuche {name} ({d} von {n} Dateien)…
+	1 instance in {f} of {t} files	1 Treffer in {f} von {t} Dateien
+	{n} instances in {f} of {t} files	{n} Treffer in {f} von {t} Dateien
+	stopped	angehalten
+	only the first results are shown	nur die ersten Ergebnisse werden angezeigt
+	Open at this page	An dieser Seite öffnen
+	Not searched	Nicht durchsucht

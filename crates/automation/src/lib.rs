@@ -183,6 +183,7 @@ impl Automation {
             "comment_image_preview" => return self.comment_image_preview(&a),
             "text_extract" => self.text_extract(&a)?,
             "text_find" => self.text_find(&a)?,
+            "text_find_folder" => self.text_find_folder(&a)?,
             "page_rotate" => {
                 let degrees = a.int("degrees")?;
                 if degrees % 90 != 0 {
@@ -1803,6 +1804,39 @@ impl Automation {
         };
         let out: Vec<Value> = pages.iter().zip(texts).map(|(p, t)| json!({ "page": p + 1, "text": text(&t) })).collect();
         Ok(json!({ "pages": out }))
+    }
+
+    /// Every PDF under `folder` searched for `query` (`folder_search`): the files are read, not
+    /// opened as documents, and paths are reported relative to the folder.
+    fn text_find_folder(&mut self, a: &Args) -> Result<Value> {
+        use pdfcraft_engine::folder_search as fs;
+        let folder = self.resolve(a.str("folder")?, false)?;
+        let query = a.str("query")?;
+        let opts = fs::Options {
+            case_sensitive: a.opt_bool("case_sensitive")?.unwrap_or(false),
+            whole_words: a.opt_bool("whole_words")?.unwrap_or(false),
+            subfolders: a.opt_bool("subfolders")?.unwrap_or(true),
+        };
+        let limit = usize::try_from(a.opt_int("limit")?.unwrap_or(fs::MAX_HITS as i64).clamp(1, fs::MAX_HITS as i64)).unwrap_or(fs::MAX_HITS);
+        let cancel = std::sync::atomic::AtomicBool::new(false);
+        let mut r = fs::search_folder(&folder, query, opts, &cancel, |_, _, _| {}).map_err(ToolError::InvalidArgs)?;
+        if r.hits.len() > limit {
+            r.hits.truncate(limit);
+            r.truncated = true;
+        }
+        let shown =
+            |p: &Path| p.strip_prefix(&folder).map(|q| q.to_string_lossy().replace('\\', "/")).unwrap_or_else(|_| p.to_string_lossy().into_owned());
+        let matches: Vec<Value> = r.hits.iter().map(|h| json!({ "file": shown(&h.path), "page": h.page + 1, "context": h.context })).collect();
+        let errors: Vec<Value> = r.errors.iter().map(|(p, e)| json!({ "file": shown(p), "error": e })).collect();
+        Ok(json!({
+            "query": query,
+            "count": matches.len(),
+            "matches": matches,
+            "files_found": r.files_found,
+            "files_searched": r.files_searched,
+            "errors": errors,
+            "complete": !r.truncated,
+        }))
     }
 
     /// Matches in document order, extracting page text in growing batches and stopping as soon as

@@ -174,6 +174,24 @@ pub fn tools() -> Vec<ToolDef> {
                 }),
                 &["doc"],
             )),
+        t(
+            "text_find_folder",
+            "Search a folder of PDFs",
+            "Advanced Search ▸ All PDF documents in a folder: find a phrase in the text of every PDF under folder (subfolders too unless subfolders is false; hidden files and links are skipped). Returns each match with its file, page (1-based) and the line it is on, files that couldn't be searched (password protected, damaged) with the reason, and complete: false when it stopped at limit matches (default and most 5000) or 5000 files. Doesn't open the files as documents.",
+        )
+        .ro()
+        .cmd("edit.search_folder")
+        .with(schema(
+            json!({
+                "folder": { "type": "string" },
+                "query": { "type": "string", "minLength": 1 },
+                "case_sensitive": { "type": "boolean" },
+                "whole_words": { "type": "boolean" },
+                "subfolders": { "type": "boolean" },
+                "limit": { "type": "integer", "minimum": 1, "maximum": 5000 },
+            }),
+            &["folder", "query"],
+        )),
         t("text_find", "Find text", "Find a phrase (case-insensitive, whitespace-normalised) and return each match, in page order, with its page and line rectangles in points (origin top-left). Pages are read only until the limit is reached.")
             .ro()
             .cmd("edit.find")

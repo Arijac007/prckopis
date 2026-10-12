@@ -902,6 +902,10 @@ fn dialogs(app: &mut PdfCraftApp, ctx: &egui::Context) {
                 close = crate::js_ui::document_js_body(ui, app, &t);
                 return;
             }
+            Dialog::FolderSearch => {
+                close = crate::folder_search_ui::body(ui, app, &t);
+                return;
+            }
             Dialog::Preferences => {
                 // The settings outgrow a short window: scroll them rather than run off the screen.
                 let max = (ui.ctx().content_rect().height() - 120.0).max(200.0);

@@ -2332,3 +2332,15 @@ animation effects	Off	关
 	No other files were numbered: {e}	未为其他文件编号：{e}
 	Numbered {n} more files, up to {last}, in {dir}.	已为另外 {n} 个文件编号，直到 {last}，保存在 {dir}。
 	Not numbered: {e}	未编号：{e}
+	Search a folder…	在文件夹中搜索…
+	Search a folder	在文件夹中搜索
+	Look in	搜索位置
+	Include subfolders	包括子文件夹
+	Stop	停止
+	Searching {name} ({d} of {n} files)…	正在搜索 {name}（第 {d} 个，共 {n} 个文件）…
+	1 instance in {f} of {t} files	在 {t} 个文件中的 {f} 个里找到 1 处
+	{n} instances in {f} of {t} files	在 {t} 个文件中的 {f} 个里找到 {n} 处
+	stopped	已停止
+	only the first results are shown	仅显示前面的结果
+	Open at this page	在此页打开
+	Not searched	未搜索

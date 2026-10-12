@@ -2377,3 +2377,15 @@ animation effects	Off	Disattivati
 	No other files were numbered: {e}	Nessun altro file numerato: {e}
 	Numbered {n} more files, up to {last}, in {dir}.	Numerati altri {n} file, fino a {last}, in {dir}.
 	Not numbered: {e}	Non numerati: {e}
+	Search a folder…	Cerca in una cartella…
+	Search a folder	Cerca in una cartella
+	Look in	Cerca in
+	Include subfolders	Includi sottocartelle
+	Stop	Interrompi
+	Searching {name} ({d} of {n} files)…	Ricerca in {name} ({d} di {n} file)…
+	1 instance in {f} of {t} files	1 occorrenza in {f} di {t} file
+	{n} instances in {f} of {t} files	{n} occorrenze in {f} di {t} file
+	stopped	interrotta
+	only the first results are shown	vengono mostrati solo i primi risultati
+	Open at this page	Apri a questa pagina
+	Not searched	Non cercati

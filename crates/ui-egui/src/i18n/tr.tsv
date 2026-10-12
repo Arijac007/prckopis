@@ -2364,3 +2364,15 @@ animation effects	Off	Kapalı
 	No other files were numbered: {e}	Başka dosya numaralandırılmadı: {e}
 	Numbered {n} more files, up to {last}, in {dir}.	{n} dosya daha {last} numarasına kadar numaralandırıldı, konum: {dir}.
 	Not numbered: {e}	Numaralandırılmadı: {e}
+	Search a folder…	Klasörde ara…
+	Search a folder	Klasörde ara
+	Look in	Aranacak yer
+	Include subfolders	Alt klasörleri dahil et
+	Stop	Durdur
+	Searching {name} ({d} of {n} files)…	{name} aranıyor ({d}/{n} dosya)…
+	1 instance in {f} of {t} files	{t} dosyanın {f} tanesinde 1 eşleşme
+	{n} instances in {f} of {t} files	{t} dosyanın {f} tanesinde {n} eşleşme
+	stopped	durduruldu
+	only the first results are shown	yalnızca ilk sonuçlar gösteriliyor
+	Open at this page	Bu sayfada aç
+	Not searched	Aranmadı

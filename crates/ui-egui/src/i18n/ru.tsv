@@ -2281,3 +2281,15 @@ animation effects	Off	Выкл
 	No other files were numbered: {e}	Другие файлы не пронумерованы: {e}
 	Numbered {n} more files, up to {last}, in {dir}.	Пронумеровано ещё файлов: {n}, до {last}, в {dir}.
 	Not numbered: {e}	Не пронумерованы: {e}
+	Search a folder…	Поиск в папке…
+	Search a folder	Поиск в папке
+	Look in	Искать в
+	Include subfolders	Включая вложенные папки
+	Stop	Остановить
+	Searching {name} ({d} of {n} files)…	Поиск в {name} ({d} из {n} файлов)…
+	1 instance in {f} of {t} files	1 совпадение в {f} из {t} файлов
+	{n} instances in {f} of {t} files	Совпадений: {n} в {f} из {t} файлов
+	stopped	остановлено
+	only the first results are shown	показаны только первые результаты
+	Open at this page	Открыть на этой странице
+	Not searched	Не просмотрены

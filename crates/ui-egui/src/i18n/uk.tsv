@@ -2390,3 +2390,15 @@ animation effects	Off	Вимкнено
 	No other files were numbered: {e}	Інші файли не пронумеровано: {e}
 	Numbered {n} more files, up to {last}, in {dir}.	Пронумеровано ще файлів: {n}, до {last}, у {dir}.
 	Not numbered: {e}	Не пронумеровано: {e}
+	Search a folder…	Пошук у теці…
+	Search a folder	Пошук у теці
+	Look in	Шукати в
+	Include subfolders	Включно з підтеками
+	Stop	Зупинити
+	Searching {name} ({d} of {n} files)…	Пошук у {name} ({d} з {n} файлів)…
+	1 instance in {f} of {t} files	1 збіг у {f} з {t} файлів
+	{n} instances in {f} of {t} files	Збігів: {n} у {f} з {t} файлів
+	stopped	зупинено
+	only the first results are shown	показано лише перші результати
+	Open at this page	Відкрити на цій сторінці
+	Not searched	Не переглянуто

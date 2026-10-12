@@ -2442,3 +2442,15 @@ animation effects	Off	Vypnuto
 	No other files were numbered: {e}	Žádné další soubory nebyly očíslovány: {e}
 	Numbered {n} more files, up to {last}, in {dir}.	Očíslováno dalších {n} souborů až po {last} ve složce {dir}.
 	Not numbered: {e}	Neočíslováno: {e}
+	Search a folder…	Hledat ve složce…
+	Search a folder	Hledat ve složce
+	Look in	Hledat v
+	Include subfolders	Včetně podsložek
+	Stop	Zastavit
+	Searching {name} ({d} of {n} files)…	Prohledávám {name} ({d} z {n} souborů)…
+	1 instance in {f} of {t} files	1 výskyt v {f} z {t} souborů
+	{n} instances in {f} of {t} files	Výskyty: {n} v {f} z {t} souborů
+	stopped	zastaveno
+	only the first results are shown	zobrazeny jsou jen první výsledky
+	Open at this page	Otevřít na této stránce
+	Not searched	Neprohledáno

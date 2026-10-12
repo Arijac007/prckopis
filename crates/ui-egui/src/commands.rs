@@ -389,6 +389,9 @@ impl PdfCraftApp {
                 self.reveal_tools();
                 self.notify_tr("Click text or an image to edit it");
             }
+            "edit.search_folder" => {
+                self.dialog = Some(crate::Dialog::FolderSearch);
+            }
             "edit.advanced_search" => {
                 if let Some(i) = self.active {
                     let f = self.views[i].find.get_or_insert_with(Default::default);

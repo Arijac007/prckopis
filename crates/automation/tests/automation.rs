@@ -5583,3 +5583,27 @@ fn bates_numbering_runs_across_files_and_can_be_removed() {
     assert!(!dir.join("x").exists());
     assert!(matches!(a.call("doc_bates_files", &json!({ "paths": ["a.pdf"], "out_dir": "x", "prefix": "a#b" })), Err(ToolError::InvalidArgs(_))));
 }
+
+#[test]
+fn searching_a_folder_finds_text_in_every_pdf() {
+    let dir = workdir("folder-search");
+    let mut a = auto(&dir);
+    // Give b.pdf words to find, under a subfolder.
+    let doc = ok(&mut a, "doc_open", json!({ "path": "b.pdf" }))["doc"].as_u64().unwrap();
+    ok(&mut a, "doc_header_footer", json!({ "doc": doc, "pages": [2], "header_center": "Quarterly invoice" }));
+    std::fs::create_dir_all(dir.join("archive")).unwrap();
+    ok(&mut a, "doc_save", json!({ "doc": doc, "path": "archive/b-invoice.pdf" }));
+    std::fs::write(dir.join("archive").join("damaged.pdf"), b"not a pdf").unwrap();
+    let r = ok(&mut a, "text_find_folder", json!({ "folder": ".", "query": "INVOICE" }));
+    assert_eq!(r["count"], 1, "{r}");
+    assert_eq!(r["matches"][0]["file"], "archive/b-invoice.pdf");
+    assert_eq!(r["matches"][0]["page"], 2);
+    assert!(r["matches"][0]["context"].as_str().unwrap().contains("Quarterly invoice"));
+    assert_eq!(r["errors"][0]["file"], "archive/damaged.pdf");
+    assert_eq!(r["complete"], true);
+    let r = ok(&mut a, "text_find_folder", json!({ "folder": ".", "query": "invoice", "subfolders": false }));
+    assert_eq!(r["count"], 0);
+    let r = ok(&mut a, "text_find_folder", json!({ "folder": ".", "query": "INVOICE", "case_sensitive": true }));
+    assert_eq!(r["count"], 0);
+    assert!(a.call("text_find_folder", &json!({ "folder": "../", "query": "x" })).is_err(), "confined to the root");
+}

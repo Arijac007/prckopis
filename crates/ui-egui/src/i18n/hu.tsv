@@ -2367,3 +2367,15 @@ animation effects	Off	Ki
 	No other files were numbered: {e}	Más fájlok nem lettek számozva: {e}
 	Numbered {n} more files, up to {last}, in {dir}.	További {n} fájl számozva, {last}-ig, itt: {dir}.
 	Not numbered: {e}	Nem számozott: {e}
+	Search a folder…	Keresés mappában…
+	Search a folder	Keresés mappában
+	Look in	Keresés itt
+	Include subfolders	Almappákkal együtt
+	Stop	Leállítás
+	Searching {name} ({d} of {n} files)…	Keresés: {name} ({d} / {n} fájl)…
+	1 instance in {f} of {t} files	1 találat {f} / {t} fájlban
+	{n} instances in {f} of {t} files	{n} találat {f} / {t} fájlban
+	stopped	leállítva
+	only the first results are shown	csak az első találatok látszanak
+	Open at this page	Megnyitás ezen az oldalon
+	Not searched	Nem átkutatott

@@ -194,6 +194,7 @@ pub const COMMANDS: &[CommandSpec] = &[
     ct("edit.redo", "Redo", EDIT, Some(Shortcut::cmd_shift("Z")), Redo, "redo-2"),
     c("edit.find", "Find…", EDIT, Some(Shortcut::cmd("F")), Document, "search"),
     c("edit.advanced_search", "Advanced search…", EDIT, Some(Shortcut::cmd_shift("F")), Document, "search"),
+    c("edit.search_folder", "Search a folder…", EDIT, None, Nothing, "file-search"),
     c("view.palette", "Find tools and commands…", VIEW, Some(Shortcut::cmd("K")), Nothing, "search"),
     // Page display: View ▸ Page display and the rail's button list the base layouts as radios and
     // continuous scrolling as a checkbox, so `menu = None` keeps them out of the generated menus.

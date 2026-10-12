@@ -46,6 +46,7 @@ mod credits;
 mod crop;
 mod drag_pointer;
 mod export_ui;
+pub mod folder_search_ui;
 mod js_ui;
 mod marks_ui;
 mod measure_ui;
@@ -315,6 +316,8 @@ pub enum Dialog {
     DocumentJs,
     /// Preferences.
     Preferences,
+    /// Edit ▸ Search a folder… (every PDF in a folder).
+    FolderSearch,
     /// Compare files: choose the older version.
     CompareFiles,
     /// Action Wizard.
@@ -685,6 +688,8 @@ pub struct PdfCraftApp {
     pub boxes_draft: pageboxes::BoxesDraft,
     /// Header & footer / watermark / background dialog state.
     pub marks_draft: marks_ui::MarksDraft,
+    /// Edit ▸ Search a folder…: the last search and its results.
+    pub folder_search: folder_search_ui::FolderSearch,
     /// Export dialog settings.
     pub export_draft: export_ui::ExportDraft,
     /// A running export's progress.
@@ -933,6 +938,7 @@ impl PdfCraftApp {
             protect_draft: Default::default(),
             boxes_draft: Default::default(),
             marks_draft: Default::default(),
+            folder_search: Default::default(),
             export_draft: Default::default(),
             export_status: None,
             signature: None,
@@ -2493,6 +2499,7 @@ impl eframe::App for PdfCraftApp {
         }
         self.poll_updates();
         self.poll_print();
+        self.folder_search.poll();
         // Shortcuts deferred last frame: the text field has taken that frame's typing since.
         let deferred = std::mem::take(&mut self.deferred_commands);
         self.shortcuts(ctx);

@@ -2281,3 +2281,15 @@ animation effects	Off	ఆఫ్
 	No other files were numbered: {e}	ఇతర ఫైళ్లకు సంఖ్యలు వేయలేదు: {e}
 	Numbered {n} more files, up to {last}, in {dir}.	మరో {n} ఫైళ్లకు {last} వరకు సంఖ్యలు వేసి {dir}లో ఉంచాము.
 	Not numbered: {e}	సంఖ్యలు వేయలేదు: {e}
+	Search a folder…	ఫోల్డర్‌లో వెతుకు…
+	Search a folder	ఫోల్డర్‌లో వెతుకు
+	Look in	ఇక్కడ వెతుకు
+	Include subfolders	ఉప ఫోల్డర్‌లను చేర్చు
+	Stop	ఆపు
+	Searching {name} ({d} of {n} files)…	{name}లో వెతుకుతోంది ({n} ఫైళ్లలో {d})…
+	1 instance in {f} of {t} files	{t} ఫైళ్లలో {f}లో 1 సరిపోలిక
+	{n} instances in {f} of {t} files	{t} ఫైళ్లలో {f}లో {n} సరిపోలికలు
+	stopped	ఆపబడింది
+	only the first results are shown	మొదటి ఫలితాలు మాత్రమే చూపబడ్డాయి
+	Open at this page	ఈ పేజీలో తెరువు
+	Not searched	వెతకలేదు

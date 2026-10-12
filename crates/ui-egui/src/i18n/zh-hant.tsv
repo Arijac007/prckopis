@@ -2242,3 +2242,15 @@ animation effects	Off	關
 	No other files were numbered: {e}	未為其他檔案編號：{e}
 	Numbered {n} more files, up to {last}, in {dir}.	已為另外 {n} 個檔案編號，直到 {last}，儲存在 {dir}。
 	Not numbered: {e}	未編號：{e}
+	Search a folder…	在資料夾中搜尋…
+	Search a folder	在資料夾中搜尋
+	Look in	搜尋位置
+	Include subfolders	包含子資料夾
+	Stop	停止
+	Searching {name} ({d} of {n} files)…	正在搜尋 {name}（第 {d} 個，共 {n} 個檔案）…
+	1 instance in {f} of {t} files	在 {t} 個檔案中的 {f} 個裡找到 1 處
+	{n} instances in {f} of {t} files	在 {t} 個檔案中的 {f} 個裡找到 {n} 處
+	stopped	已停止
+	only the first results are shown	僅顯示前面的結果
+	Open at this page	在此頁開啟
+	Not searched	未搜尋

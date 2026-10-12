@@ -2368,3 +2368,15 @@ animation effects	Off	オフ
 	No other files were numbered: {e}	他のファイルには番号を付けませんでした: {e}
 	Numbered {n} more files, up to {last}, in {dir}.	さらに {n} 個のファイルに {last} まで番号を付けて {dir} に保存しました。
 	Not numbered: {e}	番号を付けられませんでした: {e}
+	Search a folder…	フォルダーを検索…
+	Search a folder	フォルダーを検索
+	Look in	検索場所
+	Include subfolders	サブフォルダーを含める
+	Stop	停止
+	Searching {name} ({d} of {n} files)…	{name} を検索中 ({n} 個中 {d} 個目)…
+	1 instance in {f} of {t} files	{t} 個中 {f} 個のファイルで 1 件
+	{n} instances in {f} of {t} files	{t} 個中 {f} 個のファイルで {n} 件
+	stopped	停止しました
+	only the first results are shown	最初の結果のみ表示しています
+	Open at this page	このページで開く
+	Not searched	検索できなかったファイル

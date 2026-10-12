@@ -2373,3 +2373,15 @@ animation effects	Off	Izklopljeni
 	No other files were numbered: {e}	Drugih datotek nisem oštevilčil: {e}
 	Numbered {n} more files, up to {last}, in {dir}.	Oštevilčenih je še {n} datotek, do {last}, v {dir}.
 	Not numbered: {e}	Ni oštevilčeno: {e}
+	Search a folder…	Išči v mapi …
+	Search a folder	Išči v mapi
+	Look in	Išči v
+	Include subfolders	Vključi podmape
+	Stop	Ustavi
+	Searching {name} ({d} of {n} files)…	Iskanje v {name} ({d} od {n} datotek) …
+	1 instance in {f} of {t} files	1 zadetek v {f} od {t} datotek
+	{n} instances in {f} of {t} files	Zadetkov: {n} v {f} od {t} datotek
+	stopped	ustavljeno
+	only the first results are shown	prikazani so le prvi rezultati
+	Open at this page	Odpri na tej strani
+	Not searched	Ni preiskano

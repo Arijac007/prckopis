@@ -2348,3 +2348,15 @@ animation effects	Off	Wyłączone
 	No other files were numbered: {e}	Nie ponumerowano innych plików: {e}
 	Numbered {n} more files, up to {last}, in {dir}.	Ponumerowano kolejne pliki ({n}) do {last} w {dir}.
 	Not numbered: {e}	Nie ponumerowano: {e}
+	Search a folder…	Szukaj w folderze…
+	Search a folder	Szukaj w folderze
+	Look in	Szukaj w
+	Include subfolders	Uwzględnij podfoldery
+	Stop	Zatrzymaj
+	Searching {name} ({d} of {n} files)…	Przeszukiwanie {name} ({d} z {n} plików)…
+	1 instance in {f} of {t} files	1 wystąpienie w {f} z {t} plików
+	{n} instances in {f} of {t} files	Wystąpienia: {n} w {f} z {t} plików
+	stopped	zatrzymano
+	only the first results are shown	pokazano tylko pierwsze wyniki
+	Open at this page	Otwórz na tej stronie
+	Not searched	Nie przeszukano

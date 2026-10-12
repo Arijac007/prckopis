@@ -2389,3 +2389,15 @@ animation effects	Off	معطّلة
 	No other files were numbered: {e}	لم تُرقَّم ملفات أخرى: {e}
 	Numbered {n} more files, up to {last}, in {dir}.	رُقّمت {n} ملفات أخرى حتى {last} في {dir}.
 	Not numbered: {e}	لم تُرقَّم: {e}
+	Search a folder…	البحث في مجلد…
+	Search a folder	البحث في مجلد
+	Look in	البحث في
+	Include subfolders	تضمين المجلدات الفرعية
+	Stop	إيقاف
+	Searching {name} ({d} of {n} files)…	جارٍ البحث في {name} ({d} من {n} ملفات)…
+	1 instance in {f} of {t} files	تطابق واحد في {f} من {t} ملفات
+	{n} instances in {f} of {t} files	{n} تطابقات في {f} من {t} ملفات
+	stopped	توقف
+	only the first results are shown	تُعرض النتائج الأولى فقط
+	Open at this page	فتح عند هذه الصفحة
+	Not searched	لم يُبحث فيها

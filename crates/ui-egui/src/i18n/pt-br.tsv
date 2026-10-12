@@ -2382,3 +2382,15 @@ animation effects	Off	Desativados
 	No other files were numbered: {e}	Nenhum outro arquivo foi numerado: {e}
 	Numbered {n} more files, up to {last}, in {dir}.	Mais {n} arquivos numerados, até {last}, em {dir}.
 	Not numbered: {e}	Não numerados: {e}
+	Search a folder…	Pesquisar em uma pasta…
+	Search a folder	Pesquisar em uma pasta
+	Look in	Pesquisar em
+	Include subfolders	Incluir subpastas
+	Stop	Parar
+	Searching {name} ({d} of {n} files)…	Pesquisando {name} ({d} de {n} arquivos)…
+	1 instance in {f} of {t} files	1 ocorrência em {f} de {t} arquivos
+	{n} instances in {f} of {t} files	{n} ocorrências em {f} de {t} arquivos
+	stopped	interrompida
+	only the first results are shown	apenas os primeiros resultados são mostrados
+	Open at this page	Abrir nesta página
+	Not searched	Não pesquisados
