@@ -122,6 +122,8 @@ fn reduce_file_size_saves_nothing_when_the_file_is_already_small() {
     let dir = std::env::temp_dir().join(format!("prckopis-reduce-small-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
     let out = dir.join("reduced.pdf");
+    // Process ids are reused: a run that once had this id may have left a copy here.
+    let _ = std::fs::remove_file(&out);
     // A new text PDF is already compact: a copy would be no smaller (#490).
     let h = reduce("notes.txt", "lorem ipsum ".repeat(500).into_bytes(), &out);
     assert!(!out.exists(), "no copy was written");
