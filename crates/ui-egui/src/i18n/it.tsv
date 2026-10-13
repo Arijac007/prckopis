@@ -2394,3 +2394,9 @@ animation effects	Off	Disattivati
 	Old: {name}	Vecchio: {name}
 	New: {name}	Nuovo: {name}
 	Rendering…	Rendering in corso…
+	Lock all form fields after signing	Blocca tutti i campi del modulo dopo la firma
+	Locked fields become read-only, and changing one later invalidates this signature.	I campi bloccati diventano di sola lettura e modificarne uno in seguito invalida questa firma.
+	locked form fields	campi del modulo bloccati
+	The signer locked all form fields.	Il firmatario ha bloccato tutti i campi del modulo.
+	The signer locked these form fields: {}.	Il firmatario ha bloccato questi campi del modulo: {}.
+	The signer locked every form field except: {}.	Il firmatario ha bloccato tutti i campi del modulo tranne: {}.

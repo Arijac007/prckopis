@@ -2349,3 +2349,9 @@ animation effects	Off	关
 	Old: {name}	旧：{name}
 	New: {name}	新：{name}
 	Rendering…	正在渲染…
+	Lock all form fields after signing	签名后锁定所有表单域
+	Locked fields become read-only, and changing one later invalidates this signature.	锁定的表单域将变为只读，之后更改任何一个都会使此签名失效。
+	locked form fields	已锁定的表单域
+	The signer locked all form fields.	签名者锁定了所有表单域。
+	The signer locked these form fields: {}.	签名者锁定了以下表单域：{}。
+	The signer locked every form field except: {}.	签名者锁定了除以下各项外的所有表单域：{}。

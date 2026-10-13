@@ -1,5 +1,6 @@
 # Where Prckopis falls short of Acrobat Pro
 
+> **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-13 · **Change:** minor (gap 10: FieldMDP field locks on signing and in validation) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
 > **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-12 · **Change:** minor (gap 21: side-by-side compare with synchronised scrolling shipped) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
 > **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-12 · **Change:** minor (gap 10: timestamp servers, signature timestamps and document timestamps over HTTP) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
 > **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-12 · **Change:** minor (gap 13: large-file memory measured, edits keep two copies instead of three, file-backed input blocked on gap 2) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
@@ -171,11 +172,12 @@ update the numbers.
 ### 10. Signatures: no PKCS #11 or online revocation; timestamp servers HTTP only
 
 - **Missing:** PKCS #11 tokens and smart cards on macOS and Linux; HTTPS timestamp servers
-  (timestamp servers, signature timestamps and document timestamps work over http://); fetching OCSP/CRL online for LTV; FieldMDP and locking fields on signing; the OS trust store; EU
+  (timestamp servers, signature timestamps and document timestamps work over http://); fetching OCSP/CRL online for LTV; authoring field locks in Prepare Form
+  (signing with FieldMDP locks and validating them ship); the OS trust store; EU
   Trusted Lists; signature graphics and saved appearances; compare signed version; signing in the
   browser.
-- **Evidence:** `sign.pkcs11`, `sign.field-mdp`, `sign.os-trust`, `sign.eutl` planned;
-  `sign.ltv`, `sign.ocsp-crl` partial (caller-supplied
+- **Evidence:** `sign.pkcs11`, `sign.os-trust`, `sign.eutl` planned;
+  `sign.ltv`, `sign.ocsp-crl`, `sign.field-mdp` partial (caller-supplied
   evidence). Users ask for Acrobat-like validation
   ([#824](https://github.com/storytold/pdfcraft/issues/824),
   [#775](https://github.com/storytold/pdfcraft/issues/775),

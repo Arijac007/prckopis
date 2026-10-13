@@ -2364,3 +2364,9 @@ animation effects	Off	Wyłączone
 	Show the old file beside the new one, scrolling together	Pokaż stary plik obok nowego, przewijając je razem
 	Old: {name}	Stary: {name}
 	New: {name}	Nowy: {name}
+	Lock all form fields after signing	Zablokuj wszystkie pola formularza po podpisaniu
+	Locked fields become read-only, and changing one later invalidates this signature.	Zablokowane pola są tylko do odczytu, a późniejsza zmiana któregoś z nich unieważnia ten podpis.
+	locked form fields	zablokowane pola formularza
+	The signer locked all form fields.	Podpisujący zablokował wszystkie pola formularza.
+	The signer locked these form fields: {}.	Podpisujący zablokował te pola formularza: {}.
+	The signer locked every form field except: {}.	Podpisujący zablokował wszystkie pola formularza oprócz: {}.

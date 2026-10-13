@@ -2,7 +2,7 @@
 //! document, and manage trusted certificates. Rectangles are points from the top-left of the
 //! displayed page.
 
-use prckopis_engine::sign::{self, Certificate, DigitalId, Modification, Name, PrivateKey};
+use prckopis_engine::sign::{self, Certificate, DigitalId, FieldLock, Modification, Name, PrivateKey};
 use prckopis_engine::{SignOptions, SignatureInfo, SignatureStatus};
 use serde_json::{Value, json};
 
@@ -70,6 +70,7 @@ impl Automation {
             "location": s.location,
             "contact": s.contact,
             "certify": s.certify,
+            "locked_fields": s.locked_fields.as_ref().map(lock_json),
             "page": s.page.map(|p| p + 1),
             "rect": rect,
             "visible": s.visible,
@@ -182,6 +183,10 @@ impl Automation {
             }),
             Some(v) => Some(v.as_u64().filter(|n| (1..=3).contains(n)).ok_or_else(|| bad("certify must be 1, 2 or 3"))? as u8),
         };
+        let lock = match a.get("lock") {
+            None | Some(Value::Null) => None,
+            Some(v) => Some(parse_lock(v)?),
+        };
         let graphic = match a.get("graphic") {
             None | Some(Value::Null) => None,
             Some(g) if rect.is_none() && field.is_none() => return Err(bad(format!("graphic {g} needs a visible signature: pass rect or field"))),
@@ -196,6 +201,7 @@ impl Automation {
             location: a.opt_str("location")?.map(str::to_string),
             contact: a.opt_str("contact")?.map(str::to_string),
             certify,
+            lock,
             graphic,
             ..SignOptions::default()
         };
@@ -390,5 +396,36 @@ impl Automation {
         }
         self.session.set_trusted_certificates(certs);
         Ok(json!({ "trusted": self.session.trusted_certificates().iter().map(cert_json).collect::<Vec<_>>() }))
+    }
+}
+
+/// A signature's field lock as `sign_list` reports it: `"all"`, `{"include": [...]}` or
+/// `{"exclude": [...]}`, the form `sign_document`'s `lock` takes.
+fn lock_json(lock: &FieldLock) -> Value {
+    match lock {
+        FieldLock::All => json!("all"),
+        FieldLock::Include(names) => json!({ "include": names }),
+        FieldLock::Exclude(names) => json!({ "exclude": names }),
+    }
+}
+
+/// `sign_document`'s `lock`: `"all"`, `{"include": [names]}` or `{"exclude": [names]}`.
+fn parse_lock(v: &Value) -> Result<FieldLock> {
+    const USAGE: &str = "lock is \"all\", {\"include\": [field names]} or {\"exclude\": [field names]}";
+    let names = |list: &Value| -> Result<Vec<String>> {
+        let list = list.as_array().ok_or_else(|| bad(USAGE))?;
+        if list.len() > 10_000 {
+            return Err(bad("lock names at most 10000 fields"));
+        }
+        list.iter().map(|n| n.as_str().map(str::to_string).ok_or_else(|| bad(USAGE))).collect()
+    };
+    match v {
+        Value::String(s) if s == "all" => Ok(FieldLock::All),
+        Value::Object(o) if o.len() == 1 => match (o.get("include"), o.get("exclude")) {
+            (Some(list), None) => Ok(FieldLock::Include(names(list)?)),
+            (None, Some(list)) => Ok(FieldLock::Exclude(names(list)?)),
+            _ => Err(bad(USAGE)),
+        },
+        _ => Err(bad(USAGE)),
     }
 }

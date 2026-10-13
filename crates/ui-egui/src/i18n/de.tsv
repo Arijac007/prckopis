@@ -2386,3 +2386,9 @@ animation effects	Off	Aus
 	Old: {name}	Alt: {name}
 	New: {name}	Neu: {name}
 	Rendering…	Wird gerendert…
+	Lock all form fields after signing	Alle Formularfelder nach dem Signieren sperren
+	Locked fields become read-only, and changing one later invalidates this signature.	Gesperrte Felder sind schreibgeschützt; wird eines später geändert, wird diese Signatur ungültig.
+	locked form fields	gesperrte Formularfelder
+	The signer locked all form fields.	Der Unterzeichner hat alle Formularfelder gesperrt.
+	The signer locked these form fields: {}.	Der Unterzeichner hat diese Formularfelder gesperrt: {}.
+	The signer locked every form field except: {}.	Der Unterzeichner hat alle Formularfelder gesperrt außer: {}.

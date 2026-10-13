@@ -2406,3 +2406,9 @@ animation effects	Off	معطّلة
 	Old: {name}	القديم: {name}
 	New: {name}	الجديد: {name}
 	Rendering…	جارٍ العرض…
+	Lock all form fields after signing	قفل كل حقول النموذج بعد التوقيع
+	Locked fields become read-only, and changing one later invalidates this signature.	تصبح الحقول المقفلة للقراءة فقط، وتغيير أيٍّ منها لاحقًا يُبطل هذا التوقيع.
+	locked form fields	حقول نموذج مقفلة
+	The signer locked all form fields.	قفل الموقِّع كل حقول النموذج.
+	The signer locked these form fields: {}.	قفل الموقِّع حقول النموذج هذه: {}.
+	The signer locked every form field except: {}.	قفل الموقِّع كل حقول النموذج باستثناء: {}.

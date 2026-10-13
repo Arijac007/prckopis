@@ -2258,3 +2258,9 @@ animation effects	Off	關
 	Show the old file beside the new one, scrolling together	將舊檔案顯示在新檔案旁邊，同步捲動
 	Old: {name}	舊：{name}
 	New: {name}	新：{name}
+	Lock all form fields after signing	簽署後鎖定所有表單欄位
+	Locked fields become read-only, and changing one later invalidates this signature.	鎖定的欄位會變成唯讀，之後變更任何一個都會使此簽章失效。
+	locked form fields	已鎖定的表單欄位
+	The signer locked all form fields.	簽署者鎖定了所有表單欄位。
+	The signer locked these form fields: {}.	簽署者鎖定了以下表單欄位：{}。
+	The signer locked every form field except: {}.	簽署者鎖定了以下以外的所有表單欄位：{}。

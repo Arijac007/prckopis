@@ -188,6 +188,10 @@ fn certifying_without_a_visible_signature() {
     h.run_steps(2);
     h.get_by_label("Certify as \"Test Signer EC\"");
     h.get_by_label("Permitted actions after certifying");
+    // Lock the form fields too (FieldMDP).
+    h.get_by_label("Lock all form fields after signing").click();
+    h.run_steps(1);
+    assert!(h.state().sign_draft.as_ref().unwrap().lock_fields);
     h.state_mut().sign_draft.as_mut().unwrap().password = "test".into();
     h.get_by_label("Sign").click();
     h.run_steps(6);
@@ -196,6 +200,7 @@ fn certifying_without_a_visible_signature() {
     let doc = s.session.get(s.views[0].id).unwrap();
     let sig = doc.signatures.iter().find(|x| x.signed).unwrap();
     assert_eq!((sig.certify, sig.visible), (Some(2), false));
+    assert_eq!(sig.locked_fields, Some(prckopis_engine::sign::FieldLock::All));
     h.get_by_label_contains("Certified by Test Signer EC");
 }
 

@@ -114,6 +114,8 @@ pub struct SignDraft {
     pub error: Option<String>,
     /// Embed a timestamp from the default timestamp server (PAdES B-T).
     pub timestamp: bool,
+    /// Lock every form field on signing (FieldMDP). Off, an existing field's own `/Lock` applies.
+    pub lock_fields: bool,
 }
 
 impl SignDraft {
@@ -136,6 +138,7 @@ impl SignDraft {
             new_id: NewIdDraft::default(),
             error: None,
             timestamp: false,
+            lock_fields: false,
         }
     }
 }
@@ -413,6 +416,7 @@ impl PrckopisApp {
             reason: some(&d.reason),
             location: some(&d.location),
             certify: d.certify,
+            lock: d.lock_fields.then_some(prckopis_engine::sign::FieldLock::All),
             appearance: d.appearance.clone(),
             graphic,
             ..SignOptions::default()
@@ -894,6 +898,10 @@ fn sign_as(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> bool {
             d.certify = Some(p);
             ui.end_row();
         }
+        ui.label(tl!("Form fields"));
+        ui.add(widgets::checkbox(&mut d.lock_fields, tl!("Lock all form fields after signing")))
+            .on_hover_text(tl!("Locked fields become read-only, and changing one later invalidates this signature."));
+        ui.end_row();
         if let Some(server) = &default_server {
             ui.label(tl!("Timestamp"));
             ui.add(widgets::checkbox(&mut d.timestamp, &crate::i18n::fmt(tl!("Add a timestamp from {server}"), &[("server", server)])));

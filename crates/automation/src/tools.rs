@@ -736,6 +736,14 @@ pub fn tools() -> Vec<ToolDef> {
                     "location": { "type": "string" },
                     "contact": { "type": "string" },
                     "certify": { "type": "string", "enum": ["no_changes", "form_fill", "comments"] },
+                    "lock": {
+                        "description": "Lock form fields on signing (FieldMDP): \"all\", {\"include\": [field names]} or {\"exclude\": [field names]}. Locked fields become read-only, and changing one later is a change the signature does not permit. Without it, signing an existing field applies the lock the field asks for, if any.",
+                        "oneOf": [
+                            { "type": "string", "enum": ["all"] },
+                            { "type": "object", "properties": { "include": { "type": "array", "items": { "type": "string" } } }, "required": ["include"], "additionalProperties": false },
+                            { "type": "object", "properties": { "exclude": { "type": "array", "items": { "type": "string" } } }, "required": ["exclude"], "additionalProperties": false }
+                        ]
+                    },
                     "graphic": {
                         "type": "object",
                         "description": "Exactly one of image, text or strokes.",

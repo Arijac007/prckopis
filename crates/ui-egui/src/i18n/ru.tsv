@@ -2298,3 +2298,9 @@ animation effects	Off	Выкл
 	Old: {name}	Старый: {name}
 	New: {name}	Новый: {name}
 	Rendering…	Отрисовка…
+	Lock all form fields after signing	Заблокировать все поля формы после подписания
+	Locked fields become read-only, and changing one later invalidates this signature.	Заблокированные поля становятся доступными только для чтения, а их последующее изменение делает эту подпись недействительной.
+	locked form fields	заблокированные поля формы
+	The signer locked all form fields.	Подписавший заблокировал все поля формы.
+	The signer locked these form fields: {}.	Подписавший заблокировал эти поля формы: {}.
+	The signer locked every form field except: {}.	Подписавший заблокировал все поля формы, кроме: {}.

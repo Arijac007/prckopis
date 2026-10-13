@@ -2385,3 +2385,9 @@ animation effects	Off	オフ
 	Old: {name}	旧: {name}
 	New: {name}	新: {name}
 	Rendering…	描画中…
+	Lock all form fields after signing	署名後にすべてのフォームフィールドをロック
+	Locked fields become read-only, and changing one later invalidates this signature.	ロックしたフィールドは読み取り専用になり、後で変更するとこの署名は無効になります。
+	locked form fields	ロックされたフォームフィールド
+	The signer locked all form fields.	署名者はすべてのフォームフィールドをロックしました。
+	The signer locked these form fields: {}.	署名者は次のフォームフィールドをロックしました: {}。
+	The signer locked every form field except: {}.	署名者は次を除くすべてのフォームフィールドをロックしました: {}。

@@ -2400,3 +2400,9 @@ animation effects	Off	Ανενεργά
 	Show the old file beside the new one, scrolling together	Εμφάνιση του παλιού αρχείου δίπλα στο νέο, με κοινή κύλιση
 	Old: {name}	Παλιό: {name}
 	New: {name}	Νέο: {name}
+	Lock all form fields after signing	Κλείδωμα όλων των πεδίων φόρμας μετά την υπογραφή
+	Locked fields become read-only, and changing one later invalidates this signature.	Τα κλειδωμένα πεδία γίνονται μόνο για ανάγνωση και η μεταγενέστερη αλλαγή τους ακυρώνει αυτήν την υπογραφή.
+	locked form fields	κλειδωμένα πεδία φόρμας
+	The signer locked all form fields.	Ο υπογράφων κλείδωσε όλα τα πεδία φόρμας.
+	The signer locked these form fields: {}.	Ο υπογράφων κλείδωσε αυτά τα πεδία φόρμας: {}.
+	The signer locked every form field except: {}.	Ο υπογράφων κλείδωσε όλα τα πεδία φόρμας εκτός από: {}.

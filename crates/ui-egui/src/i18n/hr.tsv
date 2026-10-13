@@ -2563,3 +2563,9 @@ calendar date	November	Studeni
 calendar date	October	Listopad
 calendar date	September	Rujan
 signature pad	Type	Upiši
+	Lock all form fields after signing	Zaključaj sva polja obrasca nakon potpisivanja
+	Locked fields become read-only, and changing one later invalidates this signature.	Zaključana polja postaju samo za čitanje, a kasnija promjena nekog od njih poništava ovaj potpis.
+	locked form fields	zaključana polja obrasca
+	The signer locked all form fields.	Potpisnik je zaključao sva polja obrasca.
+	The signer locked these form fields: {}.	Potpisnik je zaključao ova polja obrasca: {}.
+	The signer locked every form field except: {}.	Potpisnik je zaključao sva polja obrasca osim: {}.

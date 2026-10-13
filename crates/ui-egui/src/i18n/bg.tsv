@@ -2348,3 +2348,9 @@ animation effects	Off	Изключени
 	Old: {name}	Стар: {name}
 	New: {name}	Нов: {name}
 	Rendering…	Изобразяване…
+	Lock all form fields after signing	Заключване на всички полета на формуляра след подписване
+	Locked fields become read-only, and changing one later invalidates this signature.	Заключените полета стават само за четене, а промяната на някое от тях по-късно прави този подпис невалиден.
+	locked form fields	заключени полета на формуляра
+	The signer locked all form fields.	Подписващият е заключил всички полета на формуляра.
+	The signer locked these form fields: {}.	Подписващият е заключил тези полета на формуляра: {}.
+	The signer locked every form field except: {}.	Подписващият е заключил всички полета на формуляра освен: {}.

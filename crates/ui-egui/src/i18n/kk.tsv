@@ -2383,3 +2383,9 @@ animation effects	Off	Өшірулі
 	Old: {name}	Ескі: {name}
 	New: {name}	Жаңа: {name}
 	Rendering…	Көрсетілуде…
+	Lock all form fields after signing	Қол қойғаннан кейін пішіннің барлық өрістерін құлыптау
+	Locked fields become read-only, and changing one later invalidates this signature.	Құлыпталған өрістер тек оқуға арналған болады, ал олардың бірін кейін өзгерту бұл қолтаңбаны жарамсыз етеді.
+	locked form fields	құлыпталған пішін өрістері
+	The signer locked all form fields.	Қол қоюшы пішіннің барлық өрістерін құлыптады.
+	The signer locked these form fields: {}.	Қол қоюшы пішіннің мына өрістерін құлыптады: {}.
+	The signer locked every form field except: {}.	Қол қоюшы мыналардан басқа пішіннің барлық өрістерін құлыптады: {}.

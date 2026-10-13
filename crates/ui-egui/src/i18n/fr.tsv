@@ -2385,3 +2385,9 @@ animation effects	Off	Désactivés
 	Old: {name}	Ancien : {name}
 	New: {name}	Nouveau : {name}
 	Rendering…	Rendu en cours…
+	Lock all form fields after signing	Verrouiller tous les champs du formulaire après la signature
+	Locked fields become read-only, and changing one later invalidates this signature.	Les champs verrouillés passent en lecture seule ; en modifier un plus tard invalide cette signature.
+	locked form fields	champs de formulaire verrouillés
+	The signer locked all form fields.	Le signataire a verrouillé tous les champs du formulaire.
+	The signer locked these form fields: {}.	Le signataire a verrouillé ces champs du formulaire : {}.
+	The signer locked every form field except: {}.	Le signataire a verrouillé tous les champs du formulaire sauf : {}.

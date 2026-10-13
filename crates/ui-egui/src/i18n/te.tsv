@@ -2297,3 +2297,9 @@ animation effects	Off	ఆఫ్
 	Show the old file beside the new one, scrolling together	పాత ఫైల్‌ను కొత్త దాని పక్కన చూపించి, కలిసి స్క్రోల్ చేయండి
 	Old: {name}	పాతది: {name}
 	New: {name}	కొత్తది: {name}
+	Lock all form fields after signing	సంతకం చేసిన తర్వాత అన్ని ఫారమ్ ఫీల్డ్‌లను లాక్ చేయి
+	Locked fields become read-only, and changing one later invalidates this signature.	లాక్ చేసిన ఫీల్డ్‌లు చదవడానికి మాత్రమే అవుతాయి; తర్వాత వాటిలో ఒకదాన్ని మార్చితే ఈ సంతకం చెల్లదు.
+	locked form fields	లాక్ చేసిన ఫారమ్ ఫీల్డ్‌లు
+	The signer locked all form fields.	సంతకం చేసినవారు అన్ని ఫారమ్ ఫీల్డ్‌లను లాక్ చేశారు.
+	The signer locked these form fields: {}.	సంతకం చేసినవారు ఈ ఫారమ్ ఫీల్డ్‌లను లాక్ చేశారు: {}.
+	The signer locked every form field except: {}.	సంతకం చేసినవారు వీటిని మినహా అన్ని ఫారమ్ ఫీల్డ్‌లను లాక్ చేశారు: {}.

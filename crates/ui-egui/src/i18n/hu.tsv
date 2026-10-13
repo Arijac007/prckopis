@@ -2384,3 +2384,9 @@ animation effects	Off	Ki
 	Old: {name}	Régi: {name}
 	New: {name}	Új: {name}
 	Rendering…	Megjelenítés…
+	Lock all form fields after signing	Az összes űrlapmező zárolása aláírás után
+	Locked fields become read-only, and changing one later invalidates this signature.	A zárolt mezők csak olvashatók lesznek, és bármelyik későbbi módosítása érvényteleníti ezt az aláírást.
+	locked form fields	zárolt űrlapmezők
+	The signer locked all form fields.	Az aláíró az összes űrlapmezőt zárolta.
+	The signer locked these form fields: {}.	Az aláíró ezeket az űrlapmezőket zárolta: {}.
+	The signer locked every form field except: {}.	Az aláíró az összes űrlapmezőt zárolta, kivéve: {}.

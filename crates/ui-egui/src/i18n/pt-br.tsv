@@ -2399,3 +2399,9 @@ animation effects	Off	Desativados
 	Old: {name}	Antigo: {name}
 	New: {name}	Novo: {name}
 	Rendering…	Renderizando…
+	Lock all form fields after signing	Bloquear todos os campos do formulário após assinar
+	Locked fields become read-only, and changing one later invalidates this signature.	Os campos bloqueados ficam somente leitura, e alterar um deles depois invalida esta assinatura.
+	locked form fields	campos de formulário bloqueados
+	The signer locked all form fields.	O signatário bloqueou todos os campos do formulário.
+	The signer locked these form fields: {}.	O signatário bloqueou estes campos do formulário: {}.
+	The signer locked every form field except: {}.	O signatário bloqueou todos os campos do formulário, exceto: {}.

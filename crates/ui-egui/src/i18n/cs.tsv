@@ -2458,3 +2458,9 @@ animation effects	Off	Vypnuto
 	Show the old file beside the new one, scrolling together	Zobrazit starý soubor vedle nového se společným posouváním
 	Old: {name}	Starý: {name}
 	New: {name}	Nový: {name}
+	Lock all form fields after signing	Po podpisu uzamknout všechna pole formuláře
+	Locked fields become read-only, and changing one later invalidates this signature.	Uzamčená pole jsou jen pro čtení a jejich pozdější změna zneplatní tento podpis.
+	locked form fields	uzamčená pole formuláře
+	The signer locked all form fields.	Podepisující uzamkl všechna pole formuláře.
+	The signer locked these form fields: {}.	Podepisující uzamkl tato pole formuláře: {}.
+	The signer locked every form field except: {}.	Podepisující uzamkl všechna pole formuláře kromě: {}.

@@ -1442,6 +1442,51 @@ fn signing_an_encrypted_form_through_tools() {
     assert_eq!((list["all_valid"].as_bool(), list["signatures"][0]["status"].as_str()), (Some(true), Some("valid")), "{list}");
 }
 
+/// Signing can lock form fields (FieldMDP): the locked field becomes read-only, `sign_list`
+/// reports the lock, and filling the locked field in afterwards is a change the signature does not
+/// permit, while the unlocked one stays fillable.
+#[test]
+fn signing_locks_form_fields_through_tools() {
+    let dir = workdir("sign-lock");
+    let mut a = auto(&dir);
+    ok(&mut a, "sign_id_create", json!({ "name": "Ada Lovelace", "key": "p256", "password": "secret1", "path": "ada.p12" }));
+    let doc = ok(&mut a, "doc_open", json!({ "path": "a.pdf" }))["doc"].as_u64().unwrap();
+    ok(&mut a, "form_add_field", json!({ "doc": doc, "page": 1, "type": "text", "rect": [20, 20, 180, 42], "name": "City" }));
+    ok(&mut a, "form_add_field", json!({ "doc": doc, "page": 1, "type": "text", "rect": [20, 60, 180, 82], "name": "Note" }));
+    ok(&mut a, "form_fill", json!({ "doc": doc, "values": { "City": "Zagreb" } }));
+    ok(&mut a, "doc_save", json!({ "doc": doc, "path": "form.pdf" }));
+    for bad in [json!("some"), json!({ "include": "City" }), json!({ "include": ["City"], "exclude": [] }), json!({ "include": [1] })] {
+        let r = a.call("sign_document", &json!({ "doc": doc, "id": "ada.p12", "password": "secret1", "lock": bad, "out": "x.pdf" }));
+        assert!(matches!(r, Err(ToolError::InvalidArgs(_))), "{bad}: {r:?}");
+    }
+    let r = ok(
+        &mut a,
+        "sign_document",
+        json!({ "doc": doc, "id": "ada.p12", "password": "secret1", "page": 1, "rect": [200, 20, 380, 70], "lock": { "include": ["City"] }, "out": "signed.pdf" }),
+    );
+    assert_eq!(r["signature"]["locked_fields"], json!({ "include": ["City"] }), "{r}");
+    let mut b = auto(&dir);
+    ok(&mut b, "sign_trust", json!({ "paths": ["ada.p12"], "password": "secret1" }));
+    let signed = ok(&mut b, "doc_open", json!({ "path": "signed.pdf" }))["doc"].as_u64().unwrap();
+    let fields = ok(&mut b, "form_fields", json!({ "doc": signed }));
+    let read_only = |name: &str| fields["fields"].as_array().unwrap().iter().find(|f| f["name"] == name).unwrap()["read_only"].as_bool();
+    assert_eq!((read_only("City"), read_only("Note")), (Some(true), Some(false)), "{fields}");
+    // The unlocked field is still form fill the signature permits.
+    ok(&mut b, "form_fill", json!({ "doc": signed, "values": { "Note": "Seen" } }));
+    ok(&mut b, "doc_save", json!({ "doc": signed, "path": "noted.pdf", "full": false }));
+    let mut c = auto(&dir);
+    ok(&mut c, "sign_trust", json!({ "paths": ["ada.p12"], "password": "secret1" }));
+    let noted = ok(&mut c, "doc_open", json!({ "path": "noted.pdf" }))["doc"].as_u64().unwrap();
+    let list = ok(&mut c, "sign_list", json!({ "doc": noted }));
+    let sig = list["signatures"].as_array().unwrap().iter().find(|s| s["signed"] == true).unwrap().clone();
+    assert_eq!((sig["status"].as_str(), sig["locked_fields"].clone()), (Some("valid"), json!({ "include": ["City"] })), "{list}");
+    // The locked field can't be filled in.
+    match c.call("form_fill", &json!({ "doc": noted, "values": { "City": "Split" } })) {
+        Err(ToolError::Failed(m)) => assert!(m.contains("read-only"), "{m}"),
+        other => panic!("a locked field is read-only: {other:?}"),
+    }
+}
+
 #[test]
 fn combine_opens_protected_files_with_their_passwords() {
     let dir = workdir("combine-passwords");

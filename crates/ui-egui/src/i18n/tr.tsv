@@ -2381,3 +2381,9 @@ animation effects	Off	Kapalı
 	Old: {name}	Eski: {name}
 	New: {name}	Yeni: {name}
 	Rendering…	Görüntüleniyor…
+	Lock all form fields after signing	İmzaladıktan sonra tüm form alanlarını kilitle
+	Locked fields become read-only, and changing one later invalidates this signature.	Kilitli alanlar salt okunur olur; birinin sonradan değiştirilmesi bu imzayı geçersiz kılar.
+	locked form fields	kilitli form alanları
+	The signer locked all form fields.	İmzalayan tüm form alanlarını kilitledi.
+	The signer locked these form fields: {}.	İmzalayan şu form alanlarını kilitledi: {}.
+	The signer locked every form field except: {}.	İmzalayan şunlar dışındaki tüm form alanlarını kilitledi: {}.
