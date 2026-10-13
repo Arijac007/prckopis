@@ -122,6 +122,7 @@ pub use prckopis_annot::{
 pub use prckopis_forms::detect;
 pub use prckopis_optimize as optimize;
 pub use prckopis_preflight as pdfa;
+pub use prckopis_preflight as preflight;
 pub use prckopis_print as print;
 /// The page size of new documents (Create ▸ Blank page, text to PDF, blank pages in an empty
 /// file): A4, as Prckopis is set up for Europe.
@@ -1266,6 +1267,11 @@ pub enum Edit {
     ConvertPdfA {
         level: prckopis_preflight::Level,
     },
+    /// Preflight ▸ Fix: apply `profile`'s fixups (none changes what a page looks like). Dates a
+    /// PDF/X file lacks are the time of the edit.
+    PreflightFix {
+        profile: prckopis_preflight::Profile,
+    },
     /// What a script (button or console) changed in form fields: values, read-only, required
     /// and visibility.
     ApplyScriptChanges {
@@ -1593,6 +1599,7 @@ pub const EDIT_LABELS: &[&str] = &[
     "Run JavaScript",
     "Run form script",
     "Save as {level}",
+    "Preflight fixups for {profile}",
     "Edit script of {name}",
     "Delete document JavaScript",
     "Edit document JavaScript",
@@ -1718,6 +1725,7 @@ impl Edit {
             Edit::XfaEvent { .. } => Label::of("Run form script"),
             // The level is the standard's own name ("PDF/A-2b"), so it goes in as it stands.
             Edit::ConvertPdfA { level } => Label::with("Save as {level}", level.label()),
+            Edit::PreflightFix { profile } => Label::with("Preflight fixups for {profile}", profile.label()),
             Edit::SetFieldScript { name, .. } => Label::with("Edit script of {name}", name.as_str()),
             Edit::SetDocumentScript { script: None, .. } => Label::of("Delete document JavaScript"),
             Edit::SetDocumentScript { .. } => Label::of("Edit document JavaScript"),
@@ -1907,6 +1915,7 @@ fn check_permission(edit: &Edit, p: &prckopis_cos::Permissions) -> Result<(), Ed
         | Edit::SetDocumentScript { .. }
         | Edit::SetFieldScript { .. }
         | Edit::ConvertPdfA { .. }
+        | Edit::PreflightFix { .. }
         | Edit::EditTextLine { .. }
         | Edit::EditTextBlock { .. }
         | Edit::RegisterTextFont { .. }
@@ -2195,6 +2204,9 @@ fn run_edit(doc: &mut prckopis_cos::Document, edit: &Edit, cx: &mut EditCtx) -> 
         }
         Edit::ConvertPdfA { level } => {
             prckopis_preflight::convert(doc, *level).map_err(|e| EditError::Invalid(e.to_string()))?;
+        }
+        Edit::PreflightFix { profile } => {
+            prckopis_preflight::profile::fix(doc, *profile, cx.date.as_deref()).map_err(|e| EditError::Invalid(e.to_string()))?;
         }
         Edit::SetDocumentScript { name, script } => prckopis_forms::set_document_script(doc, name, script.as_deref())?,
         Edit::AddOcrText { page, words } => {

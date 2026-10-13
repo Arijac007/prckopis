@@ -7593,11 +7593,11 @@ title = "Preflight analysis"
 area = "K"
 tier = "P1"
 milestone = "M11"
-status = "planned"
-commands = []
-tools = []
-evidence = []
-notes = ""
+status = "shipped"
+commands = ["preflight.run"]
+tools = ["preflight_run"]
+evidence = ["crates/preflight/src/tests.rs::profiles_by_id_run_and_report", "crates/preflight/src/tests.rs::pdfx4_verify_reports_what_breaks_it", "crates/preflight/src/tests.rs::a_pdfx4_file_passes", "crates/automation/tests/automation.rs::preflight_through_tools", "crates/ui-egui/tests/compare.rs::preflight_dialog_analyzes_fixes_and_turns_to_pages"]
+notes = "Print production / Apply PDF standards ▸ Preflight: choose a profile, Analyze, read the problems grouped with links to their pages and the clause each breaks (ISO 19005 clause; for PDF/X the ISO 32000-1 clause defining the object), Fix, Save report. Three profiles (PDF/A-2b, PDF/A-3b, PDF/X-4); Acrobat ships hundreds. Not yet: PDF/UA, PDF/X-1a/3, custom profiles, object-level results."
 
 [[feature]]
 id = "optimize.preflight-fix"
@@ -7605,11 +7605,11 @@ title = "Preflight analyze and fix"
 area = "K"
 tier = "P1"
 milestone = "M11"
-status = "planned"
-commands = []
-tools = []
-evidence = []
-notes = ""
+status = "partial"
+commands = ["preflight.run"]
+tools = ["preflight_run"]
+evidence = ["crates/preflight/src/tests.rs::pdfx4_fix_fixes_what_does_not_change_print", "crates/preflight/src/tests.rs::pdfx4_page_box_rules_and_grouping", "crates/preflight/src/tests.rs::pdfx4_graphics_states_and_optional_content", "crates/automation/tests/automation.rs::preflight_through_tools", "crates/ui-egui/tests/compare.rs::preflight_dialog_analyzes_fixes_and_turns_to_pages"]
+notes = "Fix applies the profile's fixups as one undoable edit, none of which changes what prints: PDF/A as Save as PDF/A; PDF/X-4 identification (XMP, GTS_PDFXVersion), Trapped False, missing dates (session clock), file ID, encryption, TrimBox from the crop box, ArtBox beside a TrimBox, boxes clipped to the MediaBox, image alternates/OPI, optional content names and AS. Not yet: choosing an output intent, embedding fonts, colour conversion, flattening, per-item fixes."
 
 [[feature]]
 id = "optimize.preflight-profiles"
@@ -7617,11 +7617,11 @@ title = "Built-in preflight profiles"
 area = "K"
 tier = "P1"
 milestone = "M11"
-status = "planned"
-commands = []
-tools = []
-evidence = []
-notes = ""
+status = "partial"
+commands = ["preflight.run"]
+tools = ["preflight_run"]
+evidence = ["crates/preflight/src/tests.rs::profiles_by_id_run_and_report", "crates/automation/tests/automation.rs::preflight_through_tools"]
+notes = "Built-in profiles: Verify compliance with PDF/A-2b, PDF/A-3b and PDF/X-4. Not yet: PDF/A-1/4, PDF/X-1a/3/4p/5, PDF/UA, PDF/E, digital printing and the other Acrobat profiles."
 
 [[feature]]
 id = "optimize.preflight-single-checks"
@@ -7677,11 +7677,11 @@ title = "Preflight results tree with object details"
 area = "K"
 tier = "P1"
 milestone = "M11"
-status = "planned"
-commands = []
-tools = []
-evidence = []
-notes = ""
+status = "partial"
+commands = ["preflight.run"]
+tools = ["preflight_run"]
+evidence = ["crates/preflight/src/tests.rs::pdfx4_page_box_rules_and_grouping", "crates/ui-egui/tests/compare.rs::preflight_dialog_analyzes_fixes_and_turns_to_pages"]
+notes = "Results grouped by problem with a count, links to each page and the clause; not a tree with object details, no snap view or highlighting on the page yet."
 
 [[feature]]
 id = "optimize.preflight-snap-view"
@@ -7701,11 +7701,11 @@ title = "Preflight reports (PDF, XML, text)"
 area = "K"
 tier = "P1"
 milestone = "M11"
-status = "planned"
-commands = []
-tools = []
-evidence = []
-notes = ""
+status = "partial"
+commands = ["preflight.run"]
+tools = ["preflight_run"]
+evidence = ["crates/preflight/src/tests.rs::profiles_by_id_run_and_report", "crates/automation/tests/automation.rs::preflight_through_tools"]
+notes = "Text report (profile, file, date, problems with pages, clause and whether they can be fixed), translated in the app, English from preflight_run report. Not yet: PDF or XML reports, comments on the page."
 
 [[feature]]
 id = "optimize.preflight-droplets"
@@ -7773,11 +7773,11 @@ title = "Verify PDF/X compliance"
 area = "K"
 tier = "P1"
 milestone = "M11"
-status = "planned"
-commands = []
-tools = []
-evidence = []
-notes = ""
+status = "partial"
+commands = ["preflight.run"]
+tools = ["preflight_run"]
+evidence = ["crates/preflight/src/tests.rs::pdfx4_verify_reports_what_breaks_it", "crates/preflight/src/tests.rs::a_pdfx4_file_passes", "crates/preflight/src/tests.rs::pdfx4_output_intent_rules", "crates/preflight/src/tests.rs::pdfx4_page_box_rules_and_grouping", "crates/preflight/src/tests.rs::pdfx4_graphics_states_and_optional_content", "crates/preflight/src/tests.rs::malformed_pdfx_input_never_panics", "crates/automation/tests/automation.rs::preflight_through_tools"]
+notes = "PDF/X-4 (ISO 15930-7) structural checks: XMP identification, title, dates, Trapped, file ID, encryption, one GTS_PDFX output intent with condition identifier and printer (prtr) profile, DeviceRGB/DeviceCMYK against it, TrimBox/ArtBox/BleedBox, printing annotations in the bleed, embedded fonts, external streams, PostScript, alternates/OPI, transfer functions, optional content configurations. Each cites the ISO 32000-1 clause defining the object; ISO 15930-7 sub-clause numbers still to be added from the standard's text. Not yet: PDF version, transparency group colour spaces, Separation/DeviceN alternates, PDF/X-1a, -3, -4p, -5, comparison with a reference validator."
 
 [[feature]]
 id = "optimize.pdfx-convert"

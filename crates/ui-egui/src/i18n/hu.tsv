@@ -2424,3 +2424,40 @@ animation effects	Off	Ki
 	Bank Account Numbers (IBAN)	Bankszámlaszámok (IBAN)
 	Croatian Personal ID Numbers (OIB)	Horvát személyi azonosító számok (OIB)
 	Allow access to files	Fájlhozzáférés engedélyezése
+	The document has no title	A dokumentumnak nincs címe
+	The document has no creation date	A dokumentumnak nincs létrehozási dátuma
+	The document has no modification date	A dokumentumnak nincs módosítási dátuma
+	The document doesn't say whether it is trapped (Trapped must be True or False)	A dokumentum nem jelzi, hogy készült-e rajta trapping (a Trapped értéke True vagy False kell legyen)
+	The file has no identifier (ID)	A fájlnak nincs azonosítója (ID)
+	There is no PDF/X output intent	Nincs PDF/X kimeneti cél
+	There is more than one PDF/X output intent	Egynél több PDF/X kimeneti cél van
+	The PDF/X output intent has no destination profile	A PDF/X kimeneti célnak nincs célprofilja
+	The PDF/X output intent has no output condition identifier	A PDF/X kimeneti célnak nincs kimeneti feltétel-azonosítója
+	The PDF/X output intent's profile isn't an output (printer) profile	A PDF/X kimeneti cél profilja nem kimeneti (nyomtató-) profil
+	DeviceRGB is used, but the PDF/X output intent isn't an RGB profile	DeviceRGB van használatban, de a PDF/X kimeneti cél nem RGB-profil
+	DeviceCMYK is used, but the PDF/X output intent isn't a CMYK profile	DeviceCMYK van használatban, de a PDF/X kimeneti cél nem CMYK-profil
+	The page has neither a TrimBox nor an ArtBox	Az oldalnak nincs sem TrimBox, sem ArtBox kerete
+	The page has both a TrimBox and an ArtBox	Az oldalnak TrimBox és ArtBox kerete is van
+	A page box extends beyond the MediaBox	Egy oldalkeret túlnyúlik a MediaBoxon
+	The TrimBox extends beyond the BleedBox	A TrimBox túlnyúlik a BleedBoxon
+	A graphics state sets a transfer function	Egy grafikai állapot átviteli függvényt állít be
+	An optional content configuration has no name	Egy választható tartalom konfigurációjának nincs neve
+	An optional content configuration has an AS entry	Egy választható tartalom konfigurációjában AS bejegyzés van
+	A {} annotation prints inside the bleed area	Egy {} megjegyzés a kifutó területen belül nyomtatódik
+	Preflight report	Elővizsgálati jelentés
+	Profile: {}	Profil: {}
+	File: {}	Fájl: {}
+	Date: {}	Dátum: {}
+	No problems found.	Nem található probléma.
+	Problems found: {}	Talált problémák: {}
+	Pages: {}	Oldalak: {}
+	Can be fixed	Javítható
+	Verify compliance with {}	Megfelelés ellenőrzése: {}
+	Preflight…	Elővizsgálat…
+	Preflight fixups for {profile}	Elővizsgálati javítások: {profile}
+	Profile:	Profil:
+	Analyze	Elemzés
+	Save report…	Jelentés mentése…
+	Analyze to see what the document needs for this profile.	Futtasd az elemzést, hogy lásd, mire van szüksége a dokumentumnak ehhez a profilhoz.
+	Can be fixed: {n}	Javítható: {n}
+	Save the Preflight report	Elővizsgálati jelentés mentése

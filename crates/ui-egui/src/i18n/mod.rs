@@ -1160,10 +1160,11 @@ mod tests {
     #[test]
     fn spanish_covers_what_the_engine_says() {
         let es = Lang::from_code("es").expect("es registered");
-        let lists: [(&str, &[&str]); 8] = [
+        let lists: [(&str, &[&str]); 9] = [
             ("accessibility finding", prckopis_engine::a11y::WORDINGS),
             ("accessibility report", prckopis_engine::a11y::REPORT_WORDS),
-            ("PDF/A problem", prckopis_engine::pdfa::WORDINGS),
+            ("PDF/A and PDF/X problem", prckopis_engine::pdfa::WORDINGS),
+            ("Preflight report", prckopis_engine::preflight::profile::REPORT_WORDS),
             ("signature detail", prckopis_engine::sign::pdf::WORDINGS),
             ("change after signing", prckopis_engine::sign::pdf::kind::ALL),
             ("pages to print", prckopis_engine::print::WORDINGS),
@@ -1184,9 +1185,10 @@ mod tests {
     #[test]
     fn spanish_keeps_the_holes_in_what_the_engine_says() {
         let es = Lang::from_code("es").expect("es registered");
-        let lists: [&[&str]; 4] = [
+        let lists: [&[&str]; 5] = [
             prckopis_engine::a11y::WORDINGS,
             prckopis_engine::pdfa::WORDINGS,
+            prckopis_engine::preflight::profile::REPORT_WORDS,
             prckopis_engine::sign::pdf::WORDINGS,
             prckopis_engine::print::WORDINGS,
         ];
@@ -1423,6 +1425,7 @@ mod tests {
             "Microsoft Word (.docx)",
             "PostScript / EPS",
             "Preflight",
+            "Preflight…",
             "JavaScript",
             "ZIP",
             "{n} {kind}",

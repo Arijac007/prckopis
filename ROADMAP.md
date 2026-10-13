@@ -92,7 +92,7 @@ Hours are calibrated as in [Effort and calibration](docs/target-app-parity.md#ef
 | H Digital signatures | 62.2% | 45% | 40–70 |
 | I Scan and OCR | 23.1% | 15% | 40–75 |
 | J Create and export | 39.7% | 25% | 55–100 |
-| K Optimize and standards | 34.5% | 20% | 65–115 |
+| K Optimize and standards | 40.5% | 25% | 55–100 |
 | L Print | 39.7% | 35% | 30–55 |
 | M Accessibility | 63.1% | 30% | 40–70 |
 | N Automation, preferences, misc | 30.0% | 35% | 25–45 |
@@ -133,13 +133,14 @@ Ranked; detail and the full milestone table in [docs/roadmap.md](docs/roadmap.md
 | 2 | Fidelity harness against Acrobat and the renderer decision (M2; owner decision on #841) | 110–190 |
 | 3 | Editing existing content (M7) | 100–180 |
 | 4 | OCR languages and Office export/import (M10) | 95–175 |
-| 5 | Preflight and PDF/A/X/UA (M11) | 65–115 |
+| 5 | Preflight profiles and PDF/A/X/UA (M11) | 55–100 |
 | 6 | Signatures for institutions: PKCS #11, timestamp servers, online LTV (M9) | 40–70 |
 | 7 | Accessibility tagging (M12) | 40–70 |
 | 8 | 1.0 polish: performance, right-to-left, missing languages, keyboard-only (M14) | 55–95 |
 
 ## Progress log
 
+- **2026-10-13 (M11, Preflight and PDF/X-4):** Print production and Apply PDF standards ▸ Preflight: choose a profile (PDF/A-2b, PDF/A-3b or the new PDF/X-4), Analyze, read the problems grouped with links to the pages they are on and the clause each breaks, Fix what can be fixed without changing what prints (one undoable step), and save a text report; `preflight_run` does the same headlessly. The new PDF/X-4 checks (ISO 15930-7) cover identification, title and dates, Trapped, the file ID, the GTS_PDFX output intent and its printer profile, DeviceRGB/DeviceCMYK against it, TrimBox/ArtBox/BleedBox, annotations printing in the bleed, fonts, external streams, PostScript, alternates/OPI, transfer functions and optional content configurations. Save as PDF/A now keeps a PDF/X identification in the XMP. The dialog fits a phone. Area K 34.5% → 40.5%.
 - **2026-10-13 (M8, custom redaction codes and European patterns):** Redaction properties ▸ Edit codes… opens the Redaction Code Editor: create, rename and delete your own code sets, add, change and remove codes with descriptions (shown as tooltips when picking), and import or export a set as a documented JSON file of our own (`prckopis-redaction-codes`, version 1; untrusted files are capped at 1 MB, 100 sets and 500 codes, with bad entries skipped and counted). Sets live in the preferences; picked codes become overlay text in the set's order. `redact_mark` takes a user set by name with `code_set_file`. Search & Redact gains IBAN (mod-97) and Croatian OIB (ISO 7064 MOD 11,10) patterns and Croatian month names. Tests: code-set model, round trip and malformed import, checksum patterns, automation end to end and a kittest of the editor; 21 new strings in all 21 UI catalogs including Croatian. `protect.redaction-codes` shipped, `protect.redact-pattern-locales` partial. Estimates unchanged.
 - **2026-10-13 (Android, phone layout):** On a phone the app uses a compact layout: one top bar (Menu, All tools, a document switcher, Find, Open, Save), page navigation and zoom at the bottom, tools and side panels as a sheet over the page, a thin gutter so the page fills the width, 40-point touch targets; Back closes the sheet and dialogs, and the soft keyboard follows text-field focus. Wider windows (tablets in landscape) keep the desktop layout. Kittest tests at phone size (`tests/compact.rs`); a new signed APK. Estimates unchanged.
 - **2026-10-13 (M9, field locks authored in Prepare Form):** A signature field's Digital Signature Properties get a Signed tab, as in Acrobat: "Nothing happens when signed" or "Mark as read-only:" all fields, all fields except these, or just these fields (a check list of the document's other fields). It writes the field's `/Lock` (an indirect `/SigFieldLock` dictionary, ISO 32000-2 Table 236) as an undoable field-properties edit and reads it back; `form_set_props` takes `lock` in `sign_document`'s shape (plus `"none"`) and `form_fields` reports it. Signing the field without a lock of its own applies it. Tested in forms (write, read back, remove, refused locks, malformed locks ignored), the engine (save, undo), an automation e2e test (author, sign without `lock`, `sign_list` reports `locked_fields`, the locked field is read-only) and a kittest of the Signed tab; the wording is in all 21 catalogs. Still missing for `sign.field-mdp`: choosing individual fields in the sign dialog, PDF 2.0 `/P`. Estimates unchanged.

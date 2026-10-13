@@ -126,6 +126,44 @@ fn pdfa_dialog_verifies_and_converts() {
 }
 
 #[test]
+fn preflight_dialog_analyzes_fixes_and_turns_to_pages() {
+    let doc = Session::new().create_blank(612.0, 792.0, 5).unwrap().to_vec();
+    let mut h = Harness::builder().with_size(egui::vec2(1400.0, 900.0)).build_eframe(move |_cc| {
+        let mut app = PrckopisApp::new();
+        app.set_option("language", "en").unwrap();
+        app.open_bytes("poster.pdf", None, doc.clone()).unwrap();
+        app
+    });
+    h.run_steps(4);
+    assert!(h.state_mut().execute("preflight.run"));
+    h.run_steps(2);
+    h.get_by_label("Analyze to see what the document needs for this profile.");
+    h.get_by_label("Analyze").click();
+    h.run_steps(3);
+    let results = h.state().preflight.results.clone().unwrap();
+    assert_eq!(results.profile.id(), "pdfx-4");
+    assert!(results.fixable() > 0, "{results:?}");
+    h.get_by_label("There is no PDF/X output intent");
+    // The same problem on every page is one row, with a link to each page.
+    h.get_by_label("The page has neither a TrimBox nor an ArtBox (×5)");
+    h.get_by_label("ISO 15930-7 · ISO 32000-1 14.11.2 · Can be fixed");
+    // The dialog grows with its results and settles over a few frames.
+    h.run_steps(6);
+    h.get_by_label("Page 5").click();
+    h.run_steps(3);
+    assert_eq!(h.state().views[0].current, 4);
+
+    h.get_by_label("Fix").click();
+    h.run_steps(3);
+    let results = h.state().preflight.results.clone().unwrap();
+    assert_eq!(results.fixable(), 0, "{results:?}");
+    assert!(results.issues.iter().any(|i| i.message == "There is no PDF/X output intent"));
+    assert!(h.query_by_label("The page has neither a TrimBox nor an ArtBox (×5)").is_none());
+    let id = h.state().active_ids().unwrap().1;
+    assert_eq!(h.state().session.get(id).unwrap().can_undo(), Some("Preflight fixups for PDF/X-4"));
+}
+
+#[test]
 fn export_to_word_html_and_rtf() {
     let doc = Session::new().create_from_text("t", "Exported words").unwrap().to_vec();
     let dir = std::env::temp_dir().join(format!("prckopis-office-ui-{}", std::process::id()));

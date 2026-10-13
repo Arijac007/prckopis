@@ -64,32 +64,85 @@ fn info(doc: &Document, key: &str) -> Option<String> {
     i.as_dict()?.get(key.as_bytes()).and_then(|v| doc.resolve(v).as_string().map(|s| s.to_text())).filter(|s| !s.is_empty())
 }
 
-/// The XMP packet for `doc` declaring `level`, from its document information.
-pub fn packet(doc: &Document, level: crate::Level) -> String {
+/// The standards an XMP packet identifies the file as conforming to, and its trapping state.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct Ids {
+    /// `pdfaid:part` and `pdfaid:conformance` (ISO 19005-2 6.6.4).
+    pub pdfa: Option<(u8, String)>,
+    /// `pdfxid:GTS_PDFXVersion` (ISO 15930-7), e.g. `PDF/X-4`.
+    pub pdfx: Option<String>,
+    /// `pdfuaid:part` (ISO 14289-1).
+    pub pdfua: Option<u8>,
+    /// `pdf:Trapped`: `True` or `False`.
+    pub trapped: Option<&'static str>,
+}
+
+impl Ids {
+    /// What the packet `old` already declares, so a new packet can keep it.
+    pub fn declared_in(old: Option<&str>) -> Ids {
+        let Some(x) = old else { return Ids::default() };
+        let pdfa = value(x, "pdfaid:part")
+            .and_then(|p| p.trim().parse().ok())
+            .map(|p| (p, value(x, "pdfaid:conformance").unwrap_or_default().to_uppercase()));
+        let trapped = match value(x, "pdf:Trapped").as_deref().map(str::trim) {
+            Some("True") => Some("True"),
+            Some("False") => Some("False"),
+            _ => None,
+        };
+        Ids {
+            pdfa,
+            pdfx: value(x, "pdfxid:GTS_PDFXVersion").map(|v| v.trim().to_owned()),
+            pdfua: value(x, "pdfuaid:part").and_then(|p| p.trim().parse().ok()),
+            trapped,
+        }
+    }
+}
+
+/// The XMP packet for `doc` declaring `ids`, from its document information, or — for what the
+/// document information doesn't say — from the packet `old` it replaces.
+pub fn packet(doc: &Document, ids: &Ids, old: Option<&str>) -> String {
+    let from_old = |key: &str| old.and_then(|x| value(x, key)).filter(|v| !v.trim().is_empty());
     let mut props = String::new();
-    if let Some(t) = info(doc, "Title") {
+    if let Some(t) = info(doc, "Title").or_else(|| from_old("dc:title")) {
         props.push_str(&format!("   <dc:title><rdf:Alt><rdf:li xml:lang=\"x-default\">{}</rdf:li></rdf:Alt></dc:title>\n", esc(&t)));
     }
-    if let Some(a) = info(doc, "Author") {
+    if let Some(a) = info(doc, "Author").or_else(|| from_old("dc:creator")) {
         props.push_str(&format!("   <dc:creator><rdf:Seq><rdf:li>{}</rdf:li></rdf:Seq></dc:creator>\n", esc(&a)));
     }
-    if let Some(s) = info(doc, "Subject") {
+    if let Some(s) = info(doc, "Subject").or_else(|| from_old("dc:description")) {
         props.push_str(&format!("   <dc:description><rdf:Alt><rdf:li xml:lang=\"x-default\">{}</rdf:li></rdf:Alt></dc:description>\n", esc(&s)));
     }
-    if let Some(k) = info(doc, "Keywords") {
+    if let Some(k) = info(doc, "Keywords").or_else(|| from_old("pdf:Keywords")) {
         props.push_str(&format!("   <pdf:Keywords>{}</pdf:Keywords>\n", esc(&k)));
     }
-    if let Some(p) = info(doc, "Producer") {
+    if let Some(p) = info(doc, "Producer").or_else(|| from_old("pdf:Producer")) {
         props.push_str(&format!("   <pdf:Producer>{}</pdf:Producer>\n", esc(&p)));
     }
-    if let Some(c) = info(doc, "Creator") {
+    if let Some(c) = info(doc, "Creator").or_else(|| from_old("xmp:CreatorTool")) {
         props.push_str(&format!("   <xmp:CreatorTool>{}</xmp:CreatorTool>\n", esc(&c)));
     }
-    if let Some(d) = info(doc, "CreationDate").and_then(|d| iso_date(&d)) {
-        props.push_str(&format!("   <xmp:CreateDate>{d}</xmp:CreateDate>\n"));
+    if let Some(d) = info(doc, "CreationDate").and_then(|d| iso_date(&d)).or_else(|| from_old("xmp:CreateDate")) {
+        props.push_str(&format!("   <xmp:CreateDate>{}</xmp:CreateDate>\n", esc(&d)));
     }
-    if let Some(d) = info(doc, "ModDate").and_then(|d| iso_date(&d)) {
-        props.push_str(&format!("   <xmp:ModifyDate>{d}</xmp:ModifyDate>\n"));
+    if let Some(d) = info(doc, "ModDate").and_then(|d| iso_date(&d)).or_else(|| from_old("xmp:ModifyDate")) {
+        props.push_str(&format!("   <xmp:ModifyDate>{}</xmp:ModifyDate>\n", esc(&d)));
+    }
+    if let Some(t) = ids.trapped {
+        props.push_str(&format!("   <pdf:Trapped>{t}</pdf:Trapped>\n"));
+    }
+    let mut id_props = String::new();
+    let mut namespaces = String::new();
+    if let Some((part, conformance)) = &ids.pdfa {
+        namespaces.push_str("\n    xmlns:pdfaid=\"http://www.aiim.org/pdfa/ns/id/\"");
+        id_props.push_str(&format!("   <pdfaid:part>{part}</pdfaid:part>\n   <pdfaid:conformance>{}</pdfaid:conformance>\n", esc(conformance)));
+    }
+    if let Some(version) = &ids.pdfx {
+        namespaces.push_str("\n    xmlns:pdfxid=\"http://www.npes.org/pdfx/ns/id/\"");
+        id_props.push_str(&format!("   <pdfxid:GTS_PDFXVersion>{}</pdfxid:GTS_PDFXVersion>\n", esc(version)));
+    }
+    if let Some(part) = ids.pdfua {
+        namespaces.push_str("\n    xmlns:pdfuaid=\"http://www.aiim.org/pdfua/ns/id/\"");
+        id_props.push_str(&format!("   <pdfuaid:part>{part}</pdfuaid:part>\n"));
     }
     format!(
         "<?xpacket begin=\"\u{feff}\" id=\"W5M0MpCehiHzreSzNTczkc9d\"?>\n\
@@ -98,15 +151,11 @@ pub fn packet(doc: &Document, level: crate::Level) -> String {
   <rdf:Description rdf:about=\"\"\n\
     xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n\
     xmlns:pdf=\"http://ns.adobe.com/pdf/1.3/\"\n\
-    xmlns:xmp=\"http://ns.adobe.com/xap/1.0/\"\n\
-    xmlns:pdfaid=\"http://www.aiim.org/pdfa/ns/id/\">\n\
-   <pdfaid:part>{}</pdfaid:part>\n\
-   <pdfaid:conformance>B</pdfaid:conformance>\n\
-{props}  </rdf:Description>\n\
+    xmlns:xmp=\"http://ns.adobe.com/xap/1.0/\"{namespaces}>\n\
+{id_props}{props}  </rdf:Description>\n\
  </rdf:RDF>\n\
 </x:xmpmeta>\n\
-<?xpacket end=\"w\"?>",
-        level.part()
+<?xpacket end=\"w\"?>"
     )
 }
 

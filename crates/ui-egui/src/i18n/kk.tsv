@@ -2423,3 +2423,40 @@ animation effects	Off	Өшірулі
 	Bank Account Numbers (IBAN)	Банк шотының нөмірлері (IBAN)
 	Croatian Personal ID Numbers (OIB)	Хорватияның жеке сәйкестендіру нөмірлері (OIB)
 	Allow access to files	Файлдарға қол жеткізуге рұқсат беру
+	The document has no title	Құжаттың атауы жоқ
+	The document has no creation date	Құжаттың жасалған күні жоқ
+	The document has no modification date	Құжаттың өзгертілген күні жоқ
+	The document doesn't say whether it is trapped (Trapped must be True or False)	Құжатта треппинг жасалғаны көрсетілмеген (Trapped мәні True не False болуы керек)
+	The file has no identifier (ID)	Файлдың идентификаторы (ID) жоқ
+	There is no PDF/X output intent	PDF/X шығыс профилі жоқ
+	There is more than one PDF/X output intent	Бірден көп PDF/X шығыс профилі бар
+	The PDF/X output intent has no destination profile	PDF/X шығыс профилінде мақсатты профиль жоқ
+	The PDF/X output intent has no output condition identifier	PDF/X шығыс профилінде шығыс шартының идентификаторы жоқ
+	The PDF/X output intent's profile isn't an output (printer) profile	PDF/X шығыс профилі шығыс құрылғысының (принтердің) профилі емес
+	DeviceRGB is used, but the PDF/X output intent isn't an RGB profile	DeviceRGB қолданылады, бірақ PDF/X шығыс профилі RGB профилі емес
+	DeviceCMYK is used, but the PDF/X output intent isn't a CMYK profile	DeviceCMYK қолданылады, бірақ PDF/X шығыс профилі CMYK профилі емес
+	The page has neither a TrimBox nor an ArtBox	Бетте TrimBox та, ArtBox та жоқ
+	The page has both a TrimBox and an ArtBox	Бетте TrimBox та, ArtBox та бар
+	A page box extends beyond the MediaBox	Бет шегі MediaBox шегінен шығып тұр
+	The TrimBox extends beyond the BleedBox	TrimBox BleedBox шегінен шығып тұр
+	A graphics state sets a transfer function	Графикалық күй тасымалдау функциясын орнатады
+	An optional content configuration has no name	Қосымша мазмұн конфигурациясының атауы жоқ
+	An optional content configuration has an AS entry	Қосымша мазмұн конфигурациясында AS жазбасы бар
+	A {} annotation prints inside the bleed area	{} аннотациясы кесу аймағының ішінде басылады
+	Preflight report	Басу алдындағы тексеру есебі
+	Profile: {}	Профиль: {}
+	File: {}	Файл: {}
+	Date: {}	Күн: {}
+	No problems found.	Ешқандай мәселе табылмады.
+	Problems found: {}	Табылған мәселелер: {}
+	Pages: {}	Беттер: {}
+	Can be fixed	Түзетуге болады
+	Verify compliance with {}	{} талаптарына сәйкестікті тексеру
+	Preflight…	Басу алдындағы тексеру…
+	Preflight fixups for {profile}	{profile} үшін басу алдындағы түзетулер
+	Profile:	Профиль:
+	Analyze	Талдау
+	Save report…	Есепті сақтау…
+	Analyze to see what the document needs for this profile.	Осы профиль үшін құжатқа не қажет екенін көру үшін талдаңыз.
+	Can be fixed: {n}	Түзетуге болады: {n}
+	Save the Preflight report	Басу алдындағы тексеру есебін сақтау

@@ -1079,6 +1079,18 @@ pub fn tools() -> Vec<ToolDef> {
         t("pdfa_convert", "Save as PDF/A", "Standards ▸ Save as PDF/A: fix what can be fixed for PDF/A-2b or 3b (XMP identification and metadata, an sRGB output intent, forbidden actions and JavaScript, annotation print flags, image interpolation, encryption). Returns what was fixed and what remains (e.g. fonts that aren't embedded). Undoable; save the document to keep it.")
             .cmd("standards.pdfa")
             .with(schema(json!({ "doc": doc(), "level": { "type": "string", "enum": ["2b", "3b"] } }), &["doc"])),
+        t("preflight_run", "Preflight", "Preflight: run a profile — pdfa-2b, pdfa-3b (ISO 19005) or pdfx-4 (ISO 15930-7: XMP identification, title, dates, Trapped, file ID, one PDF/X output intent with a printer profile, device colour against it, TrimBox/ArtBox/BleedBox, annotations printing in the bleed, embedded fonts, external streams, PostScript, image alternates/OPI, transfer functions, optional content configurations) — over the document. Returns every problem (standard, clause, citation, message, 1-based page, fixable) and the same problems grouped with their pages. fix: true first applies the profile's fixups, none of which changes what prints (undoable; save to keep), and lists what was fixed. report: a path to write a text report to.")
+            .destructive()
+            .cmd("preflight.run")
+            .with(schema(
+                json!({
+                    "doc": doc(),
+                    "profile": { "type": "string", "enum": ["pdfa-2b", "pdfa-3b", "pdfx-4"], "description": "Default pdfx-4." },
+                    "fix": { "type": "boolean", "description": "Apply the profile's fixups first. Default false." },
+                    "report": { "type": "string", "description": "Write the text report to this path (under --root)." }
+                }),
+                &["doc"],
+            )),
         t("action_list", "List actions", "Action Wizard: the built-in actions (name, description, steps) and every step an action can use (id, label, whether it takes a text argument).")
             .ro()
             .cmd("actions.wizard")

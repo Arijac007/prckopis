@@ -2425,3 +2425,40 @@ animation effects	Off	オフ
 	Bank Account Numbers (IBAN)	銀行口座番号 (IBAN)
 	Croatian Personal ID Numbers (OIB)	クロアチアの個人識別番号 (OIB)
 	Allow access to files	ファイルへのアクセスを許可
+	The document has no title	文書にタイトルがありません
+	The document has no creation date	文書に作成日がありません
+	The document has no modification date	文書に更新日がありません
+	The document doesn't say whether it is trapped (Trapped must be True or False)	文書にトラッピングの有無が示されていません (Trapped は True または False である必要があります)
+	The file has no identifier (ID)	ファイルに識別子 (ID) がありません
+	There is no PDF/X output intent	PDF/X 出力インテントがありません
+	There is more than one PDF/X output intent	PDF/X 出力インテントが複数あります
+	The PDF/X output intent has no destination profile	PDF/X 出力インテントに出力先プロファイルがありません
+	The PDF/X output intent has no output condition identifier	PDF/X 出力インテントに出力条件識別子がありません
+	The PDF/X output intent's profile isn't an output (printer) profile	PDF/X 出力インテントのプロファイルが出力 (プリンター) プロファイルではありません
+	DeviceRGB is used, but the PDF/X output intent isn't an RGB profile	DeviceRGB が使用されていますが、PDF/X 出力インテントが RGB プロファイルではありません
+	DeviceCMYK is used, but the PDF/X output intent isn't a CMYK profile	DeviceCMYK が使用されていますが、PDF/X 出力インテントが CMYK プロファイルではありません
+	The page has neither a TrimBox nor an ArtBox	ページに TrimBox も ArtBox もありません
+	The page has both a TrimBox and an ArtBox	ページに TrimBox と ArtBox の両方があります
+	A page box extends beyond the MediaBox	ページボックスが MediaBox からはみ出しています
+	The TrimBox extends beyond the BleedBox	TrimBox が BleedBox からはみ出しています
+	A graphics state sets a transfer function	グラフィックス状態が転送関数を設定しています
+	An optional content configuration has no name	オプションコンテンツの構成に名前がありません
+	An optional content configuration has an AS entry	オプションコンテンツの構成に AS エントリがあります
+	A {} annotation prints inside the bleed area	{} 注釈が裁ち落とし領域内に印刷されます
+	Preflight report	プリフライトレポート
+	Profile: {}	プロファイル: {}
+	File: {}	ファイル: {}
+	Date: {}	日付: {}
+	No problems found.	問題は見つかりませんでした。
+	Problems found: {}	見つかった問題: {}
+	Pages: {}	ページ: {}
+	Can be fixed	修正可能
+	Verify compliance with {}	{} への準拠を検証
+	Preflight…	プリフライト…
+	Preflight fixups for {profile}	{profile} のプリフライト修正
+	Profile:	プロファイル:
+	Analyze	分析
+	Save report…	レポートを保存…
+	Analyze to see what the document needs for this profile.	このプロファイルで文書に必要な処理を確認するには分析してください。
+	Can be fixed: {n}	修正可能: {n}
+	Save the Preflight report	プリフライトレポートを保存

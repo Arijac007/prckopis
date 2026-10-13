@@ -2338,3 +2338,40 @@ animation effects	Off	Выкл
 	Bank Account Numbers (IBAN)	Номера банковских счетов (IBAN)
 	Croatian Personal ID Numbers (OIB)	Хорватские личные идентификационные номера (OIB)
 	Allow access to files	Разрешить доступ к файлам
+	The document has no title	У документа нет названия
+	The document has no creation date	У документа нет даты создания
+	The document has no modification date	У документа нет даты изменения
+	The document doesn't say whether it is trapped (Trapped must be True or False)	Документ не указывает, выполнен ли треппинг (Trapped должен быть True или False)
+	The file has no identifier (ID)	У файла нет идентификатора (ID)
+	There is no PDF/X output intent	Нет выходного намерения PDF/X
+	There is more than one PDF/X output intent	Выходных намерений PDF/X больше одного
+	The PDF/X output intent has no destination profile	У выходного намерения PDF/X нет целевого профиля
+	The PDF/X output intent has no output condition identifier	У выходного намерения PDF/X нет идентификатора условий вывода
+	The PDF/X output intent's profile isn't an output (printer) profile	Профиль выходного намерения PDF/X не является профилем устройства вывода (принтера)
+	DeviceRGB is used, but the PDF/X output intent isn't an RGB profile	Используется DeviceRGB, но выходное намерение PDF/X не является профилем RGB
+	DeviceCMYK is used, but the PDF/X output intent isn't a CMYK profile	Используется DeviceCMYK, но выходное намерение PDF/X не является профилем CMYK
+	The page has neither a TrimBox nor an ArtBox	На странице нет ни TrimBox, ни ArtBox
+	The page has both a TrimBox and an ArtBox	На странице есть и TrimBox, и ArtBox
+	A page box extends beyond the MediaBox	Поле страницы выходит за пределы MediaBox
+	The TrimBox extends beyond the BleedBox	TrimBox выходит за пределы BleedBox
+	A graphics state sets a transfer function	Графическое состояние задаёт функцию переноса
+	An optional content configuration has no name	У конфигурации необязательного содержимого нет имени
+	An optional content configuration has an AS entry	В конфигурации необязательного содержимого есть запись AS
+	A {} annotation prints inside the bleed area	Комментарий {} печатается в области выпуска под обрез
+	Preflight report	Отчёт проверки перед печатью
+	Profile: {}	Профиль: {}
+	File: {}	Файл: {}
+	Date: {}	Дата: {}
+	No problems found.	Проблем не найдено.
+	Problems found: {}	Найдено проблем: {}
+	Pages: {}	Страницы: {}
+	Can be fixed	Можно исправить
+	Verify compliance with {}	Проверить соответствие {}
+	Preflight…	Проверка перед печатью…
+	Preflight fixups for {profile}	Исправления проверки перед печатью для {profile}
+	Profile:	Профиль:
+	Analyze	Анализировать
+	Save report…	Сохранить отчёт…
+	Analyze to see what the document needs for this profile.	Запустите анализ, чтобы увидеть, что нужно документу для этого профиля.
+	Can be fixed: {n}	Можно исправить: {n}
+	Save the Preflight report	Сохранить отчёт проверки перед печатью

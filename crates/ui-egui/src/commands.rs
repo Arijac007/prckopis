@@ -540,6 +540,10 @@ impl PrckopisApp {
                 self.pdfa.issues = None;
                 self.dialog = Some(Dialog::PdfA);
             }
+            "preflight.run" => {
+                self.preflight.results = None;
+                self.dialog = Some(Dialog::Preflight);
+            }
             "actions.wizard" | "actions.distribution" | "actions.optimize_scans" => {
                 self.wizard.editing = None;
                 match id {

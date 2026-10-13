@@ -22,6 +22,14 @@ impl crate::Document {
         self.editor.as_ref().map(|e| prckopis_preflight::verify(&e.cos, level)).unwrap_or_default()
     }
 
+    /// Preflight: run `profile` over the document.
+    pub fn preflight(&self, profile: prckopis_preflight::Profile) -> prckopis_preflight::Results {
+        match self.editor.as_ref() {
+            Some(e) => prckopis_preflight::profile::run(&e.cos, profile),
+            None => prckopis_preflight::Results { profile, issues: Vec::new() },
+        }
+    }
+
     /// The standards the document declares (Standards panel).
     pub fn standards(&self) -> prckopis_preflight::Declared {
         self.editor.as_ref().map(|e| prckopis_preflight::declared(&e.cos)).unwrap_or_default()

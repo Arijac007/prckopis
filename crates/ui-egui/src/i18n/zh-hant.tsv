@@ -2298,3 +2298,40 @@ animation effects	Off	關
 	Bank Account Numbers (IBAN)	銀行帳號 (IBAN)
 	Croatian Personal ID Numbers (OIB)	克羅埃西亞個人識別號碼 (OIB)
 	Allow access to files	允許存取檔案
+	The document has no title	文件沒有標題
+	The document has no creation date	文件沒有建立日期
+	The document has no modification date	文件沒有修改日期
+	The document doesn't say whether it is trapped (Trapped must be True or False)	文件未說明是否已補漏白（Trapped 必須為 True 或 False）
+	The file has no identifier (ID)	檔案沒有識別碼（ID）
+	There is no PDF/X output intent	沒有 PDF/X 輸出目的
+	There is more than one PDF/X output intent	PDF/X 輸出目的不只一個
+	The PDF/X output intent has no destination profile	PDF/X 輸出目的沒有目標描述檔
+	The PDF/X output intent has no output condition identifier	PDF/X 輸出目的沒有輸出條件識別碼
+	The PDF/X output intent's profile isn't an output (printer) profile	PDF/X 輸出目的的描述檔不是輸出（印表機）描述檔
+	DeviceRGB is used, but the PDF/X output intent isn't an RGB profile	使用了 DeviceRGB，但 PDF/X 輸出目的不是 RGB 描述檔
+	DeviceCMYK is used, but the PDF/X output intent isn't a CMYK profile	使用了 DeviceCMYK，但 PDF/X 輸出目的不是 CMYK 描述檔
+	The page has neither a TrimBox nor an ArtBox	頁面既沒有 TrimBox 也沒有 ArtBox
+	The page has both a TrimBox and an ArtBox	頁面同時有 TrimBox 和 ArtBox
+	A page box extends beyond the MediaBox	某個頁面方框超出了 MediaBox
+	The TrimBox extends beyond the BleedBox	TrimBox 超出了 BleedBox
+	A graphics state sets a transfer function	某個圖形狀態設定了轉換函式
+	An optional content configuration has no name	某個選擇性內容設定沒有名稱
+	An optional content configuration has an AS entry	某個選擇性內容設定含有 AS 項目
+	A {} annotation prints inside the bleed area	一個 {} 註解會列印在出血區域內
+	Preflight report	印前偵測報告
+	Profile: {}	描述檔：{}
+	File: {}	檔案：{}
+	Date: {}	日期：{}
+	No problems found.	未發現問題。
+	Problems found: {}	發現的問題：{}
+	Pages: {}	頁面：{}
+	Can be fixed	可以修正
+	Verify compliance with {}	驗證是否符合 {}
+	Preflight…	印前偵測…
+	Preflight fixups for {profile}	{profile} 的印前偵測修正
+	Profile:	描述檔：
+	Analyze	分析
+	Save report…	儲存報告…
+	Analyze to see what the document needs for this profile.	進行分析，查看文件要符合此描述檔還需要什麼。
+	Can be fixed: {n}	可以修正：{n}
+	Save the Preflight report	儲存印前偵測報告

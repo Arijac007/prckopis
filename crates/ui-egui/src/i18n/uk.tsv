@@ -2447,3 +2447,40 @@ animation effects	Off	Вимкнено
 	Bank Account Numbers (IBAN)	Номери банківських рахунків (IBAN)
 	Croatian Personal ID Numbers (OIB)	Хорватські персональні ідентифікаційні номери (OIB)
 	Allow access to files	Дозволити доступ до файлів
+	The document has no title	Документ не має назви
+	The document has no creation date	Документ не має дати створення
+	The document has no modification date	Документ не має дати зміни
+	The document doesn't say whether it is trapped (Trapped must be True or False)	Документ не вказує, чи виконано треппінг (Trapped має бути True або False)
+	The file has no identifier (ID)	Файл не має ідентифікатора (ID)
+	There is no PDF/X output intent	Немає профілю виводу PDF/X
+	There is more than one PDF/X output intent	Профілів виводу PDF/X більше одного
+	The PDF/X output intent has no destination profile	Профіль виводу PDF/X не має цільового профілю
+	The PDF/X output intent has no output condition identifier	Профіль виводу PDF/X не має ідентифікатора умов виводу
+	The PDF/X output intent's profile isn't an output (printer) profile	Профіль виводу PDF/X не є профілем пристрою виводу (принтера)
+	DeviceRGB is used, but the PDF/X output intent isn't an RGB profile	Використано DeviceRGB, але профіль виводу PDF/X не є профілем RGB
+	DeviceCMYK is used, but the PDF/X output intent isn't a CMYK profile	Використано DeviceCMYK, але профіль виводу PDF/X не є профілем CMYK
+	The page has neither a TrimBox nor an ArtBox	Сторінка не має ні TrimBox, ні ArtBox
+	The page has both a TrimBox and an ArtBox	Сторінка має і TrimBox, і ArtBox
+	A page box extends beyond the MediaBox	Межа сторінки виходить за MediaBox
+	The TrimBox extends beyond the BleedBox	TrimBox виходить за BleedBox
+	A graphics state sets a transfer function	Графічний стан задає функцію перенесення
+	An optional content configuration has no name	Конфігурація необов'язкового вмісту не має назви
+	An optional content configuration has an AS entry	Конфігурація необов'язкового вмісту має запис AS
+	A {} annotation prints inside the bleed area	Примітка {} друкується в області випуску під обріз
+	Preflight report	Звіт переддрукової перевірки
+	Profile: {}	Профіль: {}
+	File: {}	Файл: {}
+	Date: {}	Дата: {}
+	No problems found.	Проблем не знайдено.
+	Problems found: {}	Знайдено проблем: {}
+	Pages: {}	Сторінки: {}
+	Can be fixed	Можна виправити
+	Verify compliance with {}	Перевірити відповідність {}
+	Preflight…	Переддрукова перевірка…
+	Preflight fixups for {profile}	Виправлення переддрукової перевірки для {profile}
+	Profile:	Профіль:
+	Analyze	Аналізувати
+	Save report…	Зберегти звіт…
+	Analyze to see what the document needs for this profile.	Запустіть аналіз, щоб побачити, що потрібно документу для цього профілю.
+	Can be fixed: {n}	Можна виправити: {n}
+	Save the Preflight report	Зберегти звіт переддрукової перевірки

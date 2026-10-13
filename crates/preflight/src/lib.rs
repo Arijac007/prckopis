@@ -18,11 +18,19 @@
 //! [`convert`] fixes what can be fixed without changing how pages look (XMP, the sRGB output
 //! intent, forbidden actions, annotation flags, Interpolate, NeedAppearances, encryption) and
 //! returns what remains. Fonts that aren't embedded can't be fixed here.
+//!
+//! [`pdfx`] checks PDF/X-4 (ISO 15930-7) and fixes what it can, and [`profile`] is Preflight: a
+//! profile (PDF/A-2b, PDF/A-3b, PDF/X-4) run over a document, its results grouped by problem with
+//! the pages they are on, its fixups, and a text report.
 
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 
 pub mod icc;
+pub mod pdfx;
+pub mod profile;
 mod xmp;
+
+pub use profile::{Group, Profile, Results, report_text};
 
 use prckopis_cos::{Dict, Document, ObjRef, Object, PdfString, Stream};
 
@@ -48,6 +56,14 @@ impl Level {
         }
     }
 
+    /// The standard whose clauses [`verify`] cites.
+    pub fn standard(self) -> &'static str {
+        match self {
+            Level::A2b => "ISO 19005-2",
+            Level::A3b => "ISO 19005-3",
+        }
+    }
+
     pub fn from_id(id: &str) -> Option<Level> {
         match id.to_ascii_lowercase().replace(['/', '-', ' '], "").as_str() {
             "pdfa2b" | "a2b" | "2b" => Some(Level::A2b),
@@ -66,7 +82,10 @@ impl Level {
 /// [`Issue::said`] does that.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Issue {
-    /// The ISO 19005-2 clause.
+    /// The standard the rule comes from: `ISO 19005-2`, `ISO 19005-3` or `ISO 15930-7`.
+    pub standard: &'static str,
+    /// The clause of [`standard`](Issue::standard) (`6.6.2.1`), or — for PDF/X, whose rules are
+    /// about objects ISO 32000 defines — the ISO 32000-1 clause that defines what is checked.
     pub clause: &'static str,
     pub message: String,
     /// The problem as it is worded here, with `{}` where the document's own name goes.
@@ -80,6 +99,29 @@ pub struct Issue {
 }
 
 impl Issue {
+    /// An issue worded by `pattern`, with `value` in its `{}`: the English
+    /// [`message`](Issue::message) is filled in here, so the two never drift apart.
+    pub fn new(
+        standard: &'static str,
+        clause: &'static str,
+        pattern: &'static str,
+        value: Option<String>,
+        page: Option<usize>,
+        fixable: bool,
+    ) -> Issue {
+        let message = match &value {
+            Some(v) => pattern.replacen("{}", v, 1),
+            None => pattern.to_owned(),
+        };
+        Issue { standard, clause, message, pattern, value, page, fixable }
+    }
+
+    /// Where the rule is written down, ready to show: `ISO 19005-2 6.6.2.1`, or
+    /// `ISO 15930-7 · ISO 32000-1 14.11.5`.
+    pub fn citation(&self) -> String {
+        if self.clause.starts_with("ISO ") { format!("{} · {}", self.standard, self.clause) } else { format!("{} {}", self.standard, self.clause) }
+    }
+
     /// The problem as one sentence, said in the language `words` translates into.
     ///
     /// The wording is translated and the document's own name goes in afterwards, in one pass, so a
@@ -140,6 +182,29 @@ pub const WORDINGS: &[&str] = &[
     "PostScript XObjects aren't allowed",
     "Embedded files must be PDF/A files themselves (use PDF/A-3 for others)",
     "An embedded file has no AFRelationship",
+    // PDF/X-4 (pdfx.rs): identification and the document information.
+    "The document has no title",
+    "The document has no creation date",
+    "The document has no modification date",
+    "The document doesn't say whether it is trapped (Trapped must be True or False)",
+    "The file has no identifier (ID)",
+    // PDF/X-4: the output intent and colour.
+    "There is no PDF/X output intent",
+    "There is more than one PDF/X output intent",
+    "The PDF/X output intent has no destination profile",
+    "The PDF/X output intent has no output condition identifier",
+    "The PDF/X output intent's profile isn't an output (printer) profile",
+    "DeviceRGB is used, but the PDF/X output intent isn't an RGB profile",
+    "DeviceCMYK is used, but the PDF/X output intent isn't a CMYK profile",
+    // PDF/X-4: pages, graphics states, optional content and annotations.
+    "The page has neither a TrimBox nor an ArtBox",
+    "The page has both a TrimBox and an ArtBox",
+    "A page box extends beyond the MediaBox",
+    "The TrimBox extends beyond the BleedBox",
+    "A graphics state sets a transfer function",
+    "An optional content configuration has no name",
+    "An optional content configuration has an AS entry",
+    "A {} annotation prints inside the bleed area",
 ];
 
 /// What a document declares (the Standards panel).
@@ -156,12 +221,12 @@ const FORBIDDEN_ACTIONS: &[&[u8]] =
     &[b"JavaScript", b"Launch", b"Sound", b"Movie", b"ResetForm", b"ImportData", b"Hide", b"SetOCGState", b"Rendition", b"Trans", b"GoTo3DView"];
 const FORBIDDEN_ANNOTS: &[&[u8]] = &[b"Sound", b"Movie", b"Screen", b"3D", b"RichMedia"];
 
-fn catalog(doc: &Document) -> Dict {
+pub(crate) fn catalog(doc: &Document) -> Dict {
     doc.root().and_then(|r| doc.get(r).as_dict().cloned()).unwrap_or_default()
 }
 
 /// The XMP metadata stream of the catalog, as text.
-fn metadata(doc: &Document) -> Option<String> {
+pub(crate) fn metadata(doc: &Document) -> Option<String> {
     let cat = catalog(doc);
     let m = doc.resolve(cat.get(b"Metadata")?);
     match &*m {
@@ -192,7 +257,7 @@ pub fn declared(doc: &Document) -> Declared {
 }
 
 /// Every indirect object, with its reference.
-fn objects(doc: &Document) -> Vec<(ObjRef, std::sync::Arc<Object>)> {
+pub(crate) fn objects(doc: &Document) -> Vec<(ObjRef, std::sync::Arc<Object>)> {
     doc.object_numbers()
         .into_iter()
         .map(|n| {
@@ -202,7 +267,7 @@ fn objects(doc: &Document) -> Vec<(ObjRef, std::sync::Arc<Object>)> {
         .collect()
 }
 
-fn dict_of(o: &Object) -> Option<&Dict> {
+pub(crate) fn dict_of(o: &Object) -> Option<&Dict> {
     match o {
         Object::Dict(d) => Some(d),
         Object::Stream(s) => Some(&s.dict),
@@ -218,47 +283,52 @@ fn has_pdfa_intent(doc: &Document) -> bool {
 /// components (`/N`, else the ICC header's data colour space; `None` when neither says), or
 /// `None` when the document has no PDF/A output intent.
 fn pdfa_intent_profile(doc: &Document) -> Option<Option<i64>> {
+    output_intents(doc, b"GTS_PDFA1").first().map(|d| profile_components(doc, d))
+}
+
+/// The catalog's output intents of subtype `s` (`GTS_PDFA1`, `GTS_PDFX`), in order.
+pub(crate) fn output_intents(doc: &Document, s: &[u8]) -> Vec<Dict> {
     let cat = catalog(doc);
     let list = cat.get(b"OutputIntents").map(|o| doc.resolve(o)).and_then(|o| o.as_array().cloned()).unwrap_or_default();
-    list.iter().find_map(|oi| {
-        let d = doc.resolve(oi).as_dict().cloned()?;
-        if d.name(b"S") != Some(b"GTS_PDFA1") {
-            return None;
+    list.iter().filter_map(|oi| doc.resolve(oi).as_dict().cloned()).filter(|d| d.name(b"S") == Some(s)).collect()
+}
+
+/// An output intent's destination profile's number of colour components: `/N`, else the ICC
+/// header's data colour space; `None` when neither says (or there is no profile).
+pub(crate) fn profile_components(doc: &Document, intent: &Dict) -> Option<i64> {
+    let profile = doc.resolve(intent.get(b"DestOutputProfile")?);
+    let Object::Stream(s) = &*profile else { return None };
+    s.dict.int(b"N").or_else(|| {
+        // ICC.1 header: the data colour space is bytes 16–19.
+        match s.decoded().ok()?.get(16..20)? {
+            b"GRAY" => Some(1),
+            b"RGB " => Some(3),
+            b"CMYK" => Some(4),
+            _ => None,
         }
-        let profile = doc.resolve(d.get(b"DestOutputProfile")?);
-        let Object::Stream(s) = &*profile else { return Some(None) };
-        Some(s.dict.int(b"N").or_else(|| {
-            // ICC.1 header: the data colour space is bytes 16–19.
-            match s.decoded().ok()?.get(16..20)? {
-                b"GRAY" => Some(1),
-                b"RGB " => Some(3),
-                b"CMYK" => Some(4),
-                _ => None,
-            }
-        }))
     })
 }
 
 /// Which device colour spaces the document uses.
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
-struct DeviceColour {
-    gray: bool,
-    rgb: bool,
-    cmyk: bool,
+pub(crate) struct DeviceColour {
+    pub(crate) gray: bool,
+    pub(crate) rgb: bool,
+    pub(crate) cmyk: bool,
     /// Resources that define `DefaultRGB` / `DefaultCMYK`: device colour there is drawn in that
     /// space, which PDF/A accepts whatever the output intent (ISO 19005-2 6.2.4.3).
-    default_rgb: bool,
-    default_cmyk: bool,
+    pub(crate) default_rgb: bool,
+    pub(crate) default_cmyk: bool,
 }
 
 impl DeviceColour {
-    fn any(self) -> bool {
+    pub(crate) fn any(self) -> bool {
         self.gray || self.rgb || self.cmyk
     }
 }
 
 /// Whether any content or object uses a device colour space.
-fn uses_device_colour(doc: &Document, objs: &[(ObjRef, std::sync::Arc<Object>)]) -> DeviceColour {
+pub(crate) fn uses_device_colour(doc: &Document, objs: &[(ObjRef, std::sync::Arc<Object>)]) -> DeviceColour {
     let mut used = DeviceColour::default();
     for (_, o) in objs {
         let Some(d) = dict_of(o) else { continue };
@@ -305,12 +375,9 @@ pub fn verify(doc: &Document, level: Level) -> Vec<Issue> {
     let mut out = Vec::new();
     // Each problem is worded here and named by the document there: the wording goes on the list in
     // `WORDINGS` for an interface to translate, and the name goes in its `{}` as it stands.
+    let standard = level.standard();
     let mut issue = |clause: &'static str, pattern: &'static str, value: Option<String>, page: Option<usize>, fixable: bool| {
-        let message = match &value {
-            Some(v) => pattern.replacen("{}", v, 1),
-            None => pattern.to_owned(),
-        };
-        out.push(Issue { clause, message, pattern, value, page, fixable });
+        out.push(Issue::new(standard, clause, pattern, value, page, fixable));
     };
     let cat = catalog(doc);
     // 6.1.3 / 6.6: identification and metadata.
@@ -477,7 +544,7 @@ pub fn verify(doc: &Document, level: Level) -> Vec<Issue> {
     out
 }
 
-fn check_font(doc: &Document, d: &Dict, issue: &mut impl FnMut(&'static str, &'static str, Option<String>, Option<usize>, bool)) {
+pub(crate) fn check_font(doc: &Document, d: &Dict, issue: &mut impl FnMut(&'static str, &'static str, Option<String>, Option<usize>, bool)) {
     let sub = d.name(b"Subtype");
     if sub == Some(b"Type3") {
         return;
@@ -506,7 +573,7 @@ fn check_font(doc: &Document, d: &Dict, issue: &mut impl FnMut(&'static str, &'s
     }
 }
 
-fn info(doc: &Document, key: &str) -> Option<String> {
+pub(crate) fn info(doc: &Document, key: &str) -> Option<String> {
     let i = doc.trailer().get(b"Info").map(|i| doc.resolve(i))?;
     i.as_dict()?.get(key.as_bytes()).and_then(|v| doc.resolve(v).as_string().map(|s| s.to_text()))
 }
@@ -600,7 +667,12 @@ pub fn convert(doc: &mut Document, level: Level) -> Result<Report, prckopis_cos:
         cat.set(b"OutputIntents".to_vec(), Object::Array(list));
         fixed.push("Added an sRGB output intent".into());
     }
-    let x = xmp::packet(doc, level);
+    // Whatever else the old packet identified the file as (PDF/X, PDF/UA) and its trapping state
+    // stay declared.
+    let old = metadata(doc);
+    let mut ids = xmp::Ids::declared_in(old.as_deref());
+    ids.pdfa = Some((level.part(), "B".into()));
+    let x = xmp::packet(doc, &ids, old.as_deref());
     let mut md = Dict::new();
     md.set(b"Type".to_vec(), Object::name("Metadata"));
     md.set(b"Subtype".to_vec(), Object::name("XML"));

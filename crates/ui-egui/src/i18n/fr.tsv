@@ -2425,3 +2425,40 @@ animation effects	Off	Désactivés
 	Bank Account Numbers (IBAN)	Numéros de compte bancaire (IBAN)
 	Croatian Personal ID Numbers (OIB)	Numéros d’identification personnels croates (OIB)
 	Allow access to files	Autoriser l'accès aux fichiers
+	The document has no title	Le document n'a pas de titre
+	The document has no creation date	Le document n'a pas de date de création
+	The document has no modification date	Le document n'a pas de date de modification
+	The document doesn't say whether it is trapped (Trapped must be True or False)	Le document n'indique pas s'il est grossi-maigri (Trapped doit valoir True ou False)
+	The file has no identifier (ID)	Le fichier n'a pas d'identifiant (ID)
+	There is no PDF/X output intent	Il n'y a pas d'intention de sortie PDF/X
+	There is more than one PDF/X output intent	Il y a plus d'une intention de sortie PDF/X
+	The PDF/X output intent has no destination profile	L'intention de sortie PDF/X n'a pas de profil de destination
+	The PDF/X output intent has no output condition identifier	L'intention de sortie PDF/X n'a pas d'identifiant de condition de sortie
+	The PDF/X output intent's profile isn't an output (printer) profile	Le profil de l'intention de sortie PDF/X n'est pas un profil de sortie (imprimante)
+	DeviceRGB is used, but the PDF/X output intent isn't an RGB profile	DeviceRGB est utilisé, mais l'intention de sortie PDF/X n'est pas un profil RVB
+	DeviceCMYK is used, but the PDF/X output intent isn't a CMYK profile	DeviceCMYK est utilisé, mais l'intention de sortie PDF/X n'est pas un profil CMJN
+	The page has neither a TrimBox nor an ArtBox	La page n'a ni TrimBox ni ArtBox
+	The page has both a TrimBox and an ArtBox	La page a à la fois une TrimBox et une ArtBox
+	A page box extends beyond the MediaBox	Une zone de page dépasse la MediaBox
+	The TrimBox extends beyond the BleedBox	La TrimBox dépasse la BleedBox
+	A graphics state sets a transfer function	Un état graphique définit une fonction de transfert
+	An optional content configuration has no name	Une configuration de contenu facultatif n'a pas de nom
+	An optional content configuration has an AS entry	Une configuration de contenu facultatif a une entrée AS
+	A {} annotation prints inside the bleed area	Une annotation {} s'imprime dans la zone de fond perdu
+	Preflight report	Rapport de contrôle en amont
+	Profile: {}	Profil : {}
+	File: {}	Fichier : {}
+	Date: {}	Date : {}
+	No problems found.	Aucun problème trouvé.
+	Problems found: {}	Problèmes trouvés : {}
+	Pages: {}	Pages : {}
+	Can be fixed	Peut être corrigé
+	Verify compliance with {}	Vérifier la conformité à {}
+	Preflight…	Contrôle en amont…
+	Preflight fixups for {profile}	Corrections du contrôle en amont pour {profile}
+	Profile:	Profil :
+	Analyze	Analyser
+	Save report…	Enregistrer le rapport…
+	Analyze to see what the document needs for this profile.	Analysez pour voir ce dont le document a besoin pour ce profil.
+	Can be fixed: {n}	Peut être corrigé : {n}
+	Save the Preflight report	Enregistrer le rapport de contrôle en amont

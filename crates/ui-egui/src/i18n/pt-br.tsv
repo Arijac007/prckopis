@@ -2439,3 +2439,40 @@ animation effects	Off	Desativados
 	Bank Account Numbers (IBAN)	Números de conta bancária (IBAN)
 	Croatian Personal ID Numbers (OIB)	Números de identificação pessoal croatas (OIB)
 	Allow access to files	Permitir acesso aos arquivos
+	The document has no title	O documento não tem título
+	The document has no creation date	O documento não tem data de criação
+	The document has no modification date	O documento não tem data de modificação
+	The document doesn't say whether it is trapped (Trapped must be True or False)	O documento não informa se tem trapping (Trapped deve ser True ou False)
+	The file has no identifier (ID)	O arquivo não tem identificador (ID)
+	There is no PDF/X output intent	Não há intenção de saída PDF/X
+	There is more than one PDF/X output intent	Há mais de uma intenção de saída PDF/X
+	The PDF/X output intent has no destination profile	A intenção de saída PDF/X não tem perfil de destino
+	The PDF/X output intent has no output condition identifier	A intenção de saída PDF/X não tem identificador da condição de saída
+	The PDF/X output intent's profile isn't an output (printer) profile	O perfil da intenção de saída PDF/X não é um perfil de saída (impressora)
+	DeviceRGB is used, but the PDF/X output intent isn't an RGB profile	DeviceRGB é usado, mas a intenção de saída PDF/X não é um perfil RGB
+	DeviceCMYK is used, but the PDF/X output intent isn't a CMYK profile	DeviceCMYK é usado, mas a intenção de saída PDF/X não é um perfil CMYK
+	The page has neither a TrimBox nor an ArtBox	A página não tem TrimBox nem ArtBox
+	The page has both a TrimBox and an ArtBox	A página tem TrimBox e ArtBox ao mesmo tempo
+	A page box extends beyond the MediaBox	Um limite da página ultrapassa a MediaBox
+	The TrimBox extends beyond the BleedBox	A TrimBox ultrapassa a BleedBox
+	A graphics state sets a transfer function	Um estado gráfico define uma função de transferência
+	An optional content configuration has no name	Uma configuração de conteúdo opcional não tem nome
+	An optional content configuration has an AS entry	Uma configuração de conteúdo opcional tem uma entrada AS
+	A {} annotation prints inside the bleed area	Uma anotação {} é impressa dentro da área de sangria
+	Preflight report	Relatório de preflight
+	Profile: {}	Perfil: {}
+	File: {}	Arquivo: {}
+	Date: {}	Data: {}
+	No problems found.	Nenhum problema encontrado.
+	Problems found: {}	Problemas encontrados: {}
+	Pages: {}	Páginas: {}
+	Can be fixed	Pode ser corrigido
+	Verify compliance with {}	Verificar a conformidade com {}
+	Preflight…	Preflight…
+	Preflight fixups for {profile}	Correções do preflight para {profile}
+	Profile:	Perfil:
+	Analyze	Analisar
+	Save report…	Salvar relatório…
+	Analyze to see what the document needs for this profile.	Analise para ver o que o documento precisa para este perfil.
+	Can be fixed: {n}	Pode ser corrigido: {n}
+	Save the Preflight report	Salvar o relatório de preflight

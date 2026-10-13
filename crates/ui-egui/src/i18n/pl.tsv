@@ -2404,3 +2404,40 @@ animation effects	Off	Wyłączone
 	Bank Account Numbers (IBAN)	Numery rachunków bankowych (IBAN)
 	Croatian Personal ID Numbers (OIB)	Chorwackie osobiste numery identyfikacyjne (OIB)
 	Allow access to files	Zezwól na dostęp do plików
+	The document has no title	Dokument nie ma tytułu
+	The document has no creation date	Dokument nie ma daty utworzenia
+	The document has no modification date	Dokument nie ma daty modyfikacji
+	The document doesn't say whether it is trapped (Trapped must be True or False)	Dokument nie określa, czy wykonano trapping (Trapped musi mieć wartość True lub False)
+	The file has no identifier (ID)	Plik nie ma identyfikatora (ID)
+	There is no PDF/X output intent	Brak profilu wyjściowego PDF/X
+	There is more than one PDF/X output intent	Jest więcej niż jeden profil wyjściowy PDF/X
+	The PDF/X output intent has no destination profile	Profil wyjściowy PDF/X nie ma profilu docelowego
+	The PDF/X output intent has no output condition identifier	Profil wyjściowy PDF/X nie ma identyfikatora warunków wyjściowych
+	The PDF/X output intent's profile isn't an output (printer) profile	Profil wyjściowy PDF/X nie jest profilem urządzenia wyjściowego (drukarki)
+	DeviceRGB is used, but the PDF/X output intent isn't an RGB profile	Użyto DeviceRGB, ale profil wyjściowy PDF/X nie jest profilem RGB
+	DeviceCMYK is used, but the PDF/X output intent isn't a CMYK profile	Użyto DeviceCMYK, ale profil wyjściowy PDF/X nie jest profilem CMYK
+	The page has neither a TrimBox nor an ArtBox	Strona nie ma ani TrimBox, ani ArtBox
+	The page has both a TrimBox and an ArtBox	Strona ma jednocześnie TrimBox i ArtBox
+	A page box extends beyond the MediaBox	Obszar strony wykracza poza MediaBox
+	The TrimBox extends beyond the BleedBox	TrimBox wykracza poza BleedBox
+	A graphics state sets a transfer function	Stan graficzny ustawia funkcję transferu
+	An optional content configuration has no name	Konfiguracja zawartości opcjonalnej nie ma nazwy
+	An optional content configuration has an AS entry	Konfiguracja zawartości opcjonalnej ma wpis AS
+	A {} annotation prints inside the bleed area	Adnotacja {} drukuje się w obszarze spadu
+	Preflight report	Raport kontroli wstępnej
+	Profile: {}	Profil: {}
+	File: {}	Plik: {}
+	Date: {}	Data: {}
+	No problems found.	Nie znaleziono problemów.
+	Problems found: {}	Znalezione problemy: {}
+	Pages: {}	Strony: {}
+	Can be fixed	Można naprawić
+	Verify compliance with {}	Sprawdź zgodność z {}
+	Preflight…	Kontrola wstępna…
+	Preflight fixups for {profile}	Poprawki kontroli wstępnej dla {profile}
+	Profile:	Profil:
+	Analyze	Analizuj
+	Save report…	Zapisz raport…
+	Analyze to see what the document needs for this profile.	Uruchom analizę, aby sprawdzić, czego dokument potrzebuje dla tego profilu.
+	Can be fixed: {n}	Można naprawić: {n}
+	Save the Preflight report	Zapisz raport kontroli wstępnej
