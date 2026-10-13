@@ -81,3 +81,31 @@ fn a_wide_window_keeps_the_desktop_layout() {
     h.run_steps(4);
     h.get_by_label("E-Sign");
 }
+
+#[test]
+fn the_theme_button_and_more_menu_are_on_the_phone_bar() {
+    use prckopis_ui_egui::theme::ThemePreference;
+    let mut h = phone(true);
+    // The theme button cycles system, light, dark, as on the desktop's title bar.
+    let start = h.state().theme_preference;
+    h.get_by_label_contains("Display theme: ").click();
+    h.run_steps(2);
+    assert_ne!(h.state().theme_preference, start);
+    for _ in 0..3 {
+        if h.state().theme_preference == ThemePreference::Dark {
+            break;
+        }
+        h.get_by_label_contains("Display theme: ").click();
+        h.run_steps(2);
+    }
+    assert_eq!(h.state().theme_preference, ThemePreference::Dark);
+    // More: workspaces, Print, Document properties, Full screen, theme, Preferences.
+    h.get_by_label("More options").click();
+    h.run_steps(2);
+    for item in ["Read", "Edit", "E-Sign", "Print…", "Document properties…", "Full screen mode", "Preferences…"] {
+        assert!(h.query_by_label(item).is_some(), "{item} is in More");
+    }
+    h.get_by_label("Edit").click();
+    h.run_steps(2);
+    assert!(h.state().left_open, "a workspace opens its tools in the sheet");
+}

@@ -421,7 +421,12 @@ pub fn mode_bar(app: &mut PrckopisApp, ui: &mut egui::Ui) {
 
 fn main_menu(app: &mut PrckopisApp, ui: &mut egui::Ui) {
     let t = Tokens::get(ui.ctx());
-    let resp = widgets::ghost_button(ui, "panel-left", tl!("Menu"));
+    // The phone layout has no room for the word: the icon, with the word as its tooltip.
+    let resp = if app.compact_layout(ui.ctx()) {
+        icons::button(ui, "panel-left", COMPACT_ICON, false, tl!("Menu"))
+    } else {
+        widgets::ghost_button(ui, "panel-left", tl!("Menu"))
+    };
     egui::Popup::menu(&resp).show(|ui| {
         ui.set_min_width(230.0);
         ui.menu_button(tl!("File"), |ui| crate::commands::registry_menu(app, ui, "File"));
@@ -686,8 +691,8 @@ fn rail_view_menu(ui: &mut egui::Ui, view: &mut DocView) -> Option<&'static str>
 
 /// Height of the phone layout's top and bottom bars.
 const COMPACT_BAR: f32 = 52.0;
-/// Icon buttons in the phone layout: a finger-sized box.
-const COMPACT_ICON: f32 = 40.0;
+/// Icon buttons in the phone layout: a finger-sized box that still fits eight to a phone's width.
+const COMPACT_ICON: f32 = 38.0;
 
 /// The side panels the phone layout's panel button offers, with their icons.
 const COMPACT_PANELS: [(RightPanel, &str, &str); 7] = [
@@ -701,7 +706,8 @@ const COMPACT_PANELS: [(RightPanel, &str, &str); 7] = [
 ];
 
 /// The phone layout's top bar: Menu, All tools, the document (tap to switch to another open one),
-/// then Find tools and commands, Open and Save.
+/// then Find tools and commands, Open, Save, the display theme (tap: system, light, dark) and More
+/// (workspaces, Print, Document properties, Full screen, theme and Preferences).
 pub fn compact_top_bar(app: &mut PrckopisApp, ui: &mut egui::Ui) {
     let t = Tokens::get(ui.ctx());
     egui::Panel::top("compact_top_bar")
@@ -709,7 +715,7 @@ pub fn compact_top_bar(app: &mut PrckopisApp, ui: &mut egui::Ui) {
         .frame(egui::Frame::NONE.fill(t.chrome).inner_margin(egui::Margin::symmetric(4, 0)).stroke(Stroke::new(1.0, t.divider)))
         .show(ui, |ui| {
             ui.horizontal_centered(|ui| {
-                ui.spacing_mut().item_spacing.x = 2.0;
+                ui.spacing_mut().item_spacing.x = 0.0;
                 main_menu(app, ui);
                 if icons::button(ui, "layout-grid", COMPACT_ICON, app.left_open, tl!("All tools")).clicked() {
                     app.left_open = !app.left_open;
@@ -719,7 +725,9 @@ pub fn compact_top_bar(app: &mut PrckopisApp, ui: &mut egui::Ui) {
                 }
                 let has_doc = app.active.is_some();
                 ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                    ui.spacing_mut().item_spacing.x = 2.0;
+                    ui.spacing_mut().item_spacing.x = 0.0;
+                    compact_more_menu(app, ui, has_doc);
+                    compact_theme_button(app, ui);
                     if has_doc {
                         let tip = crate::commands::command_tip(ui.ctx(), tl!("Save ({key})"), "file.save");
                         if icons::button(ui, "save", COMPACT_ICON, false, &tip).clicked() {
@@ -737,6 +745,67 @@ pub fn compact_top_bar(app: &mut PrckopisApp, ui: &mut egui::Ui) {
                 });
             });
         });
+}
+
+/// The display theme, as on the desktop's title bar: the icon shows the choice, a tap moves on to
+/// the next one (system, light, dark).
+fn compact_theme_button(app: &mut PrckopisApp, ui: &mut egui::Ui) {
+    let (icon, label) = match app.theme_preference {
+        ThemePreference::System => ("monitor", tl!("Use system setting")),
+        ThemePreference::Light => ("sun", tl!("Light gray")),
+        ThemePreference::Dark => ("moon", tl!("Dark gray")),
+    };
+    let tip = format!("{}: {label}", tl!("Display theme"));
+    if icons::button(ui, icon, COMPACT_ICON, false, &tip).clicked() {
+        app.execute(match app.theme_preference {
+            ThemePreference::System => "view.theme.light",
+            ThemePreference::Light => "view.theme.dark",
+            ThemePreference::Dark => "view.theme.system",
+        });
+    }
+}
+
+/// More: what the desktop's mode bar and title bar offer and the phone bar has no room for.
+fn compact_more_menu(app: &mut PrckopisApp, ui: &mut egui::Ui, has_doc: bool) {
+    let t = Tokens::get(ui.ctx());
+    let resp = icons::button(ui, "ellipsis-vertical", COMPACT_ICON, false, tl!("More options"));
+    egui::Popup::menu(&resp).show(|ui| {
+        ui.set_min_width(230.0);
+        for (mode, label) in
+            [(Mode::AllTools, "All tools"), (Mode::Read, "Read"), (Mode::Edit, "Edit"), (Mode::Convert, "Convert"), (Mode::Sign, "E-Sign")]
+        {
+            if ui.add(widgets::radio(app.mode == mode, tl!(label))).clicked() {
+                // Read mode is the page alone; the others open their tools in the sheet.
+                app.switch_mode(mode, mode != Mode::Read);
+                if mode == Mode::Read {
+                    app.left_open = false;
+                }
+                ui.close();
+            }
+        }
+        ui.separator();
+        ui.add_enabled_ui(has_doc, |ui| {
+            if ui.button(tl!("Print…")).clicked() {
+                app.run_command("print.dialog");
+                ui.close();
+            }
+            if ui.button(tl!("Document properties…")).clicked() {
+                app.dialog = Some(Dialog::Properties(PropsTab::Description));
+                ui.close();
+            }
+            if ui.button(tl!("Full screen mode")).clicked() {
+                app.execute("view.full_screen");
+                ui.close();
+            }
+        });
+        ui.separator();
+        ui.label(egui::RichText::new(tl!("Display theme")).color(t.text_faint).small());
+        theme_menu(app, ui);
+        if ui.button(tl!("Preferences…")).clicked() {
+            app.dialog = Some(Dialog::Preferences);
+            ui.close();
+        }
+    });
 }
 
 /// The name of the document shown (or Home); tapping it lists the open documents, Home and Close.
