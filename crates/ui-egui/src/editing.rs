@@ -591,7 +591,7 @@ impl PrckopisApp {
                     let dialog = rfd::AsyncFileDialog::new().add_filter("PDF", &["pdf"]).set_file_name(name);
                     // The bytes are taken once the user has chosen, so edits made meanwhile are saved too.
                     self.ask_one(crate::pickers::Ask::Save(dialog), None, move |app, dest| {
-                        if app.save_doc_to(id, &dest.to_string_lossy()) {
+                        if app.save_doc_to(id, &with_pdf_extension(&dest.to_string_lossy())) {
                             after(app);
                         }
                     });
@@ -942,6 +942,15 @@ fn write_atomically_with(path: &str, bytes: &[u8], suffixes: impl IntoIterator<I
     result
 }
 
+/// The path a Save As writes to: the chosen one, with `.pdf` added when it doesn't end in it.
+/// The Windows save panel keeps a name typed without an extension as it is, and a file saved as
+/// "Contract" is neither shown as a PDF nor opened by anything (reported on Windows).
+#[cfg(not(target_arch = "wasm32"))]
+fn with_pdf_extension(path: &str) -> String {
+    let ends_in_pdf = std::path::Path::new(path).extension().is_some_and(|e| e.eq_ignore_ascii_case("pdf"));
+    if ends_in_pdf { path.to_string() } else { format!("{path}.pdf") }
+}
+
 #[cfg(not(target_arch = "wasm32"))]
 fn short_name(path: &str) -> String {
     std::path::Path::new(path).file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_else(|| path.to_string())
@@ -1027,6 +1036,15 @@ fn bookmark_at<'a>(items: &'a [prckopis_render::OutlineItem], path: &[usize]) ->
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn save_as_names_without_pdf_get_it() {
+        use super::with_pdf_extension as f;
+        assert_eq!(f(r"C:\Users\me\Documents\Contract"), r"C:\Users\me\Documents\Contract.pdf");
+        assert_eq!(f(r"C:\Users\me\Documents\Contract.PDF"), r"C:\Users\me\Documents\Contract.PDF");
+        assert_eq!(f("/home/me/a.pdf"), "/home/me/a.pdf");
+        assert_eq!(f("/home/me/report.v2"), "/home/me/report.v2.pdf");
+    }
+
     use super::{SaveTarget, is_mail_temp_copy, write_atomically, write_atomically_with};
     use prckopis_platform::staging::{STAGING_ATTEMPTS, staging_suffixes};
     use std::path::{Path, PathBuf};
