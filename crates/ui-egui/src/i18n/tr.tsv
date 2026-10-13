@@ -2399,3 +2399,24 @@ animation effects	Off	Kapalı
 	Just these fields	Yalnızca bu alanlar
 	This document has no other fields.	Bu belgede başka alan yok.
 	Choose at least one field.	En az bir alan seçin.
+	Edit codes…	Kodları düzenle…
+	Redaction Code Editor	Karartma kodu düzenleyicisi
+	Code sets	Kod kümeleri
+	No code sets yet. Type a name and choose New set.	Henüz kod kümesi yok. Bir ad yazın ve Yeni küme'yi seçin.
+	New set	Yeni küme
+	Codes in this set	Bu kümedeki kodlar
+	Code:	Kod:
+	Import…	İçe aktar…
+	Type a name first.	Önce bir ad yazın.
+	That name is already used.	Bu ad zaten kullanılıyor.
+	Type a code first.	Önce bir kod yazın.
+	This set already has that code.	Bu kümede o kod zaten var.
+	The name, code or description is too long.	Ad, kod veya açıklama çok uzun.
+	There are too many code sets or codes.	Çok fazla kod kümesi veya kod var.
+	That set or code no longer exists.	O küme veya kod artık yok.
+	Imported {n} code set(s) from {name}; skipped {k} unreadable or repeated entries.	{name} dosyasından içe aktarılan kod kümesi: {n}; atlanan okunamayan veya yinelenen girdi: {k}.
+	Imported {n} code set(s) from {name}.	{name} dosyasından içe aktarılan kod kümesi: {n}.
+	{name} is too large for a code set file (at most 1 MB).	{name} kod kümesi dosyası için çok büyük (en fazla 1 MB).
+	{name} is not a redaction code set file.	{name} bir karartma kodu kümesi dosyası değil.
+	Bank Account Numbers (IBAN)	Banka hesap numaraları (IBAN)
+	Croatian Personal ID Numbers (OIB)	Hırvatistan kişisel kimlik numaraları (OIB)

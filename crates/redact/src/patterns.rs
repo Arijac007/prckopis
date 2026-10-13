@@ -1,6 +1,8 @@
 //! Search & Redact patterns (Acrobat's Find Text ▸ Patterns): phone numbers, email addresses,
-//! credit card numbers, US Social Security numbers and dates. Each matcher works on a page's
-//! text as characters and returns character ranges; callers map them to glyphs and areas.
+//! credit card numbers, US Social Security numbers and dates, and for Europe IBANs (mod-97
+//! check) and Croatian personal identification numbers (OIB, ISO 7064 MOD 11,10 check). Dates
+//! know English, Turkish, German, French, Italian and Croatian month names. Each matcher works on
+//! a page's text as characters and returns character ranges; callers map them to glyphs and areas.
 
 use std::ops::Range;
 
@@ -11,9 +13,13 @@ pub enum Pattern {
     CreditCard,
     Ssn,
     Date,
+    /// International Bank Account Numbers (ISO 13616), with a valid mod-97 check.
+    Iban,
+    /// Croatian personal identification numbers (OIB), with a valid check digit.
+    HrOib,
 }
 
-pub const PATTERNS: [Pattern; 5] = [Pattern::Phone, Pattern::Email, Pattern::CreditCard, Pattern::Ssn, Pattern::Date];
+pub const PATTERNS: [Pattern; 7] = [Pattern::Phone, Pattern::Email, Pattern::CreditCard, Pattern::Ssn, Pattern::Date, Pattern::Iban, Pattern::HrOib];
 
 impl Pattern {
     pub fn label(self) -> &'static str {
@@ -23,6 +29,8 @@ impl Pattern {
             Pattern::CreditCard => "Credit Cards",
             Pattern::Ssn => "Social Security Numbers",
             Pattern::Date => "Dates",
+            Pattern::Iban => "Bank Account Numbers (IBAN)",
+            Pattern::HrOib => "Croatian Personal ID Numbers (OIB)",
         }
     }
 
@@ -33,6 +41,8 @@ impl Pattern {
             Pattern::CreditCard => "credit-card",
             Pattern::Ssn => "ssn",
             Pattern::Date => "date",
+            Pattern::Iban => "iban",
+            Pattern::HrOib => "hr-oib",
         }
     }
 
@@ -180,13 +190,17 @@ fn ssn(s: &[char], i: usize) -> Option<usize> {
 }
 
 /// Month names the date pattern knows: English, then the languages whose dates are written
-/// "5 Ekim 2024" / "5. Oktober 2024" (day, month name, year).
-const MONTHS: [[&str; 12]; 5] = [
+/// "5 Ekim 2024" / "5. Oktober 2024" / "5. listopada 2024." (day, month name, year). Croatian
+/// writes the month in the genitive after a day, so both forms are listed.
+const MONTHS: [[&str; 12]; 8] = [
     ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"],
     ["ocak", "şubat", "mart", "nisan", "mayıs", "haziran", "temmuz", "ağustos", "eylül", "ekim", "kasım", "aralık"],
     ["januar", "februar", "märz", "april", "mai", "juni", "juli", "august", "september", "oktober", "november", "dezember"],
     ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"],
     ["gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno", "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre"],
+    ["siječanj", "veljača", "ožujak", "travanj", "svibanj", "lipanj", "srpanj", "kolovoz", "rujan", "listopad", "studeni", "prosinac"],
+    ["siječnja", "veljače", "ožujka", "travnja", "svibnja", "lipnja", "srpnja", "kolovoza", "rujna", "listopada", "studenoga", "prosinca"],
+    ["siječnja", "veljače", "ožujka", "travnja", "svibnja", "lipnja", "srpnja", "kolovoza", "rujna", "listopada", "studenog", "prosinca"],
 ];
 
 /// Abbreviations that may end in a full stop: English and Turkish ("Oca.", "Şub", "Ağu").
@@ -277,6 +291,73 @@ fn date(s: &[char], i: usize) -> Option<usize> {
     Some(k2 + y - i)
 }
 
+/// ISO 7064 MOD 11,10: the check digit of a Croatian OIB (its 11th digit).
+fn mod11_10(digits: &[u32]) -> u32 {
+    let mut a = 10;
+    for d in digits {
+        a = (a + d) % 10;
+        if a == 0 {
+            a = 10;
+        }
+        a = a * 2 % 11;
+    }
+    (11 - a) % 10
+}
+
+/// An OIB: 11 digits standing alone (optionally written "HR" + digits, as in a VAT number)
+/// whose last digit checks.
+fn hr_oib(s: &[char], i: usize) -> Option<usize> {
+    let prefix = if s.get(i) == Some(&'H') && s.get(i + 1) == Some(&'R') { 2 } else { 0 };
+    if word(i.checked_sub(1).and_then(|p| s.get(p))) {
+        return None;
+    }
+    let digits: Vec<u32> = s.get(i + prefix..i + prefix + 11)?.iter().map(|c| c.to_digit(10)).collect::<Option<_>>()?;
+    if word(s.get(i + prefix + 11)) {
+        return None;
+    }
+    let (body, check) = digits.split_at(10);
+    (check.first() == Some(&mod11_10(body))).then_some(prefix + 11)
+}
+
+/// ISO 13616's check: the number, with its first four characters moved to the end and letters
+/// read as 10–35, leaves 1 when divided by 97.
+fn mod97(chars: &[char]) -> bool {
+    let (head, tail) = chars.split_at(chars.len().min(4));
+    let mut r: u32 = 0;
+    for c in tail.iter().chain(head) {
+        let Some(v) = c.to_digit(36) else { return false };
+        r = if v >= 10 { (r * 100 + v) % 97 } else { (r * 10 + v) % 97 };
+    }
+    r == 1
+}
+
+/// An IBAN: two capital letters (the country), two check digits and up to 30 digits or capital
+/// letters, printed whole or in groups split by single spaces. The longest run of whole groups
+/// that passes the mod-97 check matches, so a capitalised word after the number stays out.
+fn iban(s: &[char], i: usize) -> Option<usize> {
+    let upper = |k: usize| s.get(k).is_some_and(char::is_ascii_uppercase);
+    if word(i.checked_sub(1).and_then(|p| s.get(p))) || !(upper(i) && upper(i + 1) && digit(s.get(i + 2)) && digit(s.get(i + 3))) {
+        return None;
+    }
+    let part = |c: &char| c.is_ascii_digit() || c.is_ascii_uppercase();
+    let (mut k, mut chars, mut best) = (i, Vec::new(), None);
+    while chars.len() < 34 {
+        match s.get(k) {
+            Some(c) if part(c) => {
+                chars.push(*c);
+                k += 1;
+                let group_end = !s.get(k).is_some_and(part);
+                if group_end && (15..=34).contains(&chars.len()) && !word(s.get(k)) && mod97(&chars) {
+                    best = Some(k - i);
+                }
+            }
+            Some(' ') if s.get(k + 1).is_some_and(part) && k > i => k += 1,
+            _ => break,
+        }
+    }
+    best
+}
+
 /// Character ranges of `text` matching `pattern`.
 pub fn find(pattern: Pattern, text: &[char]) -> Vec<Range<usize>> {
     let f: fn(&[char], usize) -> Option<usize> = match pattern {
@@ -285,6 +366,8 @@ pub fn find(pattern: Pattern, text: &[char]) -> Vec<Range<usize>> {
         Pattern::CreditCard => credit_card,
         Pattern::Ssn => ssn,
         Pattern::Date => date,
+        Pattern::Iban => iban,
+        Pattern::HrOib => hr_oib,
     };
     let mut out = Vec::new();
     let mut i = 0;
@@ -427,6 +510,45 @@ mod tests {
         );
         // "Mai" alone, a dotted day without a month and an unknown word are not dates.
         assert_eq!(found(Pattern::Date, "Mai 2024, Kapitel 5. Absatz 2024, 5 Oktoberfest 2024"), Vec::<String>::new());
+    }
+
+    #[test]
+    fn croatian_dates_and_phone_numbers() {
+        assert_eq!(
+            found(Pattern::Date, "Zagreb, 5. listopada 2024., 13.10.2026., 1. siječnja 2025, 30. studenog 2023 i 2 PROSINCA 2022"),
+            ["5. listopada 2024", "13.10.2026", "1. siječnja 2025", "30. studenog 2023", "2 PROSINCA 2022"]
+        );
+        assert_eq!(found(Pattern::Date, "listopad 2024, 5. listopadski 2024"), Vec::<String>::new());
+        assert_eq!(
+            found(Pattern::Phone, "Tel. +385 1 2345 678, mob. +385 91 234 5678, 01 2345 678, 091 234 5678"),
+            ["+385 1 2345 678", "+385 91 234 5678", "01 2345 678", "091 234 5678"]
+        );
+    }
+
+    #[test]
+    fn croatian_oibs_need_a_valid_check_digit() {
+        assert_eq!(
+            found(Pattern::HrOib, "OIB: 69435151530, OIB 12345678903; PDV ID HR69435151530."),
+            ["69435151530", "12345678903", "HR69435151530"]
+        );
+        // A wrong check digit, too few or too many digits, or digits inside a longer word.
+        assert_eq!(found(Pattern::HrOib, "69435151531, 6943515153, 694351515300, X69435151530, 69435151530A, 6943 5151 530"), Vec::<String>::new());
+        assert_eq!(mod11_10(&[0; 10]), 1);
+    }
+
+    #[test]
+    fn ibans_need_a_valid_mod97_check() {
+        assert_eq!(
+            found(Pattern::Iban, "IBAN: HR1210010051863000160, DE89 3704 0044 0532 0130 00 and GB82 WEST 1234 5698 7654 32 BIC"),
+            ["HR1210010051863000160", "DE89 3704 0044 0532 0130 00", "GB82 WEST 1234 5698 7654 32"]
+        );
+        // One wrong digit, lowercase, too short, or glued to a word.
+        assert_eq!(
+            found(Pattern::Iban, "HR1210010051863000161, hr1210010051863000160, HR12 1001, XHR1210010051863000160, HR1210010051863000160x"),
+            Vec::<String>::new()
+        );
+        assert!(mod97(&"AT611904300234573201".chars().collect::<Vec<_>>()));
+        assert!(!mod97(&"AT611904300234573202".chars().collect::<Vec<_>>()));
     }
 
     #[test]

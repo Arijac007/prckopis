@@ -2403,3 +2403,24 @@ animation effects	Off	オフ
 	Just these fields	これらのフィールドのみ
 	This document has no other fields.	この文書には他のフィールドがありません。
 	Choose at least one field.	フィールドを 1 つ以上選択してください。
+	Edit codes…	コードを編集…
+	Redaction Code Editor	墨消しコードエディター
+	Code sets	コードセット
+	No code sets yet. Type a name and choose New set.	コードセットはまだありません。名前を入力して「新しいセット」を選んでください。
+	New set	新しいセット
+	Codes in this set	このセットのコード
+	Code:	コード:
+	Import…	読み込み…
+	Type a name first.	先に名前を入力してください。
+	That name is already used.	その名前は既に使われています。
+	Type a code first.	先にコードを入力してください。
+	This set already has that code.	このセットには既にそのコードがあります。
+	The name, code or description is too long.	名前、コード、または説明が長すぎます。
+	There are too many code sets or codes.	コードセットまたはコードが多すぎます。
+	That set or code no longer exists.	そのセットまたはコードはもうありません。
+	Imported {n} code set(s) from {name}; skipped {k} unreadable or repeated entries.	{name} からコードセットを {n} 個読み込みました。読めないか重複している {k} 件の項目は飛ばしました。
+	Imported {n} code set(s) from {name}.	{name} からコードセットを {n} 個読み込みました。
+	{name} is too large for a code set file (at most 1 MB).	{name} はコードセットファイルとして大きすぎます (最大 1 MB)。
+	{name} is not a redaction code set file.	{name} は墨消しコードセットのファイルではありません。
+	Bank Account Numbers (IBAN)	銀行口座番号 (IBAN)
+	Croatian Personal ID Numbers (OIB)	クロアチアの個人識別番号 (OIB)

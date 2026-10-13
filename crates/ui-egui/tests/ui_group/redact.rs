@@ -108,6 +108,107 @@ fn redaction_codes_become_the_overlay_text() {
 }
 
 #[test]
+fn custom_redaction_code_sets_are_edited_exported_imported_and_kept() {
+    use prckopis_ui_egui::RedactCodeSetChoice;
+    let mut h = harness();
+    assert!(h.state_mut().execute("redact.properties"));
+    h.run_steps(4);
+    h.get_by_label("Use overlay text").click();
+    h.run_steps(4);
+    h.get_by_label("Edit codes…").click();
+    h.run_steps(4);
+    assert_eq!(h.state().dialog, Some(Dialog::RedactCodes));
+    h.get_by_label("Redaction Code Editor");
+    h.get_by_label("No code sets yet. Type a name and choose New set.");
+    // A name the built-in sets use is refused, with a message.
+    h.state_mut().redact_code_editor.set_name = "U.S. FOIA".into();
+    h.get_by_label("New set").click();
+    h.run_steps(4);
+    h.get_by_label("That name is already used.");
+    h.state_mut().redact_code_editor.set_name = "GDPR".into();
+    h.get_by_label("New set").click();
+    h.run_steps(4);
+    for (code, description) in [("Art. 9", "Special categories"), ("Art. 10", "Criminal convictions"), ("Art. 99", "")] {
+        let d = &mut h.state_mut().redact_code_editor;
+        (d.code_text, d.description) = (code.into(), description.into());
+        h.get_by_label("Add").click();
+        // The centred dialog grows by a row and settles over a few frames.
+        h.run_steps(4);
+    }
+    let added: Vec<String> =
+        h.state().redact_prefs.code_sets.get("GDPR").map(|s| s.codes.iter().map(|c| c.code.clone()).collect()).unwrap_or_default();
+    assert_eq!(added, ["Art. 9", "Art. 10", "Art. 99"], "{:?}", h.state().redact_code_editor);
+    h.get_by_label("Art. 9 — Special categories");
+    // Change a code, remove another, rename the set.
+    h.get_by_label("Art. 10 — Criminal convictions").click();
+    h.run_steps(4);
+    h.state_mut().redact_code_editor.code_text = "Art. 10(1)".into();
+    h.get_by_label("Update").click();
+    h.run_steps(4);
+    h.get_by_label("Art. 99").click();
+    h.run_steps(4);
+    h.get_by_label("Remove").click();
+    h.run_steps(4);
+    h.state_mut().redact_code_editor.set_name = "EU GDPR".into();
+    h.get_by_label("Rename").click();
+    h.run_steps(4);
+    let set = h.state().redact_prefs.code_sets.get("EU GDPR").cloned().expect("renamed");
+    let codes: Vec<&str> = set.codes.iter().map(|c| c.code.as_str()).collect();
+    assert_eq!(codes, ["Art. 9", "Art. 10(1)"]);
+    // Export, then import the file back: the copy gets a free name.
+    let file = std::env::temp_dir().join(format!("prckopis-codes-{}.json", std::process::id()));
+    h.state_mut().save_override = Some(file.to_string_lossy().into_owned());
+    h.get_by_label("Export…").click();
+    h.run_steps(4);
+    let bytes = std::fs::read(&file).expect("exported");
+    let _ = std::fs::remove_file(&file);
+    h.state_mut().use_files(prckopis_ui_egui::FilePurpose::RedactCodes, vec![("codes.json".into(), bytes)]);
+    let names: Vec<String> = h.state().redact_prefs.code_sets.sets().iter().map(|s| s.name.clone()).collect();
+    assert_eq!(names, ["EU GDPR", "EU GDPR (2)"]);
+    assert_eq!(h.state().redact_prefs.code_sets.sets()[1].codes, set.codes, "codes and descriptions survive the round trip");
+    // Untrusted files change nothing.
+    h.state_mut().use_files(prckopis_ui_egui::FilePurpose::RedactCodes, vec![("bad.json".into(), b"{\"format\":1}".to_vec())]);
+    h.state_mut().use_files(prckopis_ui_egui::FilePurpose::RedactCodes, vec![("huge.json".into(), vec![b' '; (1 << 20) + 1])]);
+    assert_eq!(h.state().redact_prefs.code_sets.sets().len(), 2);
+    h.run_steps(4);
+    h.get_by_label("Done").click();
+    h.run_steps(4);
+    assert_eq!(h.state().dialog, Some(Dialog::RedactProps));
+    // Pick the set and its codes in Redaction properties.
+    h.get_by_label("Redaction code:").click();
+    h.run_steps(4);
+    h.get_by_value("U.S. FOIA").click();
+    h.run_steps(4);
+    h.get_by_label("EU GDPR").click();
+    h.run_steps(4);
+    assert_eq!(h.state().redact_prefs.code_set, RedactCodeSetChoice::Custom("EU GDPR".into()));
+    h.get_by_label("Art. 10(1)").click();
+    h.run_steps(4);
+    h.get_by_label("Art. 9").click();
+    h.run_steps(4);
+    h.get_by_label("OK").click();
+    h.run_steps(4);
+    let prefs = h.state().redact_prefs.clone();
+    assert_eq!(prefs.overlay_text(), "Art. 9, Art. 10(1)", "codes in the set's order");
+    let prckopis_engine::Edit::AddAnnotation(a) = prefs.mark(0, vec![prckopis_engine::rect_quad([10.0, 10.0, 50.0, 30.0])], "T") else {
+        panic!("a mark adds an annotation")
+    };
+    assert!(matches!(a.shape, prckopis_engine::Shape::Redact { ref overlay, .. } if overlay == "Art. 9, Art. 10(1)"));
+    // The sets are kept in the preferences; unreadable saved sets are dropped.
+    let saved = h.state().persist();
+    let mut again = PrckopisApp::new();
+    again.restore(&saved);
+    assert_eq!(again.redact_prefs.code_sets, prefs.code_sets);
+    let mut v: serde_json::Value = serde_json::from_str(&saved).unwrap();
+    v["redaction_code_sets"] =
+        serde_json::json!({ "format": "prckopis-redaction-codes", "sets": [{ "name": 5 }, { "name": "Ok", "codes": [{ "code": "" }] }] });
+    let mut damaged = PrckopisApp::new();
+    damaged.restore(&v.to_string());
+    assert_eq!(damaged.redact_prefs.code_sets.sets().len(), 1);
+    assert!(damaged.redact_prefs.code_sets.sets()[0].codes.is_empty());
+}
+
+#[test]
 fn redacting_an_imported_word_list() {
     let memo = prckopis_engine::Session::new().create_from_text("memo", "Call Ada today\nAda is private\nPublic line").unwrap().to_vec();
     let mut h = Harness::builder().with_size(egui::vec2(1400.0, 900.0)).build_eframe(move |_cc| {

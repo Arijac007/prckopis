@@ -2476,3 +2476,24 @@ animation effects	Off	Vypnuto
 	Just these fields	Pouze tato pole
 	This document has no other fields.	Tento dokument nemá žádná další pole.
 	Choose at least one field.	Vyberte alespoň jedno pole.
+	Edit codes…	Upravit kódy…
+	Redaction Code Editor	Editor kódů začernění
+	Code sets	Sady kódů
+	No code sets yet. Type a name and choose New set.	Zatím nejsou žádné sady kódů. Zadejte název a zvolte Nová sada.
+	New set	Nová sada
+	Codes in this set	Kódy v této sadě
+	Code:	Kód:
+	Import…	Importovat…
+	Type a name first.	Nejprve zadejte název.
+	That name is already used.	Tento název se už používá.
+	Type a code first.	Nejprve zadejte kód.
+	This set already has that code.	Tato sada už tento kód obsahuje.
+	The name, code or description is too long.	Název, kód nebo popis je příliš dlouhý.
+	There are too many code sets or codes.	Sad kódů nebo kódů je příliš mnoho.
+	That set or code no longer exists.	Tato sada nebo kód už neexistuje.
+	Imported {n} code set(s) from {name}; skipped {k} unreadable or repeated entries.	Importované sady kódů ze souboru {name}: {n}; přeskočené nečitelné nebo opakované položky: {k}.
+	Imported {n} code set(s) from {name}.	Importované sady kódů ze souboru {name}: {n}.
+	{name} is too large for a code set file (at most 1 MB).	{name} je pro soubor sady kódů příliš velký (nejvýše 1 MB).
+	{name} is not a redaction code set file.	{name} není soubor sady kódů začernění.
+	Bank Account Numbers (IBAN)	Čísla bankovních účtů (IBAN)
+	Croatian Personal ID Numbers (OIB)	Chorvatská osobní identifikační čísla (OIB)

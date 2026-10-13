@@ -2408,3 +2408,24 @@ animation effects	Off	Izklopljeni
 	Just these fields	Samo ta polja
 	This document has no other fields.	Ta dokument nima drugih polj.
 	Choose at least one field.	Izberite vsaj eno polje.
+	Edit codes…	Uredi kode…
+	Redaction Code Editor	Urejevalnik kod počrnitve
+	Code sets	Nabori kod
+	No code sets yet. Type a name and choose New set.	Naborov kod še ni. Vnesite ime in izberite Nov nabor.
+	New set	Nov nabor
+	Codes in this set	Kode v tem naboru
+	Code:	Koda:
+	Import…	Uvozi…
+	Type a name first.	Najprej vnesite ime.
+	That name is already used.	To ime je že uporabljeno.
+	Type a code first.	Najprej vnesite kodo.
+	This set already has that code.	Ta nabor že ima to kodo.
+	The name, code or description is too long.	Ime, koda ali opis je predolg.
+	There are too many code sets or codes.	Naborov kod ali kod je preveč.
+	That set or code no longer exists.	Ta nabor ali koda ne obstaja več.
+	Imported {n} code set(s) from {name}; skipped {k} unreadable or repeated entries.	Uvoženi nabori kod iz {name}: {n}; preskočeni neberljivi ali ponovljeni vnosi: {k}.
+	Imported {n} code set(s) from {name}.	Uvoženi nabori kod iz {name}: {n}.
+	{name} is too large for a code set file (at most 1 MB).	Datoteka {name} je prevelika za datoteko nabora kod (največ 1 MB).
+	{name} is not a redaction code set file.	{name} ni datoteka nabora kod počrnitve.
+	Bank Account Numbers (IBAN)	Številke bančnih računov (IBAN)
+	Croatian Personal ID Numbers (OIB)	Hrvaške osebne identifikacijske številke (OIB)

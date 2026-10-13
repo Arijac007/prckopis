@@ -432,7 +432,7 @@ pub fn tools() -> Vec<ToolDef> {
         t(
             "redact_mark",
             "Mark for redaction",
-            "Mark content for redaction (nothing is removed until redact_apply). One of: rect [x0, y0, x1, y1] (points from the top-left of the displayed page) with page; find (text, every match); words (a list of words or phrases, every match of each; the result's matched_words says how many marks each made); pattern (phone, email, credit-card, ssn, date: every match, Acrobat's Search & Redact patterns); whole_pages: true. find and words accept case_sensitive and whole_words (both default false). find, words, pattern and whole_pages work on pages (default all). overlay: text shown on the box once applied, or code_set (foia: U.S. FOIA (b)(1)(A)…(b)(9); privacy-act: U.S. Privacy Act (d)(5), (j)(1)…(k)(7)) with codes, shown as \"(b)(6), (b)(7)(C)\"; fill: box colour (default black). Undoable.",
+            "Mark content for redaction (nothing is removed until redact_apply). One of: rect [x0, y0, x1, y1] (points from the top-left of the displayed page) with page; find (text, every match); words (a list of words or phrases, every match of each; the result's matched_words says how many marks each made); pattern (phone, email, credit-card, ssn, date, iban (mod-97 checked), hr-oib (Croatian OIB, check digit verified): every match, Acrobat's Search & Redact patterns); whole_pages: true. find and words accept case_sensitive and whole_words (both default false). find, words, pattern and whole_pages work on pages (default all). overlay: text shown on the box once applied, or code_set (foia: U.S. FOIA (b)(1)(A)…(b)(9); privacy-act: U.S. Privacy Act (d)(5), (j)(1)…(k)(7); or the name of a user-defined set in code_set_file, a code-set file exported by the Redaction Code Editor) with codes, shown in the set's order as \"(b)(6), (b)(7)(C)\"; fill: box colour (default black). Undoable.",
         )
         .with(schema(
             json!({
@@ -443,11 +443,12 @@ pub fn tools() -> Vec<ToolDef> {
                 "words": { "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 1, "maxItems": 1000 },
                 "case_sensitive": { "type": "boolean", "description": "Match letter case for find or words (default false)." },
                 "whole_words": { "type": "boolean", "description": "Match whole words for find or words (default false)." },
-                "pattern": { "type": "string", "enum": ["phone", "email", "credit-card", "ssn", "date"] },
+                "pattern": { "type": "string", "enum": ["phone", "email", "credit-card", "ssn", "date", "iban", "hr-oib"] },
                 "whole_pages": { "type": "boolean" },
                 "pages": pages("to search or mark (default: all)"),
                 "overlay": { "type": "string" },
-                "code_set": { "type": "string", "enum": ["foia", "privacy-act"] },
+                "code_set": { "type": "string", "minLength": 1, "description": "foia, privacy-act, or the name of a set in code_set_file." },
+                "code_set_file": { "type": "string", "description": "A redaction code-set file (JSON, format prckopis-redaction-codes) holding user-defined sets." },
                 "codes": { "type": "array", "items": { "type": "string" }, "minItems": 1, "description": "Redaction codes from code_set, e.g. [\"(b)(6)\"]." },
                 "fill": { "type": "string", "description": "#RRGGBB or a colour name." },
                 "author": { "type": "string" },

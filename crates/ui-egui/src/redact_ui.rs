@@ -4,7 +4,10 @@
 //! confirmation, as Acrobat asks) or clear them.
 
 use egui::{Color32, CornerRadius, Pos2, Rect, Stroke};
-use prckopis_engine::{Edit, NewAnnotation, REDACT_PATTERNS, REDACTION_CODE_SETS, RedactPattern, RedactionCodeSet, Rgb, Shape, Style, rect_quad};
+use prckopis_engine::{
+    Edit, NewAnnotation, REDACT_PATTERNS, REDACTION_CODE_SETS, RedactPattern, RedactionCodeSet, RedactionCodeSetError, RedactionCodeSets, Rgb, Shape,
+    Style, rect_quad,
+};
 use prckopis_render::DocInfo;
 
 use crate::canvas::{DocView, PageXform};
@@ -22,10 +25,21 @@ pub struct RedactPrefs {
     pub overlay: String,
     /// The overlay text is the picked redaction codes instead of `overlay`.
     pub use_code: bool,
-    pub code_set: RedactionCodeSet,
-    pub codes: Vec<&'static str>,
+    pub code_set: CodeSetChoice,
+    /// The picked codes of `code_set`.
+    pub codes: Vec<String>,
+    /// The user's own code sets (Redaction Code Editor), kept in the preferences.
+    pub code_sets: RedactionCodeSets,
     /// Overlay text font, size (0 = auto), colour, alignment and repetition.
     pub look: prckopis_engine::OverlayLook,
+}
+
+/// Which code set the redaction codes come from.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum CodeSetChoice {
+    BuiltIn(RedactionCodeSet),
+    /// A user-defined set, by name.
+    Custom(String),
 }
 
 impl Default for RedactPrefs {
@@ -36,8 +50,9 @@ impl Default for RedactPrefs {
             overlay: String::new(),
             use_code: false,
             // Infallible: a non-empty constant array.
-            code_set: REDACTION_CODE_SETS[0],
+            code_set: CodeSetChoice::BuiltIn(REDACTION_CODE_SETS[0]),
             codes: Vec::new(),
+            code_sets: RedactionCodeSets::default(),
             look: Default::default(),
         }
     }
@@ -48,9 +63,50 @@ impl RedactPrefs {
         match (self.use_overlay, self.use_code) {
             (false, _) => String::new(),
             (true, false) => self.overlay.clone(),
-            // `codes` only ever holds codes of `code_set`, so this can't fail.
-            (true, true) => self.code_set.overlay(&self.codes).unwrap_or_default(),
+            // Picked codes the set no longer has (edited meanwhile) are left out.
+            (true, true) => prckopis_engine::redaction_overlay(&self.set_codes(), &self.codes),
         }
+    }
+
+    /// The codes of the chosen set, with their descriptions (none for the built-in sets).
+    pub fn set_entries(&self) -> Vec<(String, String)> {
+        match &self.code_set {
+            CodeSetChoice::BuiltIn(s) => s.codes.iter().map(|c| (c.to_string(), String::new())).collect(),
+            CodeSetChoice::Custom(name) => {
+                self.code_sets.get(name).map(|s| s.codes.iter().map(|c| (c.code.clone(), c.description.clone())).collect()).unwrap_or_default()
+            }
+        }
+    }
+
+    pub fn set_codes(&self) -> Vec<String> {
+        self.set_entries().into_iter().map(|e| e.0).collect()
+    }
+
+    pub fn set_name(&self) -> String {
+        match &self.code_set {
+            CodeSetChoice::BuiltIn(s) => s.name.to_string(),
+            CodeSetChoice::Custom(name) => name.clone(),
+        }
+    }
+
+    /// Choose the set to take codes from; the picked codes are cleared when it changes.
+    pub fn choose_set(&mut self, set: CodeSetChoice) {
+        if self.code_set != set {
+            self.code_set = set;
+            self.codes.clear();
+        }
+    }
+
+    fn is_chosen(&self, name: &str) -> bool {
+        matches!(&self.code_set, CodeSetChoice::Custom(n) if n.trim().to_lowercase() == name.trim().to_lowercase())
+    }
+
+    /// Add imported code sets (renamed when their names are taken); returns how many were added.
+    pub fn import_code_sets(&mut self, bytes: &[u8]) -> Result<(usize, usize), RedactionCodeSetError> {
+        let imported = prckopis_engine::import_redaction_codes(bytes)?;
+        let total = imported.sets.len();
+        let added = self.code_sets.merge(imported.sets).len();
+        Ok((added, imported.skipped + (total - added)))
     }
 
     pub fn mark(&self, page: usize, quads: Vec<[f64; 8]>, author: &str) -> Edit {
@@ -59,6 +115,208 @@ impl RedactPrefs {
         style.fill = self.fill;
         Edit::AddAnnotation(NewAnnotation { page, shape, style, contents: String::new(), author: author.to_string() })
     }
+}
+
+/// The Redaction Code Editor's fields.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct CodeEditorDraft {
+    /// The set being edited, by name.
+    pub set: Option<String>,
+    /// The set name field (New set, Rename).
+    pub set_name: String,
+    /// The code selected in the list.
+    pub code: Option<String>,
+    pub code_text: String,
+    pub description: String,
+    /// The last edit's problem, shown under the fields.
+    pub error: Option<String>,
+}
+
+/// What the Redaction Code Editor asks for besides editing.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct CodeEditorAction {
+    pub done: bool,
+    pub import: bool,
+    /// Export this set, by name.
+    pub export: Option<String>,
+}
+
+fn code_set_error(e: &RedactionCodeSetError) -> String {
+    use prckopis_engine::RedactionCodeSetError as E;
+    match e {
+        E::EmptyName => tl!("Type a name first."),
+        E::DuplicateSet(_) => tl!("That name is already used."),
+        E::EmptyCode => tl!("Type a code first."),
+        E::DuplicateCode(_) => tl!("This set already has that code."),
+        E::NameTooLong | E::CodeTooLong | E::DescriptionTooLong => tl!("The name, code or description is too long."),
+        E::TooManySets | E::TooManyCodes | E::TooLarge => tl!("There are too many code sets or codes."),
+        E::NoSuchSet(_) | E::NoSuchCode(_) | E::Malformed(_) => tl!("That set or code no longer exists."),
+    }
+    .to_string()
+}
+
+/// The Redaction Code Editor (Redaction properties ▸ Edit codes…): create, rename and delete
+/// code sets, add, change and remove their codes, and import or export them.
+pub(crate) fn codes_body(ui: &mut egui::Ui, p: &mut RedactPrefs, d: &mut CodeEditorDraft, t: &Tokens) -> CodeEditorAction {
+    let mut action = CodeEditorAction::default();
+    ui.set_width(480.0);
+    ui.label(egui::RichText::new(tl!("Redaction Code Editor")).font(crate::theme::semibold(18.0)));
+    ui.add_space(8.0);
+    // The selected set may have gone (deleted, or a stale name).
+    if d.set.as_deref().is_some_and(|s| p.code_sets.get(s).is_none()) {
+        d.set = None;
+    }
+    if d.set.is_none() {
+        d.set = p.code_sets.sets().first().map(|s| s.name.clone());
+    }
+    ui.label(egui::RichText::new(tl!("Code sets")).strong());
+    egui::ScrollArea::vertical().id_salt("redaction-code-sets").max_height(110.0).auto_shrink([false, true]).show(ui, |ui| {
+        if p.code_sets.is_empty() {
+            ui.label(egui::RichText::new(tl!("No code sets yet. Type a name and choose New set.")).color(t.text_faint));
+        }
+        for s in p.code_sets.sets() {
+            let on = d.set.as_deref() == Some(s.name.as_str());
+            if ui.selectable_label(on, &s.name).clicked() && !on {
+                d.set = Some(s.name.clone());
+                d.set_name = s.name.clone();
+                d.code = None;
+            }
+        }
+    });
+    let mut err: Option<RedactionCodeSetError> = None;
+    ui.horizontal(|ui| {
+        let l = ui.label(tl!("Name:"));
+        ui.add(crate::widgets::line(&mut d.set_name).desired_width(180.0)).labelled_by(l.id);
+        if ui.button(tl!("New set")).clicked() {
+            match p.code_sets.add_set(&d.set_name) {
+                Ok(name) => {
+                    d.set = Some(name);
+                    d.code = None;
+                }
+                Err(e) => err = Some(e),
+            }
+        }
+        let selected = d.set.clone();
+        if ui.add_enabled(selected.is_some(), egui::Button::new(tl!("Rename"))).clicked()
+            && let Some(old) = selected.clone()
+        {
+            match p.code_sets.rename_set(&old, &d.set_name) {
+                Ok(name) => {
+                    if p.is_chosen(&old) {
+                        p.code_set = CodeSetChoice::Custom(name.clone());
+                    }
+                    d.set = Some(name);
+                }
+                Err(e) => err = Some(e),
+            }
+        }
+        if ui.add_enabled(selected.is_some(), egui::Button::new(tl!("Delete"))).clicked()
+            && let Some(old) = selected
+        {
+            if let Err(e) = p.code_sets.remove_set(&old) {
+                err = Some(e);
+            } else {
+                if p.is_chosen(&old) {
+                    p.choose_set(CodeSetChoice::BuiltIn(REDACTION_CODE_SETS[0]));
+                }
+                d.set = None;
+                d.code = None;
+            }
+        }
+    });
+    ui.separator();
+    let set = d.set.clone();
+    ui.add_enabled_ui(set.is_some(), |ui| {
+        ui.label(egui::RichText::new(tl!("Codes in this set")).strong());
+        let entries: Vec<(String, String)> = set
+            .as_deref()
+            .and_then(|s| p.code_sets.get(s))
+            .map(|s| s.codes.iter().map(|c| (c.code.clone(), c.description.clone())).collect())
+            .unwrap_or_default();
+        egui::ScrollArea::vertical().id_salt("redaction-codes").max_height(150.0).auto_shrink([false, true]).show(ui, |ui| {
+            for (code, description) in &entries {
+                let on = d.code.as_deref() == Some(code.as_str());
+                let text = if description.is_empty() { code.clone() } else { format!("{code} — {description}") };
+                if ui.selectable_label(on, text).clicked() {
+                    d.code = Some(code.clone());
+                    d.code_text = code.clone();
+                    d.description = description.clone();
+                }
+            }
+        });
+        egui::Grid::new("redaction-code-fields").num_columns(2).spacing([8.0, 6.0]).show(ui, |ui| {
+            let l = ui.label(tl!("Code:"));
+            ui.add(crate::widgets::line(&mut d.code_text).desired_width(300.0)).labelled_by(l.id);
+            ui.end_row();
+            let l = ui.label(tl!("Description:"));
+            ui.add(crate::widgets::line(&mut d.description).desired_width(300.0)).labelled_by(l.id);
+            ui.end_row();
+        });
+        ui.horizontal(|ui| {
+            let Some(s) = set.clone() else { return };
+            if ui.button(tl!("Add")).clicked() {
+                match p.code_sets.add_code(&s, &d.code_text, &d.description) {
+                    Ok(()) => {
+                        d.code = p.code_sets.get(&s).and_then(|x| x.codes.last()).map(|c| c.code.clone());
+                    }
+                    Err(e) => err = Some(e),
+                }
+            }
+            let picked = d.code.clone();
+            if ui.add_enabled(picked.is_some(), egui::Button::new(tl!("Update"))).clicked()
+                && let Some(old) = picked.clone()
+            {
+                let at = p.code_sets.get(&s).and_then(|x| x.codes.iter().position(|c| c.code == old));
+                match p.code_sets.edit_code(&s, &old, &d.code_text, &d.description) {
+                    Ok(()) => {
+                        // The code as stored (trimmed, on one line), in the same place.
+                        let new = at.and_then(|i| p.code_sets.get(&s).and_then(|x| x.codes.get(i))).map(|c| c.code.clone());
+                        if let Some(new) = &new
+                            && p.is_chosen(&s)
+                        {
+                            for c in p.codes.iter_mut().filter(|c| **c == old) {
+                                c.clone_from(new);
+                            }
+                        }
+                        d.code = new;
+                    }
+                    Err(e) => err = Some(e),
+                }
+            }
+            if ui.add_enabled(picked.is_some(), egui::Button::new(tl!("Remove"))).clicked()
+                && let Some(old) = picked
+            {
+                match p.code_sets.remove_code(&s, &old) {
+                    Ok(()) => {
+                        if p.is_chosen(&s) {
+                            p.codes.retain(|c| *c != old);
+                        }
+                        d.code = None;
+                    }
+                    Err(e) => err = Some(e),
+                }
+            }
+        });
+    });
+    match err {
+        Some(e) => d.error = Some(code_set_error(&e)),
+        None if ui.ctx().input(|i| i.pointer.any_click()) => d.error = None,
+        None => {}
+    }
+    if let Some(e) = &d.error {
+        ui.label(egui::RichText::new(e).color(t.text_muted));
+    }
+    ui.add_space(12.0);
+    ui.horizontal(|ui| {
+        action.import = ui.button(tl!("Import…")).clicked();
+        if ui.add_enabled(set.is_some(), egui::Button::new(tl!("Export…"))).clicked() {
+            action.export = set.clone();
+        }
+        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+            action.done = widgets::pill_button(ui, tl!("Done"), true).clicked();
+        });
+    });
+    action
 }
 
 /// Redact pages: which pages to mark.
@@ -254,6 +512,60 @@ impl PrckopisApp {
     }
 }
 
+impl PrckopisApp {
+    /// Redaction Code Editor ▸ Import: add the sets of a code-set file (untrusted).
+    pub fn import_redaction_codes(&mut self, name: &str, bytes: &[u8]) {
+        let before = self.redact_prefs.code_sets.sets().len();
+        match self.redact_prefs.import_code_sets(bytes) {
+            Ok((added, skipped)) => {
+                let n = added.to_string();
+                if skipped > 0 {
+                    self.notify_fmt(
+                        "Imported {n} code set(s) from {name}; skipped {k} unreadable or repeated entries.",
+                        &[("n", &n), ("name", name), ("k", &skipped.to_string())],
+                    );
+                } else {
+                    self.notify_fmt("Imported {n} code set(s) from {name}.", &[("n", &n), ("name", name)]);
+                }
+                // Show the first imported set in the editor.
+                if let Some(s) = self.redact_prefs.code_sets.sets().get(before) {
+                    self.redact_code_editor = CodeEditorDraft { set: Some(s.name.clone()), set_name: s.name.clone(), ..Default::default() };
+                }
+            }
+            Err(RedactionCodeSetError::TooLarge) => self.notify_fmt("{name} is too large for a code set file (at most 1 MB).", &[("name", name)]),
+            Err(_) => self.notify_fmt("{name} is not a redaction code set file.", &[("name", name)]),
+        }
+    }
+
+    /// Redaction Code Editor ▸ Export: write one set as a code-set file (asks where;
+    /// `save_override` in tests).
+    pub fn export_redaction_codes(&mut self, set: &str) {
+        let Some(s) = self.redact_prefs.code_sets.get(set) else { return };
+        let text = prckopis_engine::export_redaction_codes([s]);
+        let file: String = s.name.chars().map(|c| if c.is_alphanumeric() || c == '-' || c == '_' { c } else { '_' }).collect();
+        let file = format!("{}.json", if file.trim_matches('_').is_empty() { "redaction-codes" } else { file.as_str() });
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            let write =
+                move |app: &mut Self, path: std::path::PathBuf| match crate::editing::write_atomically(&path.to_string_lossy(), text.as_bytes()) {
+                    Ok(()) => app.notify_fmt("Exported to {path}", &[("path", &path.display().to_string())]),
+                    Err(e) => app.notify_fmt("Couldn't write {name}: {e}", &[("name", &path.display().to_string()), ("e", &e.to_string())]),
+                };
+            match self.save_override.clone() {
+                Some(p) => write(self, p.into()),
+                None => {
+                    let dialog = rfd::AsyncFileDialog::new().set_title(tl!("Export…").to_string()).add_filter("JSON", &["json"]).set_file_name(file);
+                    self.ask_one(crate::pickers::Ask::Save(dialog), None, write);
+                }
+            }
+        }
+        #[cfg(target_arch = "wasm32")]
+        if let Err(e) = crate::editing::download(&file, text.as_bytes()) {
+            self.notify_error(e);
+        }
+    }
+}
+
 /// Redact pages ("Mark Page Range"). Returns (apply, cancel).
 pub(crate) fn pages_body(ui: &mut egui::Ui, d: &mut PagesDraft, pages: usize, _t: &Tokens) -> (bool, bool) {
     ui.label(egui::RichText::new(tl!("Mark Page Range")).font(crate::theme::semibold(18.0)));
@@ -325,8 +637,9 @@ pub(crate) fn search_body(ui: &mut egui::Ui, d: &mut SearchDraft, t: &Tokens) ->
     (go || enter, cancel, import)
 }
 
-/// Redaction Tool Properties. Returns (apply, cancel).
-pub(crate) fn props_body(ui: &mut egui::Ui, d: &mut RedactPrefs, _t: &Tokens) -> (bool, bool) {
+/// Redaction Tool Properties. Returns (apply, cancel, open the Redaction Code Editor).
+pub(crate) fn props_body(ui: &mut egui::Ui, d: &mut RedactPrefs, _t: &Tokens) -> (bool, bool, bool) {
+    let mut edit_codes = false;
     ui.set_width(380.0);
     ui.label(egui::RichText::new(tl!("Redaction Tool Properties")).font(crate::theme::semibold(18.0)));
     ui.add_space(8.0);
@@ -358,27 +671,46 @@ pub(crate) fn props_body(ui: &mut egui::Ui, d: &mut RedactPrefs, _t: &Tokens) ->
             d.use_code = true;
         }
         let codes_on = on && d.use_code;
-        ui.add_enabled_ui(codes_on, |ui| {
-            egui::ComboBox::from_id_salt("redaction-code-set").selected_text(d.code_set.name).show_ui(ui, |ui| {
-                for set in REDACTION_CODE_SETS {
-                    if ui.selectable_label(d.code_set == set, set.name).clicked() && d.code_set != set {
-                        d.code_set = set;
-                        d.codes.clear();
+        ui.horizontal(|ui| {
+            ui.add_enabled_ui(codes_on, |ui| {
+                let mut choice: Option<CodeSetChoice> = None;
+                egui::ComboBox::from_id_salt("redaction-code-set").selected_text(d.set_name()).show_ui(ui, |ui| {
+                    for set in REDACTION_CODE_SETS {
+                        if ui.selectable_label(d.code_set == CodeSetChoice::BuiltIn(set), set.name).clicked() {
+                            choice = Some(CodeSetChoice::BuiltIn(set));
+                        }
                     }
+                    for set in d.code_sets.sets() {
+                        let c = CodeSetChoice::Custom(set.name.clone());
+                        if ui.selectable_label(d.code_set == c, &set.name).clicked() {
+                            choice = Some(c);
+                        }
+                    }
+                });
+                if let Some(c) = choice {
+                    d.choose_set(c);
                 }
             });
+            edit_codes = ui.button(tl!("Edit codes…")).clicked();
         });
         ui.end_row();
-        for row in d.code_set.codes.chunks(4) {
+        let entries = d.set_entries();
+        for row in entries.chunks(4) {
             ui.label("");
             ui.add_enabled_ui(codes_on, |ui| {
-                ui.horizontal(|ui| {
-                    for &code in row {
-                        let mut picked = d.codes.contains(&code);
-                        if ui.add_sized([62.0, 18.0], widgets::checkbox(&mut picked, code)).changed() {
-                            d.codes.retain(|c| *c != code);
+                ui.horizontal_wrapped(|ui| {
+                    for (code, description) in row {
+                        let mut picked = d.codes.contains(code);
+                        let r = if code.chars().count() <= 9 {
+                            ui.add_sized([62.0, 18.0], widgets::checkbox(&mut picked, code.as_str()))
+                        } else {
+                            ui.add(widgets::checkbox(&mut picked, code.as_str()))
+                        };
+                        let r = if description.is_empty() { r } else { r.on_hover_text(description.as_str()) };
+                        if r.changed() {
+                            d.codes.retain(|c| c != code);
                             if picked {
-                                d.codes.push(code);
+                                d.codes.push(code.clone());
                             }
                         }
                     }
@@ -430,7 +762,8 @@ pub(crate) fn props_body(ui: &mut egui::Ui, d: &mut RedactPrefs, _t: &Tokens) ->
         ui.end_row();
     });
     ui.add_space(12.0);
-    buttons(ui, "OK", true)
+    let (ok, cancel) = buttons(ui, "OK", true);
+    (ok, cancel, edit_codes)
 }
 
 /// Apply redactions confirmation. Returns (apply, cancel).

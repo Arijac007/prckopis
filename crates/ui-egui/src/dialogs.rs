@@ -56,6 +56,8 @@ fn dialogs(app: &mut PrckopisApp, ctx: &egui::Context) {
     let mut bulk_field_props_now = false;
     let mut redact_now: Option<Dialog> = None;
     let mut import_words = false;
+    let mut import_codes = false;
+    let mut export_codes: Option<String> = None;
     let mut print_go = false;
     let mut revert_now = false;
     let mut summarize_now = false;
@@ -528,9 +530,22 @@ fn dialogs(app: &mut PrckopisApp, ctx: &egui::Context) {
             }
             Dialog::RedactProps => {
                 let mut prefs = app.redact_prefs.clone();
-                let (ok, cancel) = crate::redact_ui::props_body(ui, &mut prefs, &t);
+                let (ok, cancel, edit_codes) = crate::redact_ui::props_body(ui, &mut prefs, &t);
                 app.redact_prefs = prefs;
+                if edit_codes {
+                    app.redact_code_editor = crate::redact_ui::CodeEditorDraft::default();
+                    next = Dialog::RedactCodes;
+                }
                 close = ok || cancel;
+                return;
+            }
+            Dialog::RedactCodes => {
+                let action = crate::redact_ui::codes_body(ui, &mut app.redact_prefs, &mut app.redact_code_editor, &t);
+                if action.done {
+                    next = Dialog::RedactProps;
+                }
+                import_codes = action.import;
+                export_codes = action.export;
                 return;
             }
             Dialog::RedactApply => {
@@ -1218,6 +1233,12 @@ fn dialogs(app: &mut PrckopisApp, ctx: &egui::Context) {
     }
     if import_words {
         app.pick_files(crate::files::FilePurpose::RedactWords, false);
+    }
+    if import_codes {
+        app.pick_files(crate::files::FilePurpose::RedactCodes, false);
+    }
+    if let Some(set) = export_codes {
+        app.export_redaction_codes(&set);
     }
     match redact_now {
         Some(Dialog::RedactPages) => app.redact_pages(),

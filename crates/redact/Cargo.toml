@@ -17,5 +17,6 @@ prckopis-forms = { workspace = true }
 prckopis-edit = { workspace = true }
 prckopis-annot = { workspace = true }
 thiserror = { workspace = true }
+serde_json = { workspace = true }
 
 [dev-dependencies]

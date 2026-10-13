@@ -2402,3 +2402,24 @@ animation effects	Off	Ki
 	Just these fields	Csak ezek a mezők
 	This document has no other fields.	Ebben a dokumentumban nincsenek más mezők.
 	Choose at least one field.	Válasszon legalább egy mezőt.
+	Edit codes…	Kódok szerkesztése…
+	Redaction Code Editor	Kitakarási kódszerkesztő
+	Code sets	Kódkészletek
+	No code sets yet. Type a name and choose New set.	Még nincsenek kódkészletek. Írjon be egy nevet, és válassza az Új készlet lehetőséget.
+	New set	Új készlet
+	Codes in this set	A készlet kódjai
+	Code:	Kód:
+	Import…	Importálás…
+	Type a name first.	Először írjon be egy nevet.
+	That name is already used.	Ez a név már foglalt.
+	Type a code first.	Először írjon be egy kódot.
+	This set already has that code.	Ebben a készletben már van ilyen kód.
+	The name, code or description is too long.	A név, a kód vagy a leírás túl hosszú.
+	There are too many code sets or codes.	Túl sok a kódkészlet vagy a kód.
+	That set or code no longer exists.	Ez a készlet vagy kód már nem létezik.
+	Imported {n} code set(s) from {name}; skipped {k} unreadable or repeated entries.	Importált kódkészletek innen: {name}: {n}; kihagyott olvashatatlan vagy ismétlődő bejegyzések: {k}.
+	Imported {n} code set(s) from {name}.	Importált kódkészletek innen: {name}: {n}.
+	{name} is too large for a code set file (at most 1 MB).	A(z) {name} túl nagy egy kódkészletfájlhoz (legfeljebb 1 MB).
+	{name} is not a redaction code set file.	A(z) {name} nem kitakarási kódkészletfájl.
+	Bank Account Numbers (IBAN)	Bankszámlaszámok (IBAN)
+	Croatian Personal ID Numbers (OIB)	Horvát személyi azonosító számok (OIB)

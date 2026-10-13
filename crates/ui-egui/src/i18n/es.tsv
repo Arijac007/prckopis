@@ -2532,3 +2532,24 @@ animation effects	Off	Desactivados
 	Just these fields	Solo estos campos
 	This document has no other fields.	Este documento no tiene otros campos.
 	Choose at least one field.	Elija al menos un campo.
+	Edit codes…	Editar códigos…
+	Redaction Code Editor	Editor de códigos de censura
+	Code sets	Conjuntos de códigos
+	No code sets yet. Type a name and choose New set.	Aún no hay conjuntos de códigos. Escriba un nombre y elija Nuevo conjunto.
+	New set	Nuevo conjunto
+	Codes in this set	Códigos de este conjunto
+	Code:	Código:
+	Import…	Importar…
+	Type a name first.	Escriba primero un nombre.
+	That name is already used.	Ese nombre ya está en uso.
+	Type a code first.	Escriba primero un código.
+	This set already has that code.	Este conjunto ya tiene ese código.
+	The name, code or description is too long.	El nombre, el código o la descripción es demasiado largo.
+	There are too many code sets or codes.	Hay demasiados conjuntos de códigos o códigos.
+	That set or code no longer exists.	Ese conjunto o código ya no existe.
+	Imported {n} code set(s) from {name}; skipped {k} unreadable or repeated entries.	Conjuntos de códigos importados de {name}: {n}; entradas ilegibles o repetidas omitidas: {k}.
+	Imported {n} code set(s) from {name}.	Conjuntos de códigos importados de {name}: {n}.
+	{name} is too large for a code set file (at most 1 MB).	{name} es demasiado grande para un archivo de conjunto de códigos (máximo 1 MB).
+	{name} is not a redaction code set file.	{name} no es un archivo de conjunto de códigos de censura.
+	Bank Account Numbers (IBAN)	Números de cuenta bancaria (IBAN)
+	Croatian Personal ID Numbers (OIB)	Números de identificación personal croatas (OIB)

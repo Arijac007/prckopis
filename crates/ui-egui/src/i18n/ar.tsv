@@ -2424,3 +2424,24 @@ animation effects	Off	معطّلة
 	Just these fields	هذه الحقول فقط
 	This document has no other fields.	لا يحتوي هذا المستند على حقول أخرى.
 	Choose at least one field.	اختر حقلاً واحداً على الأقل.
+	Edit codes…	تحرير الرموز…
+	Redaction Code Editor	محرر رموز الحجب
+	Code sets	مجموعات الرموز
+	No code sets yet. Type a name and choose New set.	لا توجد مجموعات رموز بعد. اكتب اسمًا واختر مجموعة جديدة.
+	New set	مجموعة جديدة
+	Codes in this set	الرموز في هذه المجموعة
+	Code:	الرمز:
+	Import…	استيراد…
+	Type a name first.	اكتب اسمًا أولًا.
+	That name is already used.	هذا الاسم مستخدم بالفعل.
+	Type a code first.	اكتب رمزًا أولًا.
+	This set already has that code.	تحتوي هذه المجموعة على هذا الرمز بالفعل.
+	The name, code or description is too long.	الاسم أو الرمز أو الوصف طويل جدًا.
+	There are too many code sets or codes.	عدد مجموعات الرموز أو الرموز كبير جدًا.
+	That set or code no longer exists.	لم تعد تلك المجموعة أو ذلك الرمز موجودًا.
+	Imported {n} code set(s) from {name}; skipped {k} unreadable or repeated entries.	تم استيراد {n} من مجموعات الرموز من {name}؛ وتم تخطي {k} من الإدخالات غير المقروءة أو المكررة.
+	Imported {n} code set(s) from {name}.	تم استيراد {n} من مجموعات الرموز من {name}.
+	{name} is too large for a code set file (at most 1 MB).	{name} أكبر من أن يكون ملف مجموعة رموز (1 ميغابايت على الأكثر).
+	{name} is not a redaction code set file.	{name} ليس ملف مجموعة رموز حجب.
+	Bank Account Numbers (IBAN)	أرقام الحسابات المصرفية (IBAN)
+	Croatian Personal ID Numbers (OIB)	أرقام الهوية الشخصية الكرواتية (OIB)

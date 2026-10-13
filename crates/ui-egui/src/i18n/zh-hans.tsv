@@ -2367,3 +2367,24 @@ animation effects	Off	关
 	Just these fields	仅这些字段
 	This document has no other fields.	此文档没有其他字段。
 	Choose at least one field.	请至少选择一个字段。
+	Edit codes…	编辑代码…
+	Redaction Code Editor	密文代码编辑器
+	Code sets	代码集
+	No code sets yet. Type a name and choose New set.	还没有代码集。输入名称并选择“新建集”。
+	New set	新建集
+	Codes in this set	此集中的代码
+	Code:	代码：
+	Import…	导入…
+	Type a name first.	请先输入名称。
+	That name is already used.	该名称已被使用。
+	Type a code first.	请先输入代码。
+	This set already has that code.	此集已包含该代码。
+	The name, code or description is too long.	名称、代码或说明过长。
+	There are too many code sets or codes.	代码集或代码过多。
+	That set or code no longer exists.	该集或代码已不存在。
+	Imported {n} code set(s) from {name}; skipped {k} unreadable or repeated entries.	已从 {name} 导入 {n} 个代码集；跳过了 {k} 个无法读取或重复的条目。
+	Imported {n} code set(s) from {name}.	已从 {name} 导入 {n} 个代码集。
+	{name} is too large for a code set file (at most 1 MB).	{name} 太大，无法用作代码集文件（最大 1 MB）。
+	{name} is not a redaction code set file.	{name} 不是密文代码集文件。
+	Bank Account Numbers (IBAN)	银行账号 (IBAN)
+	Croatian Personal ID Numbers (OIB)	克罗地亚个人识别号码 (OIB)

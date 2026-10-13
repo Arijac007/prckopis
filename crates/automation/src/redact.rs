@@ -2,8 +2,8 @@
 //! (removing what they cover for good) or clear them.
 
 use prckopis_engine::{
-    Edit, Hidden, NewAnnotation, REDACT_MAX_WORDS, REDACTION_CODE_SETS, RedactPattern, RedactionCodeSet, Shape, Style, find_pattern, rect_quad,
-    redact_word_list,
+    Edit, Hidden, NewAnnotation, REDACT_MAX_WORDS, REDACTION_CODE_SETS, REDACTION_CODES_MAX_FILE_BYTES, RedactPattern, RedactionCodeSet,
+    RedactionCodeSets, Shape, Style, find_pattern, import_redaction_codes, rect_quad, redact_word_list, redaction_overlay,
 };
 use serde_json::{Value, json};
 
@@ -18,20 +18,38 @@ impl Automation {
             Some(_) => self.pages(a, "pages")?,
             None => (0..n).collect(),
         };
+        if a.get("code_set_file").is_some() && a.get("code_set").is_none() {
+            return Err(ToolError::InvalidArgs("code_set_file needs code_set".into()));
+        }
         let overlay = match (a.opt_str("overlay")?, a.opt_str("code_set")?) {
             (Some(_), Some(_)) => return Err(ToolError::InvalidArgs("pass overlay or code_set with codes, not both".into())),
             (Some(o), None) => o.to_string(),
             (None, Some(id)) => {
-                let set = RedactionCodeSet::from_id(id).ok_or_else(|| {
-                    let ids: Vec<_> = REDACTION_CODE_SETS.iter().map(|s| s.id).collect();
-                    ToolError::InvalidArgs(format!("unknown code_set {id:?}; allowed: {}", ids.join(", ")))
-                })?;
+                // Built-in ids first, then the sets of code_set_file by name.
+                let custom = self.code_set_file(a)?;
+                let (name, codes): (String, Vec<String>) = match RedactionCodeSet::from_id(id) {
+                    Some(set) => (set.id.to_string(), set.codes.iter().map(|c| c.to_string()).collect()),
+                    None => match custom.as_ref().and_then(|c| c.get(id)) {
+                        Some(set) => (set.name.clone(), set.codes.iter().map(|c| c.code.clone()).collect()),
+                        None => {
+                            let ids: Vec<String> = REDACTION_CODE_SETS
+                                .iter()
+                                .map(|s| s.id.to_string())
+                                .chain(custom.iter().flat_map(|c| c.sets().iter().map(|s| s.name.clone())))
+                                .collect();
+                            let hint = if custom.is_none() { " (or a set's name with code_set_file)" } else { "" };
+                            return Err(ToolError::InvalidArgs(format!("unknown code_set {id:?}; allowed: {}{hint}", ids.join(", "))));
+                        }
+                    },
+                };
                 let picked = a.strs("codes")?;
-                let allowed = || format!("allowed in {}: {}", set.id, set.codes.join(", "));
-                match set.overlay(&picked) {
-                    Ok(o) if !o.is_empty() => o,
-                    Ok(_) => return Err(ToolError::InvalidArgs(format!("codes is empty; {}", allowed()))),
-                    Err(bad) => return Err(ToolError::InvalidArgs(format!("unknown code {bad:?}; {}", allowed()))),
+                let allowed = || format!("allowed in {name}: {}", codes.join(", "));
+                if let Some(bad) = picked.iter().find(|p| !codes.iter().any(|c| c == *p)) {
+                    return Err(ToolError::InvalidArgs(format!("unknown code {bad:?}; {}", allowed())));
+                }
+                match redaction_overlay(&codes, &picked) {
+                    o if !o.is_empty() => o,
+                    _ => return Err(ToolError::InvalidArgs(format!("codes is empty; {}", allowed()))),
                 }
             }
             (None, None) if a.get("codes").is_some() => return Err(ToolError::InvalidArgs("codes needs code_set".into())),
@@ -140,6 +158,21 @@ impl Automation {
             out["matched_words"] = json!(matched_words.iter().map(|(w, n)| json!({ "word": w, "marked": n })).collect::<Vec<_>>());
         }
         Ok(out)
+    }
+
+    /// The user-defined code sets of `code_set_file` (a file exported by the Redaction Code
+    /// Editor), if given. The file is untrusted: read capped, and refused when malformed.
+    fn code_set_file(&self, a: &Args) -> Result<Option<RedactionCodeSets>> {
+        let Some(p) = a.opt_str("code_set_file")? else { return Ok(None) };
+        let path = self.resolve(p, false)?;
+        let file = std::fs::File::open(&path).map_err(failed)?;
+        use std::io::Read;
+        let mut bytes = Vec::new();
+        file.take(REDACTION_CODES_MAX_FILE_BYTES as u64 + 1).read_to_end(&mut bytes).map_err(failed)?;
+        let imported = import_redaction_codes(&bytes).map_err(|e| ToolError::InvalidArgs(format!("code_set_file: {e}")))?;
+        let mut sets = RedactionCodeSets::default();
+        sets.merge(imported.sets);
+        Ok(Some(sets))
     }
 
     pub(crate) fn redact_apply(&mut self, a: &Args) -> Result<Value> {

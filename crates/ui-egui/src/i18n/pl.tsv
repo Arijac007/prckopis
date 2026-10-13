@@ -2382,3 +2382,24 @@ animation effects	Off	Wyłączone
 	Just these fields	Tylko te pola
 	This document has no other fields.	Ten dokument nie ma innych pól.
 	Choose at least one field.	Wybierz co najmniej jedno pole.
+	Edit codes…	Edytuj kody…
+	Redaction Code Editor	Edytor kodów utajniania
+	Code sets	Zestawy kodów
+	No code sets yet. Type a name and choose New set.	Nie ma jeszcze zestawów kodów. Wpisz nazwę i wybierz Nowy zestaw.
+	New set	Nowy zestaw
+	Codes in this set	Kody w tym zestawie
+	Code:	Kod:
+	Import…	Importuj…
+	Type a name first.	Najpierw wpisz nazwę.
+	That name is already used.	Ta nazwa jest już używana.
+	Type a code first.	Najpierw wpisz kod.
+	This set already has that code.	Ten zestaw zawiera już ten kod.
+	The name, code or description is too long.	Nazwa, kod lub opis jest za długi.
+	There are too many code sets or codes.	Jest zbyt wiele zestawów kodów lub kodów.
+	That set or code no longer exists.	Ten zestaw lub kod już nie istnieje.
+	Imported {n} code set(s) from {name}; skipped {k} unreadable or repeated entries.	Zaimportowane zestawy kodów z {name}: {n}; pominięte nieczytelne lub powtórzone wpisy: {k}.
+	Imported {n} code set(s) from {name}.	Zaimportowane zestawy kodów z {name}: {n}.
+	{name} is too large for a code set file (at most 1 MB).	{name} jest za duży na plik zestawu kodów (najwyżej 1 MB).
+	{name} is not a redaction code set file.	{name} nie jest plikiem zestawu kodów utajniania.
+	Bank Account Numbers (IBAN)	Numery rachunków bankowych (IBAN)
+	Croatian Personal ID Numbers (OIB)	Chorwackie osobiste numery identyfikacyjne (OIB)

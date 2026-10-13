@@ -5573,7 +5573,7 @@ status = "shipped"
 commands = ["redact.search"]
 tools = ["redact_mark"]
 evidence = ["crates/redact/src/patterns.rs::phone_numbers", "crates/redact/src/patterns.rs::credit_cards_need_a_valid_checksum", "crates/automation/tests/automation.rs::redacting_through_tools"]
-notes = "phone (North American, E.164 with + country code, national with trunk 0), e-mail, credit card (Luhn), SSN, dates (English US forms)"
+notes = "phone (North American, E.164 with + country code, national with trunk 0), e-mail, credit card (Luhn), SSN, dates (English US forms), and IBAN and Croatian OIB (protect.redact-pattern-locales)"
 
 [[feature]]
 id = "protect.redact-pattern-locales"
@@ -5581,11 +5581,11 @@ title = "Pattern sets per locale"
 area = "G"
 tier = "P1"
 milestone = "M8"
-status = "planned"
-commands = []
-tools = []
-evidence = []
-notes = ""
+status = "partial"
+commands = ["redact.search"]
+tools = ["redact_mark"]
+evidence = ["crates/redact/src/patterns.rs::ibans_need_a_valid_mod97_check", "crates/redact/src/patterns.rs::croatian_oibs_need_a_valid_check_digit", "crates/redact/src/patterns.rs::croatian_dates_and_phone_numbers", "crates/redact/src/patterns.rs::dates_with_german_french_and_italian_month_names", "crates/automation/tests/automation.rs::redacting_european_patterns_through_tools"]
+notes = "beyond the U.S. set: IBANs (ISO 13616, mod-97 checked, whole or in groups of four), Croatian OIB (11 digits or HR + 11 digits, ISO 7064 MOD 11,10 check digit), day-first numeric dates (dd.mm.yyyy) and month names in Turkish, German, French, Italian and Croatian (nominative and genitive), E.164 (+385 …) and trunk-0 national phone numbers. Missing: a locale picker grouping patterns per country as Acrobat does, and national ID, tax and postal-code patterns for other countries (UK NI, Canadian SIN, German Steuer-ID, …)"
 
 [[feature]]
 id = "protect.redact-partial-words"
@@ -5629,11 +5629,11 @@ title = "Redaction code sets (e.g. FOIA exemptions)"
 area = "G"
 tier = "P1"
 milestone = "M8"
-status = "partial"
+status = "shipped"
 commands = ["redact.properties"]
 tools = ["redact_mark"]
-evidence = ["crates/redact/src/tests.rs::redaction_codes_join_in_set_order_and_reject_strangers", "crates/automation/tests/automation.rs::redacting_with_codes_through_tools", "crates/ui-egui/tests/ui_group/redact.rs::redaction_codes_become_the_overlay_text"]
-notes = "built-in U.S. FOIA (5 U.S.C. 552(b)) and U.S. Privacy Act (552a) sets; picked codes become the overlay text, in the set's order. Missing: Edit Codes, custom code sets, import/export of code sets"
+evidence = ["crates/redact/src/tests.rs::redaction_codes_join_in_set_order_and_reject_strangers", "crates/automation/tests/automation.rs::redacting_with_codes_through_tools", "crates/ui-egui/tests/ui_group/redact.rs::redaction_codes_become_the_overlay_text", "crates/redact/src/codes.rs::custom_sets_are_created_renamed_edited_and_removed", "crates/redact/src/codes.rs::code_set_files_round_trip", "crates/redact/src/codes.rs::malformed_code_set_files_are_refused_or_trimmed", "crates/automation/tests/automation.rs::redacting_with_a_custom_code_set_file_through_tools", "crates/ui-egui/tests/ui_group/redact.rs::custom_redaction_code_sets_are_edited_exported_imported_and_kept"]
+notes = "built-in U.S. FOIA (5 U.S.C. 552(b)) and U.S. Privacy Act (552a) sets; picked codes become the overlay text, in the set's order. Redaction properties ▸ Edit codes… opens the Redaction Code Editor: create, rename and delete user sets, add, change and remove codes with descriptions (shown as tooltips when picking), import and export a set as our own JSON file (format prckopis-redaction-codes, version 1; untrusted: at most 1 MB, 100 sets, 500 codes each, bad entries skipped and counted). User sets live in the preferences; redact_mark takes code_set by a set's name with code_set_file. Missing: reading or writing Acrobat's own code-set export files (format not observed), editing the built-in sets, and choosing the default set across restarts (the chosen set and codes are per session)"
 
 [[feature]]
 id = "protect.apply-redactions"

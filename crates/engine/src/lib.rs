@@ -126,7 +126,11 @@ pub use prckopis_print as print;
 /// The page size of new documents (Create ▸ Blank page, text to PDF, blank pages in an empty
 /// file): A4, as Prckopis is set up for Europe.
 pub const DEFAULT_PAGE_SIZE: (f64, f64) = prckopis_create::A4;
-pub use prckopis_redact::codes::{CODE_SETS as REDACTION_CODE_SETS, CodeSet as RedactionCodeSet};
+pub use prckopis_redact::codes::{
+    CODE_SETS as REDACTION_CODE_SETS, Code as RedactionCode, CodeSet as RedactionCodeSet, CodeSetError as RedactionCodeSetError,
+    CodeSets as RedactionCodeSets, CustomCodeSet as CustomRedactionCodeSet, MAX_FILE_BYTES as REDACTION_CODES_MAX_FILE_BYTES,
+    export as export_redaction_codes, import as import_redaction_codes, overlay_in as redaction_overlay,
+};
 pub use prckopis_redact::patterns::{
     MAX_WORDS as REDACT_MAX_WORDS, PATTERNS as REDACT_PATTERNS, Pattern as RedactPattern, find as find_pattern, word_list as redact_word_list,
 };

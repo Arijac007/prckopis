@@ -4254,6 +4254,7 @@ dependencies = [
  "prckopis-fonts",
  "prckopis-forms",
  "prckopis-model",
+ "serde_json",
  "thiserror 2.0.21",
 ]
 

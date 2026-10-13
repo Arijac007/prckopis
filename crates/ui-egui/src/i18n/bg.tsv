@@ -2366,3 +2366,24 @@ animation effects	Off	Изключени
 	Just these fields	Само тези полета
 	This document has no other fields.	Този документ няма други полета.
 	Choose at least one field.	Изберете поне едно поле.
+	Edit codes…	Редактиране на кодовете…
+	Redaction Code Editor	Редактор на кодове за заличаване
+	Code sets	Набори от кодове
+	No code sets yet. Type a name and choose New set.	Още няма набори от кодове. Въведете име и изберете „Нов набор“.
+	New set	Нов набор
+	Codes in this set	Кодове в този набор
+	Code:	Код:
+	Import…	Импортиране…
+	Type a name first.	Първо въведете име.
+	That name is already used.	Това име вече се използва.
+	Type a code first.	Първо въведете код.
+	This set already has that code.	Този набор вече съдържа този код.
+	The name, code or description is too long.	Името, кодът или описанието е твърде дълго.
+	There are too many code sets or codes.	Наборите от кодове или кодовете са твърде много.
+	That set or code no longer exists.	Този набор или код вече не съществува.
+	Imported {n} code set(s) from {name}; skipped {k} unreadable or repeated entries.	Импортирани набори от кодове от {name}: {n}; пропуснати нечетими или повтарящи се записи: {k}.
+	Imported {n} code set(s) from {name}.	Импортирани набори от кодове от {name}: {n}.
+	{name} is too large for a code set file (at most 1 MB).	{name} е твърде голям за файл с набор от кодове (най-много 1 MB).
+	{name} is not a redaction code set file.	{name} не е файл с набор от кодове за заличаване.
+	Bank Account Numbers (IBAN)	Номера на банкови сметки (IBAN)
+	Croatian Personal ID Numbers (OIB)	Хърватски лични идентификационни номера (OIB)

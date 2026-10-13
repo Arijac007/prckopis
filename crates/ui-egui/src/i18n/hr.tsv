@@ -2581,3 +2581,24 @@ signature pad	Type	Upiši
 	Just these fields	Samo ova polja
 	This document has no other fields.	Ovaj dokument nema drugih polja.
 	Choose at least one field.	Odaberite barem jedno polje.
+	Edit codes…	Uredi kodove…
+	Redaction Code Editor	Uređivač kodova zacrnjivanja
+	Code sets	Skupovi kodova
+	No code sets yet. Type a name and choose New set.	Još nema skupova kodova. Upišite naziv i odaberite Novi skup.
+	New set	Novi skup
+	Codes in this set	Kodovi u ovom skupu
+	Code:	Kôd:
+	Import…	Uvezi…
+	Type a name first.	Najprije upišite naziv.
+	That name is already used.	Taj se naziv već koristi.
+	Type a code first.	Najprije upišite kôd.
+	This set already has that code.	Ovaj skup već ima taj kôd.
+	The name, code or description is too long.	Naziv, kôd ili opis predugačak je.
+	There are too many code sets or codes.	Previše je skupova kodova ili kodova.
+	That set or code no longer exists.	Taj skup ili kôd više ne postoji.
+	Imported {n} code set(s) from {name}; skipped {k} unreadable or repeated entries.	Uvezeni skupovi kodova iz {name}: {n}; preskočeni nečitljivi ili ponovljeni unosi: {k}.
+	Imported {n} code set(s) from {name}.	Uvezeni skupovi kodova iz {name}: {n}.
+	{name} is too large for a code set file (at most 1 MB).	{name} je prevelik za datoteku skupa kodova (najviše 1 MB).
+	{name} is not a redaction code set file.	{name} nije datoteka skupa kodova zacrnjivanja.
+	Bank Account Numbers (IBAN)	Brojevi bankovnih računa (IBAN)
+	Croatian Personal ID Numbers (OIB)	Hrvatski osobni identifikacijski brojevi (OIB)

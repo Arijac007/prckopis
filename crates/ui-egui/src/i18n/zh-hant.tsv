@@ -2276,3 +2276,24 @@ animation effects	Off	關
 	Just these fields	僅這些欄位
 	This document has no other fields.	此文件沒有其他欄位。
 	Choose at least one field.	請至少選擇一個欄位。
+	Edit codes…	編輯代碼…
+	Redaction Code Editor	遮蔽代碼編輯器
+	Code sets	代碼集
+	No code sets yet. Type a name and choose New set.	尚無代碼集。輸入名稱並選擇「新增集」。
+	New set	新增集
+	Codes in this set	此集中的代碼
+	Code:	代碼：
+	Import…	匯入…
+	Type a name first.	請先輸入名稱。
+	That name is already used.	此名稱已被使用。
+	Type a code first.	請先輸入代碼。
+	This set already has that code.	此集已包含該代碼。
+	The name, code or description is too long.	名稱、代碼或說明過長。
+	There are too many code sets or codes.	代碼集或代碼過多。
+	That set or code no longer exists.	該集或代碼已不存在。
+	Imported {n} code set(s) from {name}; skipped {k} unreadable or repeated entries.	已從 {name} 匯入 {n} 個代碼集；略過了 {k} 個無法讀取或重複的項目。
+	Imported {n} code set(s) from {name}.	已從 {name} 匯入 {n} 個代碼集。
+	{name} is too large for a code set file (at most 1 MB).	{name} 太大，無法用作代碼集檔案（最多 1 MB）。
+	{name} is not a redaction code set file.	{name} 不是遮蔽代碼集檔案。
+	Bank Account Numbers (IBAN)	銀行帳號 (IBAN)
+	Croatian Personal ID Numbers (OIB)	克羅埃西亞個人識別號碼 (OIB)

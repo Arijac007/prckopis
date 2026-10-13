@@ -2859,6 +2859,70 @@ fn redacting_with_codes_through_tools() {
 }
 
 #[test]
+fn redacting_with_a_custom_code_set_file_through_tools() {
+    let dir = workdir("redact-custom-codes");
+    std::fs::write(dir.join("memo.txt"), "Patient Jane Roe was treated\nPublic line").unwrap();
+    let codes = json!({
+        "format": "prckopis-redaction-codes",
+        "version": 1,
+        "sets": [{ "name": "EU GDPR", "codes": [
+            { "code": "Art. 9", "description": "Special categories of personal data" },
+            { "code": "Art. 10", "description": "Criminal convictions" },
+        ] }]
+    });
+    std::fs::write(dir.join("codes.json"), codes.to_string()).unwrap();
+    std::fs::write(dir.join("broken.json"), b"{\"format\":\"prckopis-redaction-codes\",\"sets\":").unwrap();
+    std::fs::write(dir.join("huge.json"), vec![b' '; (1 << 20) + 10]).unwrap();
+    let mut a = auto(&dir);
+    let doc = ok(&mut a, "doc_create", json!({ "from": "text", "path": "memo.txt" }))["doc"].as_u64().unwrap();
+    let bad = |a: &mut Automation, args: Value| matches!(a.call("redact_mark", &args), Err(ToolError::InvalidArgs(_)));
+    // A custom set needs its file; malformed, oversized or foreign files are refused.
+    assert!(bad(&mut a, json!({ "doc": doc, "find": "Jane Roe", "code_set": "EU GDPR", "codes": ["Art. 9"] })));
+    for file in ["broken.json", "huge.json", "memo.txt"] {
+        assert!(bad(&mut a, json!({ "doc": doc, "find": "Jane Roe", "code_set": "EU GDPR", "code_set_file": file, "codes": ["Art. 9"] })), "{file}");
+    }
+    assert!(bad(&mut a, json!({ "doc": doc, "find": "Jane Roe", "code_set_file": "codes.json" })));
+    assert!(
+        a.call(
+            "redact_mark",
+            &json!({ "doc": doc, "find": "Jane Roe", "code_set": "EU GDPR", "code_set_file": "../codes.json", "codes": ["Art. 9"] })
+        )
+        .is_err(),
+        "files outside the root are refused"
+    );
+    let Err(ToolError::InvalidArgs(msg)) =
+        a.call("redact_mark", &json!({ "doc": doc, "find": "Jane Roe", "code_set": "EU GDPR", "code_set_file": "codes.json", "codes": ["Art. 99"] }))
+    else {
+        panic!("an unknown code is rejected")
+    };
+    assert!(msg.contains("Art. 10"), "the error lists the allowed codes: {msg}");
+    let r = ok(
+        &mut a,
+        "redact_mark",
+        json!({ "doc": doc, "find": "Jane Roe", "code_set": "eu gdpr", "code_set_file": "codes.json", "codes": ["Art. 10", "Art. 9"] }),
+    );
+    assert_eq!(r["marked"], 1);
+    ok(&mut a, "redact_apply", json!({ "doc": doc }));
+    let text = page_text(&mut a, doc)[0].clone();
+    assert!(!text.contains("Jane") && text.contains("Art. 9, Art. 10"), "codes in the set's order: {text}");
+}
+
+#[test]
+fn redacting_european_patterns_through_tools() {
+    let dir = workdir("redact-eu-patterns");
+    std::fs::write(dir.join("memo.txt"), "OIB 69435151530 and 69435151531\nIBAN HR1210010051863000160 and HR1210010051863000161\nPublic line")
+        .unwrap();
+    let mut a = auto(&dir);
+    let doc = ok(&mut a, "doc_create", json!({ "from": "text", "path": "memo.txt" }))["doc"].as_u64().unwrap();
+    assert_eq!(ok(&mut a, "redact_mark", json!({ "doc": doc, "pattern": "hr-oib" }))["marked"], 1);
+    assert_eq!(ok(&mut a, "redact_mark", json!({ "doc": doc, "pattern": "iban" }))["marked"], 1);
+    ok(&mut a, "redact_apply", json!({ "doc": doc }));
+    let text = page_text(&mut a, doc)[0].clone();
+    assert!(!text.contains("69435151530") && !text.contains("HR1210010051863000160"), "{text}");
+    assert!(text.contains("69435151531") && text.contains("HR1210010051863000161") && text.contains("Public line"), "invalid checksums stay: {text}");
+}
+
+#[test]
 fn redacting_word_lists_through_tools() {
     let dir = workdir("redact-words");
     std::fs::write(dir.join("memo.txt"), "Call Ada today\nAda is private\nPublic line").unwrap();
