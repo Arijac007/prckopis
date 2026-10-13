@@ -1,7 +1,6 @@
 //! Standards ▸ PDF/A: what the document declares, verifying it against PDF/A-2b or 3b, and
 //! fixing what can be fixed (Save as PDF/A).
 
-use egui::{Align, Layout};
 use prckopis_engine::pdfa::{Issue, Level};
 
 use crate::theme::{self, Tokens};
@@ -59,7 +58,7 @@ pub(crate) fn body(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> bool
     }
     ui.add_space(6.0);
     let before = app.pdfa.level;
-    ui.horizontal(|ui| {
+    crate::widgets::row(ui, |ui| {
         ui.label(tl!("Conformance level:"));
         egui::ComboBox::from_id_salt("pdfa-level").selected_text(app.pdfa.level.label()).show_ui(ui, |ui| {
             for l in [Level::A2b, Level::A3b] {
@@ -98,8 +97,8 @@ pub(crate) fn body(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> bool
     ui.add_space(10.0);
     let mut close = false;
     let mut action = None;
-    ui.horizontal(|ui| {
-        ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+    crate::widgets::row(ui, |ui| {
+        crate::widgets::trailing(ui, |ui| {
             if widgets::pill_button(ui, tl!("Save as PDF/A"), true).clicked() {
                 action = Some(true);
             }

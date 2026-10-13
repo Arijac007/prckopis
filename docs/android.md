@@ -1,6 +1,6 @@
 # Prckopis on Android
 
-> **Status:** test builds, phone layout (2026-10-13) · **Revision history:** 2026-10-13 created (NativeActivity APK, in-app file browser, release signing); 2026-10-13 phone layout, soft keyboard, Back; 2026-10-13 system bars and camera cut-out, file access
+> **Status:** test builds, phone layout (2026-10-13) · **Revision history:** 2026-10-13 created (NativeActivity APK, in-app file browser, release signing); 2026-10-13 phone layout, soft keyboard, Back; 2026-10-13 system bars and camera cut-out, file access; 2026-10-13 every dialog fits a phone
 
 `apps/prckopis-android` runs the same egui app as the desktop build inside an Android
 NativeActivity (`android_main`). All of it is Rust: no Java, Kotlin or Gradle.
@@ -45,6 +45,18 @@ Check a build with `apksigner verify --print-certs prckopis.apk`.
   targets. Back closes the sheet (and dialogs, as Escape does). `--compact on` shows it on the
   desktop for screenshots (`cargo run -p prckopis-ui-egui --example shot -- out.png doc.pdf
   --size 400x860 --compact on`); `crates/ui-egui/tests/compact.rs` tests it.
+- **Dialogs on a phone** (window narrower than 600 points, `widgets::narrow`): dialogs hang from
+  the top and are at most the screen's width; rows of controls wrap (`widgets::row`), side-by-side
+  columns stack (`widgets::side_by_side`: Print's settings and preview, Header & Footer,
+  Watermark and Background with their preview, Set Page Boxes, the Action Wizard, the Certificate
+  Viewer), fixed-width fields, combo boxes, the signature pad and fixed dialog widths shrink to
+  the screen (`widgets::fit_width`, `set_fit_width`), Header & Footer's six text boxes go one
+  under the other, and tall dialogs scroll their body above their buttons
+  (`widgets::dialog_body`) so OK/Cancel stay in sight. Buttons that share a row with others
+  (Back, Configure New Digital ID, Clear…) move to a line of their own (`widgets::trailing`).
+  `crates/ui-egui/tests/phone_dialogs.rs` opens every dialog at 384 × 854 (a Galaxy S22) and
+  checks nothing is wider than the screen and the buttons are on it; the shot example's
+  `--command print.dialog` and `--field NAME` open the dialogs `--dialog` doesn't name.
 - **Soft keyboard:** shown while a text field has focus, hidden after.
 - **Files:** rfd has no Android backend. `crates/file-dialog` (used as `rfd`) is rfd itself
   elsewhere and, on Android, the same API answered by the app's own file browser
@@ -67,5 +79,5 @@ Check a build with `apksigner verify --print-certs prckopis.apk`.
 ## Next
 
 Opening PDFs from other apps and the system picker (Storage Access Framework through JNI);
-long-press menus; dialogs that fit a phone (several use fixed 300–380 point widths); app icon; an
+long-press menus; app icon; an
 x86_64 build for emulators; CI.

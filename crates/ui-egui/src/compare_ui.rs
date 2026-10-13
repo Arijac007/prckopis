@@ -3,7 +3,7 @@
 //! offers a report or the differences as comments. Side by side, the older document is shown
 //! beside the newer one, its own changes shaded, the two scrolling together page for page.
 
-use egui::{Align, Color32, Layout};
+use egui::Color32;
 use prckopis_engine::DocId;
 use prckopis_engine::compare::{Comparison, Kind};
 
@@ -54,7 +54,7 @@ pub(crate) fn body(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> (boo
         ui.label(tl!("Old file:"));
         let shown =
             others.iter().find(|(id, _)| Some(*id) == app.compare_old).map_or(tl!("Open the older version first").to_string(), |(_, n)| n.clone());
-        egui::ComboBox::from_id_salt("compare-old").selected_text(shown).width(320.0).show_ui(ui, |ui| {
+        egui::ComboBox::from_id_salt("compare-old").selected_text(shown).width(crate::widgets::fit_width(ui, 320.0)).show_ui(ui, |ui| {
             for (id, n) in &others {
                 ui.selectable_value(&mut app.compare_old, Some(*id), n);
             }
@@ -68,8 +68,8 @@ pub(crate) fn body(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> (boo
     ui.label(egui::RichText::new(tl!("Text is compared word by word; the differences are shown on the new file.")).small().color(t.text_muted));
     ui.add_space(10.0);
     let (mut go, mut cancel) = (false, false);
-    ui.horizontal(|ui| {
-        ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+    crate::widgets::row(ui, |ui| {
+        crate::widgets::trailing(ui, |ui| {
             if ui.add_enabled_ui(app.compare_old.is_some(), |ui| widgets::pill_button(ui, tl!("Compare"), true)).inner.clicked() {
                 go = true;
             }
@@ -103,7 +103,7 @@ pub(crate) fn panel(ui: &mut egui::Ui, t: &Tokens, state: &Option<CompareState>,
         ui.label(crate::i18n::fmt(tl!("{n} {kind}"), &[("n", &s.visual.len().to_string()), ("kind", tl!("Visual"))]));
     });
     ui.add_space(6.0);
-    ui.horizontal(|ui| {
+    crate::widgets::row(ui, |ui| {
         if ui.button(tl!("Mark as comments")).clicked() {
             action = Some(PanelAction::Mark);
         }
@@ -131,7 +131,7 @@ pub(crate) fn panel(ui: &mut egui::Ui, t: &Tokens, state: &Option<CompareState>,
         };
         let selected = s.selected == Some(i);
         let r = ui.push_id(i, |ui| {
-            ui.horizontal(|ui| {
+            crate::widgets::row(ui, |ui| {
                 let (bar, _) = ui.allocate_exact_size(egui::vec2(4.0, 34.0), egui::Sense::hover());
                 ui.painter().rect_filled(bar, egui::CornerRadius::same(2), colour(ch.kind));
                 ui.vertical(|ui| {

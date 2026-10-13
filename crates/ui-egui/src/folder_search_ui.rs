@@ -114,7 +114,7 @@ pub(crate) fn body(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> bool
     let mut close = false;
     let mut choose = false;
     let mut open: Option<(PathBuf, usize)> = None;
-    ui.set_width(640.0);
+    crate::widgets::set_fit_width(ui, 640.0);
     ui.label(egui::RichText::new(tl!("Search a folder")).font(theme::semibold(18.0)));
     ui.add_space(6.0);
     let running = app.folder_search.is_running();
@@ -123,7 +123,7 @@ pub(crate) fn body(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> bool
     let l = ui.label(egui::RichText::new(tl!("What word or phrase would you like to search for?")).color(t.text_muted));
     let r = ui.add_enabled(!running, widgets::line(&mut s.query).hint_text(tl!("Search")).desired_width(f32::INFINITY)).labelled_by(l.id);
     let enter = r.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
-    ui.horizontal(|ui| {
+    crate::widgets::row(ui, |ui| {
         ui.label(tl!("Look in"));
         if ui.add_enabled(!running, egui::Button::new(tl!("Choose Folder…"))).clicked() {
             choose = true;
@@ -132,7 +132,7 @@ pub(crate) fn body(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> bool
         ui.label(egui::RichText::new(shown).color(t.text_muted));
     });
     ui.add_enabled_ui(!running, |ui| {
-        ui.horizontal(|ui| {
+        crate::widgets::row(ui, |ui| {
             ui.add(widgets::checkbox(&mut s.whole_words, tl!("Whole words only")));
             ui.add(widgets::checkbox(&mut s.case_sensitive, tl!("Case-sensitive")));
             let mut subfolders = !s.skip_subfolders;
@@ -143,7 +143,7 @@ pub(crate) fn body(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> bool
     });
     ui.add_space(6.0);
     let ready = s.folder.is_some() && !s.query.trim().is_empty();
-    ui.horizontal(|ui| {
+    crate::widgets::row(ui, |ui| {
         if running {
             if widgets::pill_button(ui, tl!("Stop"), false).clicked() {
                 s.stop();
@@ -211,7 +211,7 @@ pub(crate) fn body(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> bool
         });
     }
     ui.add_space(8.0);
-    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+    crate::widgets::buttons(ui, |ui| {
         if widgets::pill_button(ui, tl!("Close"), false).clicked() {
             close = true;
         }

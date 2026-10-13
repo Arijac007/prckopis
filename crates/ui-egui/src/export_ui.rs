@@ -5,7 +5,6 @@
 
 use std::sync::{Arc, Mutex};
 
-use egui::{Align, Layout};
 use prckopis_engine::export::{ExportSource, Exporter, ImageFormat};
 
 use crate::marks_ui::PageRange;
@@ -51,8 +50,9 @@ pub(crate) fn body(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens, kind: E
     );
     ui.add_space(8.0);
     if kind == ExportKind::Image {
-        ui.horizontal(|ui| {
+        crate::widgets::row(ui, |ui| {
             ui.label(tl!("Resolution"));
+            crate::widgets::wrap_before(ui, 170.0);
             egui::ComboBox::from_id_salt("export-dpi")
                 .selected_text(crate::i18n::fmt(tl!("{dpi} pixels/inch"), &[("dpi", &d.dpi.to_string())]))
                 .show_ui(ui, |ui| {
@@ -61,12 +61,13 @@ pub(crate) fn body(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens, kind: E
                     }
                 });
         });
-        ui.horizontal(|ui| {
+        crate::widgets::row(ui, |ui| {
             ui.label(tl!("Format"));
             let mut quality = match d.format {
                 ImageFormat::Jpeg { quality } => quality,
                 _ => 85,
             };
+            crate::widgets::wrap_before(ui, 100.0);
             egui::ComboBox::from_id_salt("export-format").selected_text(d.format.label()).show_ui(ui, |ui| {
                 for f in [ImageFormat::Png, ImageFormat::Jpeg { quality }, ImageFormat::Tiff] {
                     let on = std::mem::discriminant(&d.format) == std::mem::discriminant(&f);
@@ -77,6 +78,7 @@ pub(crate) fn body(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens, kind: E
             });
             if let ImageFormat::Jpeg { .. } = d.format {
                 ui.label(tl!("Quality"));
+                crate::widgets::wrap_before(ui, 170.0);
                 if ui.add(egui::Slider::new(&mut quality, 10..=100)).changed() {
                     d.format = ImageFormat::Jpeg { quality };
                 }
@@ -88,11 +90,12 @@ pub(crate) fn body(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens, kind: E
                 .color(t.text_faint),
         );
     } else if kind == ExportKind::AllImages {
-        ui.horizontal(|ui| {
+        crate::widgets::row(ui, |ui| {
             ui.label(tl!("Exclude images smaller than"));
             let label = move |n: u32| {
                 if n == 0 { tl!("No limit").to_string() } else { crate::i18n::trn(crate::i18n::current(), u64::from(n), "{n} pixel", "{n} pixels") }
             };
+            crate::widgets::wrap_before(ui, 130.0);
             egui::ComboBox::from_id_salt("export-min").selected_text(label(d.min_side)).show_ui(ui, |ui| {
                 for n in [0, 16, 32, 64, 128, 256] {
                     ui.selectable_value(&mut d.min_side, n, label(n));
@@ -112,7 +115,7 @@ pub(crate) fn body(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens, kind: E
     d.range.ui(ui, count);
     ui.add_space(12.0);
     let (mut apply, mut cancel) = (false, false);
-    ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+    crate::widgets::buttons(ui, |ui| {
         let ok = !d.range.pages(count).is_empty();
         if ui.add_enabled_ui(ok, |ui| widgets::pill_button(ui, tl!("Export"), true)).inner.clicked() {
             apply = true;

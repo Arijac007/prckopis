@@ -807,7 +807,7 @@ fn driver_options_panel(ui: &mut egui::Ui, d: &mut PrintDraft, t: &Tokens) {
     let PrintDraft { driver_options: Some((_, options)), driver_choices: choices, show_driver_options: show, .. } = d else { return };
     egui::Frame::new().fill(t.hover).corner_radius(egui::CornerRadius::same(6)).inner_margin(egui::Margin::same(10)).show(ui, |ui| {
         ui.set_width(ui.available_width());
-        ui.horizontal(|ui| {
+        crate::widgets::row(ui, |ui| {
             ui.label(egui::RichText::new(tl!("Printer properties")).font(theme::semibold(13.0)));
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 if ui.button(tl!("Done")).clicked() {
@@ -836,11 +836,14 @@ fn driver_options_panel(ui: &mut egui::Ui, d: &mut PrintDraft, t: &Tokens) {
                         let current = choices.get(&o.key).cloned().unwrap_or_else(|| o.default.clone());
                         let label_of = |c: &str| o.choices.iter().find(|(k, _)| k == c).map_or_else(|| c.to_string(), |(_, l)| l.clone());
                         let mut pick = current.clone();
-                        egui::ComboBox::from_id_salt(("driver-option", &o.key)).selected_text(label_of(&current)).width(200.0).show_ui(ui, |ui| {
-                            for (k, l) in &o.choices {
-                                ui.selectable_value(&mut pick, k.clone(), l.as_str());
-                            }
-                        });
+                        egui::ComboBox::from_id_salt(("driver-option", &o.key))
+                            .selected_text(label_of(&current))
+                            .width(crate::widgets::fit_width(ui, 200.0))
+                            .show_ui(ui, |ui| {
+                                for (k, l) in &o.choices {
+                                    ui.selectable_value(&mut pick, k.clone(), l.as_str());
+                                }
+                            });
                         if pick != current {
                             if pick == o.default {
                                 choices.remove(&o.key);
@@ -916,9 +919,9 @@ fn add_network_printer_panel(ui: &mut egui::Ui, d: &mut PrintDraft, t: &Tokens) 
         return;
     }
     egui::Frame::group(ui.style()).show(ui, |ui| {
-        ui.horizontal(|ui| {
+        crate::widgets::row(ui, |ui| {
             ui.label(tl!("Printer address:"));
-            let field = ui.add(egui::TextEdit::singleline(&mut d.net_address).hint_text("ipp://10.0.0.5/ipp/print").desired_width(220.0));
+            let field = ui.add(egui::TextEdit::singleline(&mut d.net_address).hint_text("ipp://10.0.0.5/ipp/print").desired_width(crate::widgets::fit_width(ui, 220.0)));
             field.on_hover_text(tl!("An ipp://, lpd:// or socket:// address of a printer on your network"));
             if ui.button(tl!("Add")).clicked() {
                 let address = d.net_address.clone();
@@ -931,7 +934,7 @@ fn add_network_printer_panel(ui: &mut egui::Ui, d: &mut PrintDraft, t: &Tokens) 
                 }
             }
         });
-        ui.horizontal(|ui| {
+        crate::widgets::row(ui, |ui| {
             let searching = matches!(d.net_search, NetSearch::Wanted | NetSearch::Running);
             if ui.add_enabled(!searching, egui::Button::new(tl!("Find on network"))).clicked() {
                 d.net_search = NetSearch::Wanted;
@@ -941,9 +944,9 @@ fn add_network_printer_panel(ui: &mut egui::Ui, d: &mut PrintDraft, t: &Tokens) 
                 ui.label(egui::RichText::new(tl!("Searching the network for printers…")).small().color(t.text_muted));
             }
         });
-        ui.horizontal(|ui| {
+        crate::widgets::row(ui, |ui| {
             ui.label(tl!("Also search:"));
-            ui.add(egui::TextEdit::singleline(&mut d.net_ranges).hint_text("10.20.30.0/24, 10.0.5.10-40").char_limit(200).desired_width(220.0))
+            ui.add(egui::TextEdit::singleline(&mut d.net_ranges).hint_text("10.20.30.0/24, 10.0.5.10-40").char_limit(200).desired_width(crate::widgets::fit_width(ui, 220.0)))
                 .on_hover_text(tl!("Printers in another subnet or VLAN don't answer a network search; name their address range here."));
         });
         let note = match d.net_search {
@@ -965,13 +968,13 @@ fn network_job_panel(ui: &mut egui::Ui, d: &mut PrintDraft, t: &Tokens) {
     }
     egui::Grid::new("print-network").num_columns(2).spacing([10.0, 6.0]).show(ui, |ui| {
         ui.label("");
-        ui.horizontal(|ui| {
+        crate::widgets::row(ui, |ui| {
             ui.add(widgets::checkbox(&mut d.net_hold, tl!("Hold at printer until released")));
             ui.add(widgets::checkbox(&mut d.net_staple, tl!("Staple")));
         });
         ui.end_row();
         ui.label(tl!("Release PIN:"));
-        ui.horizontal(|ui| {
+        crate::widgets::row(ui, |ui| {
             let mut pin: String = d.net_pin.chars().filter(char::is_ascii_digit).take(10).collect();
             ui.add(egui::TextEdit::singleline(&mut pin).password(true).desired_width(80.0));
             d.net_pin = pin.chars().filter(char::is_ascii_digit).take(10).collect();
@@ -995,6 +998,7 @@ fn network_job_panel(ui: &mut egui::Ui, d: &mut PrintDraft, t: &Tokens) {
 
 fn combo<T: PartialEq + Copy>(ui: &mut egui::Ui, id: &str, value: &mut T, choices: &[(T, &str)], width: f32) {
     let shown = choices.iter().find(|c| c.0 == *value).map_or("", |c| c.1);
+    crate::widgets::wrap_before(ui, width + 30.0);
     egui::ComboBox::from_id_salt(id).selected_text(shown).width(width).show_ui(ui, |ui| {
         for (v, label) in choices {
             ui.selectable_value(value, *v, *label);
@@ -1012,24 +1016,26 @@ pub(crate) fn body(
     labels: &[String],
     thumb: &mut dyn FnMut(usize) -> Option<egui::TextureId>,
 ) -> (bool, bool) {
-    ui.set_width(820.0);
+    crate::widgets::set_fit_width(ui, 820.0);
     ui.label(egui::RichText::new(tl!("Print")).font(theme::semibold(18.0)));
     ui.add_space(8.0);
     let settings = d.settings(sizes.len(), labels);
     let sheets = settings.as_ref().ok().and_then(|s| print::layout(sizes, s).ok()).unwrap_or_default();
     d.sheet = d.sheet.min(sheets.len().saturating_sub(1));
-    ui.horizontal_top(|ui| {
-        // Settings.
-        ui.vertical(|ui| {
-            ui.set_width(470.0);
+    // On a phone the settings and the preview stack and scroll above Print and Cancel.
+    crate::widgets::dialog_body(ui, "print-body", 64.0, |ui| {
+        crate::widgets::side_by_side(ui, |ui| {
+            // Settings.
+            ui.vertical(|ui| {
+            crate::widgets::set_fit_width(ui, 470.0);
             egui::Grid::new("print-top").num_columns(2).spacing([10.0, 8.0]).show(ui, |ui| {
                 ui.label(tl!("Printer:"));
                 let before = d.printer.clone();
                 // The browser's print dialog sets copies, two-sided printing and colour itself.
                 let browser = d.printer.as_deref() == Some(crate::web_print::BROWSER_PRINTER);
-                ui.horizontal(|ui| {
+                crate::widgets::row_or_column(ui, |ui| {
                     let shown = d.printer.as_deref().map_or_else(|| tl!("Save as PDF").to_string(), |p| d.shown_printer(p));
-                    egui::ComboBox::from_id_salt("printer").selected_text(shown).width(260.0).show_ui(ui, |ui| {
+                    egui::ComboBox::from_id_salt("printer").selected_text(shown).width(crate::widgets::fit_width(ui, 260.0)).show_ui(ui, |ui| {
                         if d.printers_loading {
                             ui.add_enabled(false, egui::Label::new(tl!("Looking for printers…")));
                         }
@@ -1075,7 +1081,7 @@ pub(crate) fn body(
                 ui.end_row();
                 ui.label(tl!("Copies:"));
                 ui.add_enabled_ui(!browser, |ui| {
-                    ui.horizontal(|ui| {
+                    crate::widgets::row(ui, |ui| {
                         ui.add(egui::DragValue::new(&mut d.copies).range(1..=999));
                         ui.add(widgets::checkbox(&mut d.collate, tl!("Collate")));
                         ui.add(widgets::checkbox(&mut d.grayscale, tl!("Print in grayscale")));
@@ -1099,7 +1105,7 @@ pub(crate) fn body(
                 ui.end_row();
                 ui.label(tl!("Paper:"));
                 let paper_name = PAPERS.get(d.paper).map_or("A4", |p| p.0);
-                egui::ComboBox::from_id_salt("paper").selected_text(paper_name).width(260.0).show_ui(ui, |ui| {
+                egui::ComboBox::from_id_salt("paper").selected_text(paper_name).width(crate::widgets::fit_width(ui, 260.0)).show_ui(ui, |ui| {
                     for (i, (name, _)) in PAPERS.iter().enumerate() {
                         ui.selectable_value(&mut d.paper, i, *name);
                     }
@@ -1143,7 +1149,7 @@ pub(crate) fn body(
             }
             ui.add_space(6.0);
             widgets::section_title(ui, tl!("Pages to Print"));
-            ui.horizontal(|ui| {
+            crate::widgets::row(ui, |ui| {
                 widgets::radio_value(ui, &mut d.which, Which::All, tl!("All"));
                 widgets::radio_value(ui, &mut d.which, Which::Current, tl!("Current page"));
                 widgets::radio_value(ui, &mut d.which, Which::Range, tl!("Pages"));
@@ -1160,7 +1166,7 @@ pub(crate) fn body(
                 let label = format!("{} ({})", tl!("Selected pages"), d.selected.len());
                 widgets::radio_value(ui, &mut d.which, Which::Selected, label);
             }
-            ui.horizontal(|ui| {
+            crate::widgets::row(ui, |ui| {
                 ui.label(tl!("More options:"));
                 combo(
                     ui,
@@ -1189,12 +1195,12 @@ pub(crate) fn body(
             ui.add_space(4.0);
             match d.handling {
                 Handling::Size => {
-                    ui.horizontal(|ui| {
+                    crate::widgets::row(ui, |ui| {
                         widgets::radio_value(ui, &mut d.size, SizeMode::Fit, tl!("Fit"));
                         widgets::radio_value(ui, &mut d.size, SizeMode::Actual, tl!("Actual size"));
                         widgets::radio_value(ui, &mut d.size, SizeMode::Shrink, tl!("Shrink oversized pages"));
                     });
-                    ui.horizontal(|ui| {
+                    crate::widgets::row(ui, |ui| {
                         let custom = matches!(d.size, SizeMode::Custom(_));
                         if ui.add(widgets::radio(custom, tl!("Custom scale:"))).clicked() {
                             d.size = SizeMode::Custom(d.custom_scale);
@@ -1203,7 +1209,7 @@ pub(crate) fn body(
                     });
                 }
                 Handling::Poster => {
-                    ui.horizontal(|ui| {
+                    crate::widgets::row(ui, |ui| {
                         ui.label(tl!("Tile scale:"));
                         ui.add(egui::DragValue::new(&mut d.poster_scale).range(10.0..=1000.0).suffix(" %"));
                         ui.label(tl!("Overlap:"));
@@ -1212,7 +1218,7 @@ pub(crate) fn body(
                     });
                 }
                 Handling::Multiple => {
-                    ui.horizontal(|ui| {
+                    crate::widgets::row(ui, |ui| {
                         ui.label(tl!("Pages per sheet:"));
                         combo(ui, "per-sheet", &mut d.per_sheet, &[(2, "2"), (4, "4"), (6, "6"), (9, "9"), (16, "16")], 60.0);
                         ui.label(tl!("Page order:"));
@@ -1230,7 +1236,7 @@ pub(crate) fn body(
                             150.0,
                         );
                     });
-                    ui.horizontal(|ui| {
+                    crate::widgets::row(ui, |ui| {
                         ui.add(widgets::checkbox(&mut d.border, tl!("Print page border")));
                         ui.add(widgets::checkbox(&mut d.auto_rotate, tl!("Auto-rotate pages")));
                     });
@@ -1241,7 +1247,7 @@ pub(crate) fn body(
                     }
                 }
                 Handling::Booklet => {
-                    ui.horizontal(|ui| {
+                    crate::widgets::row(ui, |ui| {
                         ui.label(tl!("Booklet subset:"));
                         combo(
                             ui,
@@ -1260,7 +1266,7 @@ pub(crate) fn body(
                 }
             }
             ui.add_space(6.0);
-            ui.horizontal(|ui| {
+            crate::widgets::row(ui, |ui| {
                 ui.label(tl!("Orientation:"));
                 widgets::radio_value(ui, &mut d.orientation, Orientation::Auto, tl!("Auto portrait/landscape"));
                 widgets::radio_value(ui, &mut d.orientation, Orientation::Portrait, tl!("Portrait"));
@@ -1281,109 +1287,114 @@ pub(crate) fn body(
                 220.0,
             );
         });
-        ui.add_space(12.0);
-        // Preview.
-        ui.vertical(|ui| {
-            ui.set_width(PREVIEW_W);
-            let (area, _) = ui.allocate_exact_size(vec2(PREVIEW_W, PREVIEW_H), egui::Sense::hover());
-            ui.painter().rect_filled(area, 6.0, t.hover);
-            match (&settings, sheets.get(d.sheet)) {
-                (Err(e), _) => {
-                    ui.put(area.shrink(16.0), egui::Label::new(egui::RichText::new(tl!(e)).color(t.text_muted)).wrap());
-                }
-                (Ok(_), Some(sheet)) => {
-                    let k = (PREVIEW_BOX.0 / sheet.size.0 as f32).min(PREVIEW_BOX.1 / sheet.size.1 as f32);
-                    let paper = Rect::from_center_size(area.center(), vec2(sheet.size.0 as f32 * k, sheet.size.1 as f32 * k));
-                    ui.painter().rect_filled(paper, 0.0, Color32::WHITE);
-                    ui.painter().rect_stroke(paper, 0.0, Stroke::new(1.0, t.border), egui::StrokeKind::Outside);
-                    let to_screen = |x: f64, y: f64| -> Pos2 { pos2(paper.left() + x as f32 * k, paper.bottom() - y as f32 * k) };
-                    let painter = ui.painter().with_clip_rect(paper);
-                    for pl in &sheet.placed {
-                        let (dw, dh) = sizes[pl.page];
-                        let [x0, y0, x1, y1] = pl.clip;
-                        let corners = [(x0, y0), (x1, y0), (x1, y1), (x0, y1)].map(|(x, y)| {
-                            let (sx, sy) = pl.matrix.apply(x, y);
-                            to_screen(sx, sy)
-                        });
-                        // UVs of the visible part (texture y runs down from the page top).
-                        let uv = |x: f64, y: f64| pos2((x / dw) as f32, (1.0 - y / dh) as f32);
-                        let uvs = [uv(x0, y0), uv(x1, y0), uv(x1, y1), uv(x0, y1)];
-                        match thumb(pl.page) {
-                            Some(tex) => {
-                                let mut mesh = egui::Mesh::with_texture(tex);
-                                for (p, u) in corners.iter().zip(uvs) {
-                                    mesh.vertices.push(egui::epaint::Vertex {
-                                        pos: *p,
-                                        uv: u,
-                                        color: if d.grayscale { Color32::from_gray(235) } else { Color32::WHITE },
-                                    });
+            ui.add_space(12.0);
+            // Preview.
+            ui.vertical(|ui| {
+                crate::widgets::set_fit_width(ui, PREVIEW_W);
+                let (area, _) = ui.allocate_exact_size(vec2(PREVIEW_W, PREVIEW_H), egui::Sense::hover());
+                ui.painter().rect_filled(area, 6.0, t.hover);
+                match (&settings, sheets.get(d.sheet)) {
+                    (Err(e), _) => {
+                        ui.put(area.shrink(16.0), egui::Label::new(egui::RichText::new(tl!(e)).color(t.text_muted)).wrap());
+                    }
+                    (Ok(_), Some(sheet)) => {
+                        let k = (PREVIEW_BOX.0 / sheet.size.0 as f32).min(PREVIEW_BOX.1 / sheet.size.1 as f32);
+                        let paper = Rect::from_center_size(area.center(), vec2(sheet.size.0 as f32 * k, sheet.size.1 as f32 * k));
+                        ui.painter().rect_filled(paper, 0.0, Color32::WHITE);
+                        ui.painter().rect_stroke(paper, 0.0, Stroke::new(1.0, t.border), egui::StrokeKind::Outside);
+                        let to_screen = |x: f64, y: f64| -> Pos2 { pos2(paper.left() + x as f32 * k, paper.bottom() - y as f32 * k) };
+                        let painter = ui.painter().with_clip_rect(paper);
+                        for pl in &sheet.placed {
+                            let (dw, dh) = sizes[pl.page];
+                            let [x0, y0, x1, y1] = pl.clip;
+                            let corners = [(x0, y0), (x1, y0), (x1, y1), (x0, y1)].map(|(x, y)| {
+                                let (sx, sy) = pl.matrix.apply(x, y);
+                                to_screen(sx, sy)
+                            });
+                            // UVs of the visible part (texture y runs down from the page top).
+                            let uv = |x: f64, y: f64| pos2((x / dw) as f32, (1.0 - y / dh) as f32);
+                            let uvs = [uv(x0, y0), uv(x1, y0), uv(x1, y1), uv(x0, y1)];
+                            match thumb(pl.page) {
+                                Some(tex) => {
+                                    let mut mesh = egui::Mesh::with_texture(tex);
+                                    for (p, u) in corners.iter().zip(uvs) {
+                                        mesh.vertices.push(egui::epaint::Vertex {
+                                            pos: *p,
+                                            uv: u,
+                                            color: if d.grayscale { Color32::from_gray(235) } else { Color32::WHITE },
+                                        });
+                                    }
+                                    mesh.indices.extend_from_slice(&[0, 1, 2, 0, 2, 3]);
+                                    painter.add(egui::Shape::mesh(mesh));
                                 }
-                                mesh.indices.extend_from_slice(&[0, 1, 2, 0, 2, 3]);
-                                painter.add(egui::Shape::mesh(mesh));
-                            }
-                            None => {
-                                painter.add(egui::Shape::convex_polygon(
-                                    corners.to_vec(),
-                                    Color32::from_gray(245),
-                                    Stroke::new(0.5, Color32::from_gray(180)),
-                                ));
-                                let c = corners.iter().fold(vec2(0.0, 0.0), |a, p| a + p.to_vec2()) / 4.0;
-                                painter.text(
-                                    c.to_pos2(),
-                                    egui::Align2::CENTER_CENTER,
-                                    (pl.page + 1).to_string(),
-                                    theme::regular(11.0),
-                                    Color32::from_gray(120),
-                                );
+                                None => {
+                                    painter.add(egui::Shape::convex_polygon(
+                                        corners.to_vec(),
+                                        Color32::from_gray(245),
+                                        Stroke::new(0.5, Color32::from_gray(180)),
+                                    ));
+                                    let c = corners.iter().fold(vec2(0.0, 0.0), |a, p| a + p.to_vec2()) / 4.0;
+                                    painter.text(
+                                        c.to_pos2(),
+                                        egui::Align2::CENTER_CENTER,
+                                        (pl.page + 1).to_string(),
+                                        theme::regular(11.0),
+                                        Color32::from_gray(120),
+                                    );
+                                }
                             }
                         }
+                        for b in &sheet.borders {
+                            painter.rect_stroke(
+                                Rect::from_two_pos(to_screen(b[0], b[1]), to_screen(b[2], b[3])),
+                                0.0,
+                                Stroke::new(0.6, Color32::BLACK),
+                                egui::StrokeKind::Middle,
+                            );
+                        }
+                        for l in &sheet.lines {
+                            painter.line_segment([to_screen(l[0], l[1]), to_screen(l[2], l[3])], Stroke::new(0.6, Color32::BLACK));
+                        }
                     }
-                    for b in &sheet.borders {
-                        painter.rect_stroke(
-                            Rect::from_two_pos(to_screen(b[0], b[1]), to_screen(b[2], b[3])),
-                            0.0,
-                            Stroke::new(0.6, Color32::BLACK),
-                            egui::StrokeKind::Middle,
-                        );
-                    }
-                    for l in &sheet.lines {
-                        painter.line_segment([to_screen(l[0], l[1]), to_screen(l[2], l[3])], Stroke::new(0.6, Color32::BLACK));
-                    }
+                    _ => {}
                 }
-                _ => {}
-            }
-            ui.horizontal(|ui| {
-                let n = sheets.len();
-                if ui.add_enabled(d.sheet > 0, egui::Button::new("‹")).on_hover_text(tl!("Previous sheet")).clicked() {
-                    d.sheet -= 1;
-                }
-                ui.label(if n == 0 {
-                    tl!("No sheets").to_string()
-                } else {
-                    crate::i18n::fmt(tl!("Sheet {s} of {n}"), &[("s", &(d.sheet + 1).to_string()), ("n", &n.to_string())])
+                crate::widgets::row(ui, |ui| {
+                    let n = sheets.len();
+                    if ui.add_enabled(d.sheet > 0, egui::Button::new("‹")).on_hover_text(tl!("Previous sheet")).clicked() {
+                        d.sheet -= 1;
+                    }
+                    ui.label(if n == 0 {
+                        tl!("No sheets").to_string()
+                    } else {
+                        crate::i18n::fmt(tl!("Sheet {s} of {n}"), &[("s", &(d.sheet + 1).to_string()), ("n", &n.to_string())])
+                    });
+                    if ui.add_enabled(d.sheet + 1 < n, egui::Button::new("›")).on_hover_text(tl!("Next sheet")).clicked() {
+                        d.sheet += 1;
+                    }
                 });
-                if ui.add_enabled(d.sheet + 1 < n, egui::Button::new("›")).on_hover_text(tl!("Next sheet")).clicked() {
-                    d.sheet += 1;
+                if let Some(s) = sheets.get(d.sheet) {
+                    ui.label(egui::RichText::new(d.units.size(s.size.0, s.size.1)).small().color(t.text_muted));
+                    if d.handling == Handling::Size
+                        && let Some(p) = s.placed.first()
+                    {
+                        let scale = p.matrix.0[0].hypot(p.matrix.0[1]) * 100.0;
+                        ui.label(crate::i18n::fmt(tl!("PDF scale: {scale}%"), &[("scale", &format!("{scale:.2}"))]));
+                        ui.label(
+                            egui::RichText::new(tl!("Printer paper and scaling may differ. Check driver settings.")).small().color(t.text_muted),
+                        );
+                        if (scale - 100.0).abs() > 0.01 {
+                            ui.label(
+                                egui::RichText::new(tl!("Drawing scale changes. Use Actual size for full-scale plans.")).small().color(t.text_muted),
+                            );
+                        }
+                    }
                 }
             });
-            if let Some(s) = sheets.get(d.sheet) {
-                ui.label(egui::RichText::new(d.units.size(s.size.0, s.size.1)).small().color(t.text_muted));
-                if d.handling == Handling::Size
-                    && let Some(p) = s.placed.first()
-                {
-                    let scale = p.matrix.0[0].hypot(p.matrix.0[1]) * 100.0;
-                    ui.label(crate::i18n::fmt(tl!("PDF scale: {scale}%"), &[("scale", &format!("{scale:.2}"))]));
-                    ui.label(egui::RichText::new(tl!("Printer paper and scaling may differ. Check driver settings.")).small().color(t.text_muted));
-                    if (scale - 100.0).abs() > 0.01 {
-                        ui.label(egui::RichText::new(tl!("Drawing scale changes. Use Actual size for full-scale plans.")).small().color(t.text_muted));
-                    }
-                }
-            }
-        });
+        })
     });
     ui.add_space(12.0);
     let (mut go, mut cancel) = (false, false);
-    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+    crate::widgets::buttons(ui, |ui| {
         let label = if d.printer.is_some() { "Print" } else { "Save as PDF" };
         if ui.add_enabled_ui(settings.is_ok() && !sheets.is_empty(), |ui| widgets::pill_button(ui, label, true)).inner.clicked() {
             go = true;

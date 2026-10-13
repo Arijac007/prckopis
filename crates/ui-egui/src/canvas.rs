@@ -3983,7 +3983,8 @@ fn organize_toolbar(view: &mut DocView, info: &DocInfo, editable: bool, dirty: b
     let n = info.pages.len();
     let (first, last) = (targets.first().copied().unwrap_or(0), targets.last().copied().unwrap_or(0));
     egui::Frame::NONE.fill(t.chrome).inner_margin(egui::Margin::symmetric(16, 8)).show(ui, |ui| {
-        ui.horizontal(|ui| {
+        // On a phone the bar wraps: the selection, then the page operations, then size and Save.
+        crate::widgets::row(ui, |ui| {
             ui.spacing_mut().item_spacing.x = 4.0;
             let label = match view.selected.len() {
                 0 => crate::i18n::fmt(tl!("Page {p} of {n}"), &[("p", &(view.current + 1).to_string()), ("n", &n.to_string())]),
@@ -3992,66 +3993,73 @@ fn organize_toolbar(view: &mut DocView, info: &DocInfo, editable: bool, dirty: b
             };
             // Fixed width so the buttons never shift as the selection text changes.
             ui.add_sized([150.0, 30.0], egui::Label::new(egui::RichText::new(label).font(theme::medium(13.0)).color(t.text_muted)).truncate());
+            if widgets::narrow(ui.ctx()) {
+                ui.end_row();
+            }
             ui.add_enabled_ui(editable, |ui| {
-                if icons::button(ui, "rotate-ccw", 30.0, false, tl!("Rotate counterclockwise")).clicked() {
-                    view.pending_edit = Some(Edit::RotatePages { pages: targets.clone(), degrees: -90 });
-                }
-                if icons::button(ui, "rotate-cw", 30.0, false, tl!("Rotate clockwise")).clicked() {
-                    view.pending_edit = Some(Edit::RotatePages { pages: targets.clone(), degrees: 90 });
-                }
-                let can_delete = targets.len() < n;
-                if ui.add_enabled_ui(can_delete, |ui| icons::button(ui, "trash-2", 30.0, false, tl!("Delete pages (Delete)"))).inner.clicked() {
-                    view.pending_edit = Some(Edit::DeletePages { pages: targets.clone() });
-                }
-                if icons::button(ui, "file-plus", 30.0, false, tl!("Insert a blank page after the selection")).clicked() {
-                    let c = info.pages[last].crop;
-                    let (w, h) = ((c[2] - c[0]).abs().max(1.0) as f64, (c[3] - c[1]).abs().max(1.0) as f64);
-                    view.pending_edit = Some(Edit::InsertBlankPage { at: last + 1, width: w, height: h });
-                }
-                if icons::button(ui, "file-input", 30.0, false, tl!("Insert pages from a file…")).clicked() {
-                    view.pending_action = Some(ViewAction::InsertFromFile);
-                }
-                if icons::button(ui, "replace", 30.0, false, tl!("Replace pages…")).clicked() {
-                    view.pending_action = Some(ViewAction::ReplacePages);
-                }
-                if icons::button(ui, "file-output", 30.0, false, tl!("Extract pages to a new document")).clicked() {
-                    view.pending_action = Some(ViewAction::Extract);
-                }
-                if icons::button(ui, "scissors", 30.0, false, tl!("Split into files…")).clicked() {
-                    view.pending_action = Some(ViewAction::Split);
-                }
-                // Select ▸ all, odd, even, landscape, portrait pages (Acrobat's page range
-                // selection in Organize Pages).
-                let sel = icons::button(ui, "list", 30.0, false, tl!("Select pages"));
-                egui::Popup::menu(&sel).show(|ui| {
-                    use prckopis_engine::{PageOrientation as O, PageParity as P, filter_pages};
-                    let all: Vec<usize> = (0..n).collect();
-                    for (label, parity, orient) in [
-                        ("All pages", P::Both, O::Both),
-                        ("Odd pages", P::Odd, O::Both),
-                        ("Even pages", P::Even, O::Both),
-                        ("Landscape pages", P::Both, O::Landscape),
-                        ("Portrait pages", P::Both, O::Portrait),
-                    ] {
-                        if ui.button(tl!(label)).clicked() {
-                            view.select_pages(&filter_pages(info, &all, parity, orient));
+                crate::widgets::row(ui, |ui| {
+                    if icons::button(ui, "rotate-ccw", 30.0, false, tl!("Rotate counterclockwise")).clicked() {
+                        view.pending_edit = Some(Edit::RotatePages { pages: targets.clone(), degrees: -90 });
+                    }
+                    if icons::button(ui, "rotate-cw", 30.0, false, tl!("Rotate clockwise")).clicked() {
+                        view.pending_edit = Some(Edit::RotatePages { pages: targets.clone(), degrees: 90 });
+                    }
+                    let can_delete = targets.len() < n;
+                    if ui.add_enabled_ui(can_delete, |ui| icons::button(ui, "trash-2", 30.0, false, tl!("Delete pages (Delete)"))).inner.clicked() {
+                        view.pending_edit = Some(Edit::DeletePages { pages: targets.clone() });
+                    }
+                    if icons::button(ui, "file-plus", 30.0, false, tl!("Insert a blank page after the selection")).clicked() {
+                        let c = info.pages[last].crop;
+                        let (w, h) = ((c[2] - c[0]).abs().max(1.0) as f64, (c[3] - c[1]).abs().max(1.0) as f64);
+                        view.pending_edit = Some(Edit::InsertBlankPage { at: last + 1, width: w, height: h });
+                    }
+                    if icons::button(ui, "file-input", 30.0, false, tl!("Insert pages from a file…")).clicked() {
+                        view.pending_action = Some(ViewAction::InsertFromFile);
+                    }
+                    if icons::button(ui, "replace", 30.0, false, tl!("Replace pages…")).clicked() {
+                        view.pending_action = Some(ViewAction::ReplacePages);
+                    }
+                    if icons::button(ui, "file-output", 30.0, false, tl!("Extract pages to a new document")).clicked() {
+                        view.pending_action = Some(ViewAction::Extract);
+                    }
+                    if icons::button(ui, "scissors", 30.0, false, tl!("Split into files…")).clicked() {
+                        view.pending_action = Some(ViewAction::Split);
+                    }
+                    // Select ▸ all, odd, even, landscape, portrait pages (Acrobat's page range
+                    // selection in Organize Pages).
+                    let sel = icons::button(ui, "list", 30.0, false, tl!("Select pages"));
+                    egui::Popup::menu(&sel).show(|ui| {
+                        use prckopis_engine::{PageOrientation as O, PageParity as P, filter_pages};
+                        let all: Vec<usize> = (0..n).collect();
+                        for (label, parity, orient) in [
+                            ("All pages", P::Both, O::Both),
+                            ("Odd pages", P::Odd, O::Both),
+                            ("Even pages", P::Even, O::Both),
+                            ("Landscape pages", P::Both, O::Landscape),
+                            ("Portrait pages", P::Both, O::Portrait),
+                        ] {
+                            if ui.button(tl!(label)).clicked() {
+                                view.select_pages(&filter_pages(info, &all, parity, orient));
+                                ui.close();
+                            }
+                        }
+                        if ui.button(tl!("None")).clicked() {
+                            view.select_pages(&[]);
                             ui.close();
                         }
+                    });
+                    ui.add_space(8.0);
+                    // The move buttons stay together (each is a block of its own, which doesn't wrap).
+                    crate::widgets::wrap_before(ui, 72.0);
+                    if ui.add_enabled_ui(first > 0, |ui| icons::button(ui, "chevron-left", 30.0, false, tl!("Move earlier"))).inner.clicked() {
+                        view.pending_edit = Some(Edit::MovePages { pages: targets.clone(), to: first - 1 });
                     }
-                    if ui.button(tl!("None")).clicked() {
-                        view.select_pages(&[]);
-                        ui.close();
+                    if ui.add_enabled_ui(last + 1 < n, |ui| icons::button(ui, "chevron-right", 30.0, false, tl!("Move later"))).inner.clicked() {
+                        view.pending_edit = Some(Edit::MovePages { pages: targets.clone(), to: first + 1 });
                     }
-                });
-                ui.add_space(8.0);
-                if ui.add_enabled_ui(first > 0, |ui| icons::button(ui, "chevron-left", 30.0, false, tl!("Move earlier"))).inner.clicked() {
-                    view.pending_edit = Some(Edit::MovePages { pages: targets.clone(), to: first - 1 });
-                }
-                if ui.add_enabled_ui(last + 1 < n, |ui| icons::button(ui, "chevron-right", 30.0, false, tl!("Move later"))).inner.clicked() {
-                    view.pending_edit = Some(Edit::MovePages { pages: targets.clone(), to: first + 1 });
-                }
+                })
             });
-            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+            crate::widgets::trailing(ui, |ui| {
                 if widgets::ghost_button(ui, "x", tl!("Close")).on_hover_text(tl!("Back to the document")).clicked() {
                     view.organize = false;
                 }

@@ -106,20 +106,21 @@ fn summary(r: &OptimizeReport) -> String {
 
 fn image_row(ui: &mut egui::Ui, id: &str, title: &str, s: &mut ImageSettings) {
     ui.label(egui::RichText::new(tl!(title)).font(theme::semibold(13.0)));
-    ui.horizontal(|ui| {
+    crate::widgets::row(ui, |ui| {
         ui.add(widgets::checkbox(&mut s.downsample, tl!("Bicubic downsampling to")));
         ui.add_enabled(s.downsample, egui::DragValue::new(&mut s.target_ppi).range(9.0..=2400.0).suffix(" ppi"));
         ui.label(tl!("for images above"));
         ui.add_enabled(s.downsample, egui::DragValue::new(&mut s.above_ppi).range(9.0..=2400.0).suffix(" ppi"));
     });
     s.above_ppi = s.above_ppi.max(s.target_ppi);
-    ui.horizontal(|ui| {
+    crate::widgets::row(ui, |ui| {
         ui.label(tl!("Compression"));
         let label = match s.compression {
             Compression::Jpeg(_) => "JPEG",
             Compression::Flate => tl!("ZIP"),
             Compression::Retain => tl!("Retain existing"),
         };
+        crate::widgets::wrap_before(ui, 130.0);
         egui::ComboBox::from_id_salt((id, "compression")).selected_text(label).show_ui(ui, |ui| {
             let q = match s.compression {
                 Compression::Jpeg(q) => q,
@@ -132,6 +133,7 @@ fn image_row(ui: &mut egui::Ui, id: &str, title: &str, s: &mut ImageSettings) {
         if let Compression::Jpeg(q) = &mut s.compression {
             ui.label(tl!("Quality"));
             let name = QUALITIES.iter().min_by_key(|(_, v)| (*v as i32 - *q as i32).abs()).map_or(tl!("Medium"), |(n, _)| tl!(n));
+            crate::widgets::wrap_before(ui, 130.0);
             egui::ComboBox::from_id_salt((id, "quality")).selected_text(name).show_ui(ui, |ui| {
                 for (n, v) in QUALITIES {
                     ui.selectable_value(q, v, tl!(n));
@@ -209,11 +211,11 @@ pub(crate) fn body(ui: &mut egui::Ui, d: &mut OptimizeDraft, t: &Tokens) -> (boo
     }
     ui.add_space(12.0);
     let (mut ok, mut cancel) = (false, false);
-    ui.horizontal(|ui| {
+    crate::widgets::row(ui, |ui| {
         if widgets::pill_button(ui, tl!("Audit space usage…"), false).clicked() {
             d.audit = true;
         }
-        ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+        crate::widgets::trailing(ui, |ui| {
             if widgets::pill_button(ui, tl!("OK"), true).clicked() {
                 ok = true;
             }
@@ -255,7 +257,7 @@ pub(crate) fn audit_body(ui: &mut egui::Ui, rows: &[prckopis_engine::optimize::S
     });
     ui.add_space(12.0);
     let mut ok = false;
-    ui.horizontal(|ui| ui.with_layout(Layout::right_to_left(Align::Center), |ui| ok = widgets::pill_button(ui, tl!("OK"), true).clicked()));
+    crate::widgets::row(ui, |ui| crate::widgets::buttons(ui, |ui| ok = widgets::pill_button(ui, tl!("OK"), true).clicked()));
     ok
 }
 

@@ -246,7 +246,7 @@ fn bool_row(ui: &mut egui::Ui, label: &str, c: &mut Change<bool>) {
 }
 
 fn color(ui: &mut egui::Ui, value: &mut Option<[f64; 3]>) {
-    ui.horizontal(|ui| {
+    crate::widgets::row(ui, |ui| {
         let mut none = value.is_none();
         if ui.add(widgets::checkbox(&mut none, tl!("No color"))).changed() {
             *value = if none { None } else { Some([0.0; 3]) };
@@ -259,7 +259,7 @@ fn color(ui: &mut egui::Ui, value: &mut Option<[f64; 3]>) {
 
 /// Check a property to apply its value to every selected field. No unchecked value is used.
 pub(crate) fn body(ui: &mut egui::Ui, d: &mut Draft, t: &theme::Tokens) -> (bool, bool) {
-    ui.set_width(600.0);
+    crate::widgets::set_fit_width(ui, 600.0);
     ui.label(egui::RichText::new(tl!("Shared Field Properties")).font(theme::semibold(18.0)));
     ui.label(crate::i18n::fmt(tl!("{n} fields selected"), &[("n", &d.names.len().to_string())]));
     ui.label(
@@ -268,7 +268,7 @@ pub(crate) fn body(ui: &mut egui::Ui, d: &mut Draft, t: &theme::Tokens) -> (bool
             .color(t.text_muted),
     );
     ui.add_space(8.0);
-    ui.horizontal(|ui| {
+    crate::widgets::row(ui, |ui| {
         for (tab, label) in [(Tab::General, "General"), (Tab::Appearance, "Appearance"), (Tab::Options, "Options")] {
             if tab == Tab::Options && !(d.text_fields || d.choice_fields || d.check_fields) {
                 continue;
@@ -283,7 +283,7 @@ pub(crate) fn body(ui: &mut egui::Ui, d: &mut Draft, t: &theme::Tokens) -> (bool
         egui::Grid::new("bulk-field-properties").num_columns(3).spacing([16.0, 10.0]).show(ui, |ui| match d.tab {
             Tab::General => {
                 row(ui, "Tooltip:", &mut d.tooltip, |ui, v| {
-                    ui.add(egui::TextEdit::singleline(v).desired_width(280.0));
+                    ui.add(egui::TextEdit::singleline(v).desired_width(crate::widgets::fit_width(ui, 280.0)));
                 });
                 bool_row(ui, "Read Only", &mut d.read_only);
                 bool_row(ui, "Required", &mut d.required);
@@ -371,7 +371,7 @@ pub(crate) fn body(ui: &mut egui::Ui, d: &mut Draft, t: &theme::Tokens) -> (bool
     }
     ui.separator();
     let (mut apply, mut cancel) = (false, false);
-    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+    crate::widgets::buttons(ui, |ui| {
         apply = widgets::pill_button(ui, tl!("OK"), true).clicked();
         cancel = widgets::pill_button(ui, tl!("Cancel"), false).clicked();
     });

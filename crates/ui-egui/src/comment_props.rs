@@ -2,7 +2,6 @@
 //! properties"): Appearance (colour, fill, opacity, line thickness, note icon), General (author,
 //! subject, modified) and Review History (status changes), with Acrobat's Locked box.
 
-use egui::{Align, Layout};
 use prckopis_engine::{CommentProps, Edit, LineEnding, NoteIcon};
 
 use crate::comments::swatch_grid;
@@ -220,16 +219,16 @@ pub(crate) fn body(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> (boo
                     }
                     if let Some(ends) = e.endings.as_mut() {
                         ui.label(tl!("Line ending"));
-                        ui.horizontal(|ui| {
+                        crate::widgets::row(ui, |ui| {
                             for (i, ending) in ends.iter_mut().enumerate() {
-                                egui::ComboBox::from_id_salt(("line-ending", i)).selected_text(ending_label(*ending)).width(188.0).show_ui(
-                                    ui,
-                                    |ui| {
+                                egui::ComboBox::from_id_salt(("line-ending", i))
+                                    .selected_text(ending_label(*ending))
+                                    .width(crate::widgets::fit_width(ui, 188.0))
+                                    .show_ui(ui, |ui| {
                                         for style in LineEnding::ALL {
                                             ui.selectable_value(ending, style, ending_label(style));
                                         }
-                                    },
-                                );
+                                    });
                             }
                         });
                         ui.end_row();
@@ -240,10 +239,10 @@ pub(crate) fn body(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> (boo
         PropsTab::General => {
             egui::Grid::new("comment-general").num_columns(2).spacing([12.0, 10.0]).show(ui, |ui| {
                 let l = ui.label(tl!("Author"));
-                ui.add(crate::widgets::line(&mut e.author).desired_width(280.0)).labelled_by(l.id);
+                ui.add(crate::widgets::line(&mut e.author).desired_width(crate::widgets::fit_width(ui, 280.0))).labelled_by(l.id);
                 ui.end_row();
                 let l = ui.label(tl!("Subject"));
-                ui.add(crate::widgets::line(&mut e.subject).desired_width(280.0)).labelled_by(l.id);
+                ui.add(crate::widgets::line(&mut e.subject).desired_width(crate::widgets::fit_width(ui, 280.0))).labelled_by(l.id);
                 ui.end_row();
                 ui.label(tl!("Modified"));
                 ui.label(e.modified.as_deref().map(prckopis_render::pretty_date).unwrap_or_else(|| "—".into()));
@@ -262,7 +261,7 @@ pub(crate) fn body(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> (boo
     ui.add_space(12.0);
     ui.add(widgets::checkbox(&mut d.edited.locked, tl!("Locked")));
     let (mut apply, mut cancel) = (false, false);
-    ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+    crate::widgets::buttons(ui, |ui| {
         if widgets::pill_button(ui, tl!("OK"), true).clicked() {
             apply = true;
         }

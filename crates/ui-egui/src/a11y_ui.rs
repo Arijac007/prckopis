@@ -4,7 +4,6 @@
 
 use std::collections::BTreeSet;
 
-use egui::{Align, Layout};
 use prckopis_cos::ObjRef;
 use prckopis_engine::DocId;
 use prckopis_engine::a11y::{Category, Options, Report, Rule, Status};
@@ -87,55 +86,61 @@ pub(crate) fn options_body(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens)
         });
         ui.add_space(8.0);
     };
-    group(ui, "Report Options", &mut |ui| {
-        ui.add(widgets::checkbox(&mut o.create_report, tl!("Create accessibility report")));
-    });
-    group(ui, "Page Range", &mut |ui| {
-        ui.horizontal(|ui| {
-            widgets::radio_value(ui, &mut o.all_pages, true, tl!("All pages in document"));
-            widgets::radio_value(ui, &mut o.all_pages, false, tl!("Pages from"));
-            ui.add_enabled(!o.all_pages, egui::DragValue::new(&mut o.from).range(1..=pages));
-            ui.label(tl!("to"));
-            ui.add_enabled(!o.all_pages, egui::DragValue::new(&mut o.to).range(1..=pages));
+    // On a phone the options scroll above the buttons.
+    crate::widgets::dialog_body(ui, "a11y-options-body", 64.0, |ui| {
+        group(ui, "Report Options", &mut |ui| {
+            ui.add(widgets::checkbox(&mut o.create_report, tl!("Create accessibility report")));
         });
-    });
-    let on = o.rules.len();
-    group(ui, &crate::i18n::fmt(tl!("Checking Options ({on} of 32 in all categories)"), &[("on", &on.to_string())]), &mut |ui| {
-        ui.horizontal(|ui| {
-            ui.label(tl!("Category:"));
-            egui::ComboBox::from_id_salt("a11y-category").selected_text(tl!(o.category.label())).width(260.0).show_ui(ui, |ui| {
-                for c in Category::ALL {
-                    ui.selectable_value(&mut o.category, c, tl!(c.label()));
+        group(ui, "Page Range", &mut |ui| {
+            crate::widgets::row(ui, |ui| {
+                widgets::radio_value(ui, &mut o.all_pages, true, tl!("All pages in document"));
+                widgets::radio_value(ui, &mut o.all_pages, false, tl!("Pages from"));
+                ui.add_enabled(!o.all_pages, egui::DragValue::new(&mut o.from).range(1..=pages));
+                ui.label(tl!("to"));
+                ui.add_enabled(!o.all_pages, egui::DragValue::new(&mut o.to).range(1..=pages));
+            });
+        });
+        let on = o.rules.len();
+        group(ui, &crate::i18n::fmt(tl!("Checking Options ({on} of 32 in all categories)"), &[("on", &on.to_string())]), &mut |ui| {
+            crate::widgets::row(ui, |ui| {
+                ui.label(tl!("Category:"));
+                egui::ComboBox::from_id_salt("a11y-category")
+                    .selected_text(tl!(o.category.label()))
+                    .width(crate::widgets::fit_width(ui, 260.0))
+                    .show_ui(ui, |ui| {
+                        for c in Category::ALL {
+                            ui.selectable_value(&mut o.category, c, tl!(c.label()));
+                        }
+                    });
+            });
+            ui.add_space(4.0);
+            for r in Rule::ALL.into_iter().filter(|r| r.category() == o.category) {
+                let mut checked = o.rules.contains(&r);
+                if ui.add(widgets::checkbox(&mut checked, tl!(r.description()))).changed() {
+                    if checked {
+                        o.rules.insert(r);
+                    } else {
+                        o.rules.remove(&r);
+                    }
+                }
+            }
+            ui.add_space(4.0);
+            crate::widgets::row(ui, |ui| {
+                if ui.button(tl!("Select All")).clicked() {
+                    o.rules.extend(Rule::ALL.into_iter().filter(|r| r.category() == o.category));
+                }
+                if ui.button(tl!("Clear All")).clicked() {
+                    let c = o.category;
+                    o.rules.retain(|r| r.category() != c);
                 }
             });
         });
-        ui.add_space(4.0);
-        for r in Rule::ALL.into_iter().filter(|r| r.category() == o.category) {
-            let mut checked = o.rules.contains(&r);
-            if ui.add(widgets::checkbox(&mut checked, tl!(r.description()))).changed() {
-                if checked {
-                    o.rules.insert(r);
-                } else {
-                    o.rules.remove(&r);
-                }
-            }
-        }
-        ui.add_space(4.0);
-        ui.horizontal(|ui| {
-            if ui.button(tl!("Select All")).clicked() {
-                o.rules.extend(Rule::ALL.into_iter().filter(|r| r.category() == o.category));
-            }
-            if ui.button(tl!("Clear All")).clicked() {
-                let c = o.category;
-                o.rules.retain(|r| r.category() != c);
-            }
-        });
+        ui.add(widgets::checkbox(&mut o.show_dialog, tl!("Show this dialog when the Checker starts")));
     });
-    ui.add(widgets::checkbox(&mut o.show_dialog, tl!("Show this dialog when the Checker starts")));
     ui.add_space(10.0);
     let (mut start, mut cancel) = (false, false);
-    ui.horizontal(|ui| {
-        ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+    crate::widgets::row(ui, |ui| {
+        crate::widgets::trailing(ui, |ui| {
             if widgets::pill_button(ui, tl!("Start Checking"), true).clicked() {
                 start = true;
             }
@@ -178,7 +183,7 @@ pub(crate) fn panel(ui: &mut egui::Ui, t: &Tokens, state: &mut A11yState, doc: D
     let failed = report.count(Status::Failed);
     let manual = report.count(Status::Manual);
     let skipped = report.count(Status::Skipped);
-    ui.horizontal(|ui| {
+    crate::widgets::row(ui, |ui| {
         ui.label(
             egui::RichText::new(if failed == 0 && manual == 0 && skipped == 0 {
                 tl!("No issues found").to_string()
@@ -193,7 +198,7 @@ pub(crate) fn panel(ui: &mut egui::Ui, t: &Tokens, state: &mut A11yState, doc: D
             })
             .color(t.text_muted),
         );
-        ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+        crate::widgets::trailing(ui, |ui| {
             if widgets::pill_button(ui, tl!("Check again"), false).clicked() {
                 action = Some(PanelAction::CheckAgain);
             }
@@ -544,9 +549,7 @@ pub(crate) fn alt_body(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> 
     if n == 0 {
         ui.label(egui::RichText::new(tl!("This document has no tagged figures.")).color(t.text_muted));
         let mut cancel = false;
-        ui.horizontal(|ui| {
-            ui.with_layout(Layout::right_to_left(Align::Center), |ui| cancel = widgets::pill_button(ui, tl!("Close"), true).clicked())
-        });
+        crate::widgets::row(ui, |ui| crate::widgets::buttons(ui, |ui| cancel = widgets::pill_button(ui, tl!("Close"), true).clicked()));
         return (false, cancel);
     }
     d.index = d.index.min(n - 1);
@@ -579,19 +582,25 @@ pub(crate) fn alt_body(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> 
     ui.add_space(8.0);
     ui.add_enabled_ui(!d.decorative[i], |ui| {
         let l = ui.label(tl!("Alternate text"));
-        ui.add(crate::widgets::block(&mut d.texts[i]).desired_rows(3).desired_width(380.0).hint_text(tl!("Describe the figure"))).labelled_by(l.id);
+        ui.add(
+            crate::widgets::block(&mut d.texts[i])
+                .desired_rows(3)
+                .desired_width(crate::widgets::fit_width(ui, 380.0))
+                .hint_text(tl!("Describe the figure")),
+        )
+        .labelled_by(l.id);
     });
     ui.add(widgets::checkbox(&mut d.decorative[i], tl!("Decorative figure")));
     ui.add_space(10.0);
     let (mut save, mut cancel) = (false, false);
-    ui.horizontal(|ui| {
+    crate::widgets::row(ui, |ui| {
         if ui.add_enabled_ui(i > 0, |ui| icons::button(ui, "chevron-left", 28.0, false, tl!("Previous figure"))).inner.clicked() {
             d.index -= 1;
         }
         if ui.add_enabled_ui(i + 1 < n, |ui| icons::button(ui, "chevron-right", 28.0, false, tl!("Next figure"))).inner.clicked() {
             d.index += 1;
         }
-        ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+        crate::widgets::trailing(ui, |ui| {
             if widgets::pill_button(ui, tl!("Save & Close"), true).clicked() {
                 save = true;
             }

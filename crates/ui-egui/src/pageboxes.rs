@@ -3,7 +3,7 @@
 //! Choose a box (crop, trim, bleed, art, media), margins from the media box in points, inches,
 //! millimetres or centimetres, and the pages. A preview shows the current page's media box and the new box.
 
-use egui::{Align, Color32, CornerRadius, Layout, Rect, Stroke, pos2, vec2};
+use egui::{Color32, CornerRadius, Rect, Stroke, pos2, vec2};
 use prckopis_engine::{BoxSpec, Edit, PageBox};
 
 use crate::theme::{self, Tokens};
@@ -90,105 +90,114 @@ pub(crate) fn body(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> (boo
     }
     ui.label(egui::RichText::new(tl!("Set Page Boxes")).font(theme::semibold(18.0)));
     ui.add_space(8.0);
-    ui.horizontal_top(|ui| {
-        ui.vertical(|ui| {
-            egui::Grid::new("boxes-grid").num_columns(2).spacing([12.0, 8.0]).show(ui, |ui| {
-                ui.label(tl!("Box"));
-                let names = [
-                    (PageBox::Crop, "CropBox"),
-                    (PageBox::Trim, "TrimBox"),
-                    (PageBox::Bleed, "BleedBox"),
-                    (PageBox::Art, "ArtBox"),
-                    (PageBox::Media, "MediaBox"),
-                ];
-                let cur = names.iter().find(|(b, _)| *b == d.which).map_or("CropBox", |(_, l)| *l);
-                egui::ComboBox::from_id_salt("boxes-which").selected_text(cur).show_ui(ui, |ui| {
-                    for (b, l) in names {
-                        ui.selectable_value(&mut d.which, b, l);
-                    }
-                });
-                ui.end_row();
-                ui.label(tl!("Units"));
-                egui::ComboBox::from_id_salt("boxes-unit").selected_text(d.unit.label()).show_ui(ui, |ui| {
-                    for u in Unit::ALL {
-                        ui.selectable_value(&mut d.unit, u, u.label());
-                    }
-                });
-                ui.end_row();
-                let k = d.unit.per_point();
-                for (label, idx) in [(tl!("Top"), 3), (tl!("Bottom"), 1), (tl!("Left"), 0), (tl!("Right"), 2)] {
-                    let l = ui.label(label);
-                    let mut v = d.margins[idx] * k;
-                    let speed = d.unit.speed();
-                    let r = ui
-                        .add(egui::DragValue::new(&mut v).speed(speed).range(0.0..=10_000.0).max_decimals(3).suffix(format!(" {}", d.unit.label())))
-                        .labelled_by(l.id);
-                    if r.changed() {
-                        d.margins[idx] = (v / k).max(0.0);
-                    }
-                    ui.end_row();
-                }
-                ui.label("");
-                if ui.button(tl!("Set to zero")).clicked() {
-                    d.margins = [0.0; 4];
-                }
-                ui.end_row();
-                ui.label(tl!("Pages"));
-                ui.vertical(|ui| {
-                    widgets::radio_value(ui, &mut d.range, Range::All, tl!("All"));
-                    widgets::radio_value(
-                        ui,
-                        &mut d.range,
-                        Range::Current,
-                        crate::i18n::fmt(tl!("Current page ({n})"), &[("n", &(current + 1).to_string())]),
-                    );
-                    let (mut a, mut b) = match d.range {
-                        Range::Pages(a, b) => (a, b),
-                        _ => (1, count),
-                    };
-                    ui.horizontal(|ui| {
-                        let on = matches!(d.range, Range::Pages(..));
-                        if ui.add(widgets::radio(on, tl!("From"))).clicked() {
-                            d.range = Range::Pages(a, b);
-                        }
-                        let ra = ui.add(egui::DragValue::new(&mut a).range(1..=count));
-                        ui.label(tl!("to"));
-                        let rb = ui.add(egui::DragValue::new(&mut b).range(1..=count));
-                        if ra.changed() || rb.changed() {
-                            d.range = Range::Pages(a.min(b), b.max(a));
+    // On a phone the preview sits below the settings, both scrolling above the buttons.
+    crate::widgets::dialog_body(ui, "boxes-body", 64.0, |ui| {
+        crate::widgets::side_by_side(ui, |ui| {
+            ui.vertical(|ui| {
+                egui::Grid::new("boxes-grid").num_columns(2).spacing([12.0, 8.0]).show(ui, |ui| {
+                    ui.label(tl!("Box"));
+                    let names = [
+                        (PageBox::Crop, "CropBox"),
+                        (PageBox::Trim, "TrimBox"),
+                        (PageBox::Bleed, "BleedBox"),
+                        (PageBox::Art, "ArtBox"),
+                        (PageBox::Media, "MediaBox"),
+                    ];
+                    let cur = names.iter().find(|(b, _)| *b == d.which).map_or("CropBox", |(_, l)| *l);
+                    egui::ComboBox::from_id_salt("boxes-which").selected_text(cur).show_ui(ui, |ui| {
+                        for (b, l) in names {
+                            ui.selectable_value(&mut d.which, b, l);
                         }
                     });
+                    ui.end_row();
+                    ui.label(tl!("Units"));
+                    egui::ComboBox::from_id_salt("boxes-unit").selected_text(d.unit.label()).show_ui(ui, |ui| {
+                        for u in Unit::ALL {
+                            ui.selectable_value(&mut d.unit, u, u.label());
+                        }
+                    });
+                    ui.end_row();
+                    let k = d.unit.per_point();
+                    for (label, idx) in [(tl!("Top"), 3), (tl!("Bottom"), 1), (tl!("Left"), 0), (tl!("Right"), 2)] {
+                        let l = ui.label(label);
+                        let mut v = d.margins[idx] * k;
+                        let speed = d.unit.speed();
+                        let r = ui
+                            .add(
+                                egui::DragValue::new(&mut v)
+                                    .speed(speed)
+                                    .range(0.0..=10_000.0)
+                                    .max_decimals(3)
+                                    .suffix(format!(" {}", d.unit.label())),
+                            )
+                            .labelled_by(l.id);
+                        if r.changed() {
+                            d.margins[idx] = (v / k).max(0.0);
+                        }
+                        ui.end_row();
+                    }
+                    ui.label("");
+                    if ui.button(tl!("Set to zero")).clicked() {
+                        d.margins = [0.0; 4];
+                    }
+                    ui.end_row();
+                    ui.label(tl!("Pages"));
+                    ui.vertical(|ui| {
+                        widgets::radio_value(ui, &mut d.range, Range::All, tl!("All"));
+                        widgets::radio_value(
+                            ui,
+                            &mut d.range,
+                            Range::Current,
+                            crate::i18n::fmt(tl!("Current page ({n})"), &[("n", &(current + 1).to_string())]),
+                        );
+                        let (mut a, mut b) = match d.range {
+                            Range::Pages(a, b) => (a, b),
+                            _ => (1, count),
+                        };
+                        crate::widgets::row(ui, |ui| {
+                            let on = matches!(d.range, Range::Pages(..));
+                            if ui.add(widgets::radio(on, tl!("From"))).clicked() {
+                                d.range = Range::Pages(a, b);
+                            }
+                            let ra = ui.add(egui::DragValue::new(&mut a).range(1..=count));
+                            ui.label(tl!("to"));
+                            let rb = ui.add(egui::DragValue::new(&mut b).range(1..=count));
+                            if ra.changed() || rb.changed() {
+                                d.range = Range::Pages(a.min(b), b.max(a));
+                            }
+                        });
+                    });
+                    ui.end_row();
                 });
-                ui.end_row();
             });
-        });
-        ui.add_space(16.0);
-        // Preview: the media box and the new box, to scale.
-        if let Some(b) = boxes.get(current) {
-            let m = b[0];
-            let (w, h) = ((m[2] - m[0]).max(1.0), (m[3] - m[1]).max(1.0));
-            let s = (180.0 / w.max(h)) as f32;
-            let (r, _) = ui.allocate_exact_size(vec2(200.0, 200.0), egui::Sense::hover());
-            let page = Rect::from_center_size(r.center(), vec2(w as f32 * s, h as f32 * s));
-            ui.painter().rect_filled(page, CornerRadius::ZERO, Color32::WHITE);
-            ui.painter().rect_stroke(page, CornerRadius::ZERO, Stroke::new(1.0, t.border), egui::StrokeKind::Outside);
-            let [l, bo, ri, to] = d.margins.map(|v| v as f32 * s);
-            let inner = Rect::from_min_max(pos2(page.left() + l, page.top() + to), pos2(page.right() - ri, page.bottom() - bo));
-            if inner.is_positive() {
-                ui.painter().rect_stroke(inner, CornerRadius::ZERO, Stroke::new(1.5, t.accent), egui::StrokeKind::Middle);
+            ui.add_space(16.0);
+            // Preview: the media box and the new box, to scale.
+            if let Some(b) = boxes.get(current) {
+                let m = b[0];
+                let (w, h) = ((m[2] - m[0]).max(1.0), (m[3] - m[1]).max(1.0));
+                let s = (180.0 / w.max(h)) as f32;
+                let (r, _) = ui.allocate_exact_size(vec2(200.0, 200.0), egui::Sense::hover());
+                let page = Rect::from_center_size(r.center(), vec2(w as f32 * s, h as f32 * s));
+                ui.painter().rect_filled(page, CornerRadius::ZERO, Color32::WHITE);
+                ui.painter().rect_stroke(page, CornerRadius::ZERO, Stroke::new(1.0, t.border), egui::StrokeKind::Outside);
+                let [l, bo, ri, to] = d.margins.map(|v| v as f32 * s);
+                let inner = Rect::from_min_max(pos2(page.left() + l, page.top() + to), pos2(page.right() - ri, page.bottom() - bo));
+                if inner.is_positive() {
+                    ui.painter().rect_stroke(inner, CornerRadius::ZERO, Stroke::new(1.5, t.accent), egui::StrokeKind::Middle);
+                }
+                ui.painter().text(
+                    page.center_bottom() + vec2(0.0, 6.0),
+                    egui::Align2::CENTER_TOP,
+                    crate::i18n::fmt(tl!("Page {label}"), &[("label", &(current + 1).to_string())]),
+                    theme::regular(11.0),
+                    t.text_faint,
+                );
             }
-            ui.painter().text(
-                page.center_bottom() + vec2(0.0, 6.0),
-                egui::Align2::CENTER_TOP,
-                crate::i18n::fmt(tl!("Page {label}"), &[("label", &(current + 1).to_string())]),
-                theme::regular(11.0),
-                t.text_faint,
-            );
-        }
+        })
     });
     ui.add_space(12.0);
     let (mut apply, mut cancel) = (false, false);
-    ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+    crate::widgets::buttons(ui, |ui| {
         if widgets::pill_button(ui, tl!("OK"), true).clicked() {
             apply = true;
         }

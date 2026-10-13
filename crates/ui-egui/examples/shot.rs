@@ -3,7 +3,9 @@
 //! ```text
 //! cargo run -p prckopis-ui-egui --example shot -- out.png [file.pdf] [--size 1440x900] [--scale 2] [--page 3 --panel pages …]
 //! ```
-//! `--width N` downscales the image to N pixels wide (README screenshots). Any other
+//! `--width N` downscales the image to N pixels wide (README screenshots). `--command id` runs a
+//! command (`print.dialog`, `redact.properties` …) and `--field name` opens a form field's
+//! properties, in order with the other options. Any other
 //! `--key value` pair is passed to `PrckopisApp::set_option`
 //! (the same verbs as the desktop app's command-line flags and the future control channel).
 
@@ -41,6 +43,18 @@ fn main() -> Result<(), String> {
             }
         }
         for (k, v) in &opts {
+            // `--command id` runs a command (opens dialogs the `dialog` option doesn't name, e.g.
+            // `print.dialog`); `--field name` opens a form field's properties.
+            if k == "command" {
+                if !app.execute(v) {
+                    eprintln!("shot: --command {v}: not run");
+                }
+                continue;
+            }
+            if k == "field" {
+                app.open_field_props(v, 0);
+                continue;
+            }
             if let Err(e) = app.set_option(k, v) {
                 eprintln!("shot: --{k} {v}: {e}");
             }
