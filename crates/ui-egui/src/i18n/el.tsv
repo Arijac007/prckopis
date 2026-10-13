@@ -2444,3 +2444,40 @@ animation effects	Off	Ανενεργά
 	Add alternate text to the figures.	Προσθέστε εναλλακτικό κείμενο στις εικόνες.
 	Pages left untagged (content could not be read): {pages}	Σελίδες χωρίς ετικέτες (δεν ήταν δυνατή η ανάγνωση του περιεχομένου): {pages}
 	Automatic tagging builds tags from the page content: headings, paragraphs, figures and links in content order. Check the result and add alternate text to figures.	Η αυτόματη προσθήκη ετικετών δημιουργεί ετικέτες από το περιεχόμενο των σελίδων: επικεφαλίδες, παραγράφους, εικόνες και συνδέσμους με τη σειρά του περιεχομένου. Ελέγξτε το αποτέλεσμα και προσθέστε εναλλακτικό κείμενο στις εικόνες.
+	The document has no title	Το έγγραφο δεν έχει τίτλο
+	The document has no creation date	Το έγγραφο δεν έχει ημερομηνία δημιουργίας
+	The document has no modification date	Το έγγραφο δεν έχει ημερομηνία τροποποίησης
+	The document doesn't say whether it is trapped (Trapped must be True or False)	Το έγγραφο δεν δηλώνει αν έχει γίνει trapping (το Trapped πρέπει να είναι True ή False)
+	The file has no identifier (ID)	Το αρχείο δεν έχει αναγνωριστικό (ID)
+	There is no PDF/X output intent	Δεν υπάρχει προφίλ εξόδου PDF/X
+	There is more than one PDF/X output intent	Υπάρχουν περισσότερα από ένα προφίλ εξόδου PDF/X
+	The PDF/X output intent has no destination profile	Το προφίλ εξόδου PDF/X δεν έχει προφίλ προορισμού
+	The PDF/X output intent has no output condition identifier	Το προφίλ εξόδου PDF/X δεν έχει αναγνωριστικό συνθήκης εξόδου
+	The PDF/X output intent's profile isn't an output (printer) profile	Το προφίλ ICC του προφίλ εξόδου PDF/X δεν είναι προφίλ συσκευής εξόδου (εκτυπωτή)
+	DeviceRGB is used, but the PDF/X output intent isn't an RGB profile	Χρησιμοποιείται DeviceRGB, αλλά το προφίλ εξόδου PDF/X δεν είναι προφίλ RGB
+	DeviceCMYK is used, but the PDF/X output intent isn't a CMYK profile	Χρησιμοποιείται DeviceCMYK, αλλά το προφίλ εξόδου PDF/X δεν είναι προφίλ CMYK
+	The page has neither a TrimBox nor an ArtBox	Η σελίδα δεν έχει ούτε TrimBox ούτε ArtBox
+	The page has both a TrimBox and an ArtBox	Η σελίδα έχει και TrimBox και ArtBox
+	A page box extends beyond the MediaBox	Ένα πλαίσιο σελίδας εκτείνεται πέρα από το MediaBox
+	The TrimBox extends beyond the BleedBox	Το TrimBox εκτείνεται πέρα από το BleedBox
+	A graphics state sets a transfer function	Μια κατάσταση γραφικών ορίζει συνάρτηση μεταφοράς
+	An optional content configuration has no name	Μια διαμόρφωση προαιρετικού περιεχομένου δεν έχει όνομα
+	An optional content configuration has an AS entry	Μια διαμόρφωση προαιρετικού περιεχομένου έχει καταχώριση AS
+	A {} annotation prints inside the bleed area	Ένας σχολιασμός {} εκτυπώνεται μέσα στην περιοχή αιμορραγίας
+	Preflight report	Αναφορά προελέγχου
+	Profile: {}	Προφίλ: {}
+	File: {}	Αρχείο: {}
+	Date: {}	Ημερομηνία: {}
+	No problems found.	Δεν βρέθηκαν προβλήματα.
+	Problems found: {}	Προβλήματα που βρέθηκαν: {}
+	Pages: {}	Σελίδες: {}
+	Can be fixed	Μπορεί να διορθωθεί
+	Verify compliance with {}	Επαλήθευση συμμόρφωσης με {}
+	Preflight…	Προέλεγχος…
+	Preflight fixups for {profile}	Διορθώσεις προελέγχου για {profile}
+	Profile:	Προφίλ:
+	Analyze	Ανάλυση
+	Save report…	Αποθήκευση αναφοράς…
+	Analyze to see what the document needs for this profile.	Εκτελέστε ανάλυση για να δείτε τι χρειάζεται το έγγραφο για αυτό το προφίλ.
+	Can be fixed: {n}	Μπορούν να διορθωθούν: {n}
+	Save the Preflight report	Αποθήκευση αναφοράς προελέγχου

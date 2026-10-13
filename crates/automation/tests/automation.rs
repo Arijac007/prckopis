@@ -4417,6 +4417,38 @@ fn pdfa_through_tools() {
 }
 
 #[test]
+fn preflight_through_tools() {
+    let dir = workdir("preflight");
+    let mut a = auto(&dir);
+    let doc = ok(&mut a, "doc_create", json!({ "from": "text", "text": "Print me" }))["doc"].as_u64().unwrap();
+    let r = ok(&mut a, "preflight_run", json!({ "doc": doc, "profile": "pdfx-4" }));
+    assert_eq!((r["profile"].as_str(), r["passed"].as_bool()), (Some("pdfx-4"), Some(false)), "{r}");
+    let issues = r["issues"].as_array().unwrap();
+    let find = |m: &str| issues.iter().find(|i| i["message"] == m).cloned().unwrap_or_else(|| panic!("missing {m:?} in {r}"));
+    assert_eq!(find("There is no PDF/X output intent")["fixable"], false);
+    let trim = find("The page has neither a TrimBox nor an ArtBox");
+    assert_eq!((trim["page"].as_u64(), trim["citation"].as_str()), (Some(1), Some("ISO 15930-7 · ISO 32000-1 14.11.2")));
+    assert!(r["fixable"].as_u64().unwrap() > 0 && r.get("fixed").is_none(), "{r}");
+
+    // Fix, then report: what's left can't be fixed here, and the report says so.
+    let r = ok(&mut a, "preflight_run", json!({ "doc": doc, "fix": true, "report": "preflight.txt" }));
+    assert!(r["fixed"].as_array().unwrap().iter().any(|f| f == "The page has neither a TrimBox nor an ArtBox"), "{r}");
+    assert_eq!(r["fixable"], 0, "{r}");
+    assert!(r["issues"].as_array().unwrap().iter().any(|i| i["message"] == "There is no PDF/X output intent"), "{r}");
+    let text = std::fs::read_to_string(dir.join("preflight.txt")).unwrap();
+    assert!(text.starts_with("Preflight report\nProfile: Verify compliance with PDF/X-4\n"), "{text}");
+    assert!(text.contains("There is no PDF/X output intent") && !text.contains("Can be fixed"), "{text}");
+
+    // The PDF/A profiles are the PDF/A verifier's rules.
+    let pf = ok(&mut a, "preflight_run", json!({ "doc": doc, "profile": "pdfa-2b" }));
+    let pv = ok(&mut a, "pdfa_verify", json!({ "doc": doc, "level": "2b" }));
+    assert_eq!(pf["issues"].as_array().unwrap().len(), pv["issues"].as_array().unwrap().len());
+    let err = a.call("preflight_run", &json!({ "doc": doc, "profile": "pdfx-9" })).unwrap_err().to_string();
+    assert!(err.contains("pdfx-4"), "{err}");
+    assert!(a.call("preflight_run", &json!({ "doc": doc, "report": "../outside.txt" })).is_err());
+}
+
+#[test]
 fn exporting_to_word_html_and_rtf() {
     let dir = workdir("office");
     let mut a = auto(&dir);

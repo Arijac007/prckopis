@@ -2434,3 +2434,40 @@ animation effects	Off	Izklopljeni
 	Add alternate text to the figures.	Slikam dodajte nadomestno besedilo.
 	Pages left untagged (content could not be read): {pages}	Strani, ki so ostale brez oznak (vsebine ni bilo mogoče prebrati): {pages}
 	Automatic tagging builds tags from the page content: headings, paragraphs, figures and links in content order. Check the result and add alternate text to figures.	Samodejno označevanje ustvari oznake iz vsebine strani: naslove, odstavke, slike in povezave v vrstnem redu vsebine. Preverite rezultat in slikam dodajte nadomestno besedilo.
+	The document has no title	Dokument nima naslova
+	The document has no creation date	Dokument nima datuma nastanka
+	The document has no modification date	Dokument nima datuma spremembe
+	The document doesn't say whether it is trapped (Trapped must be True or False)	Dokument ne navaja, ali je bil izveden trapping (Trapped mora biti True ali False)
+	The file has no identifier (ID)	Datoteka nima identifikatorja (ID)
+	There is no PDF/X output intent	Ni izhodnega namena PDF/X
+	There is more than one PDF/X output intent	Obstaja več kot en izhodni namen PDF/X
+	The PDF/X output intent has no destination profile	Izhodni namen PDF/X nima ciljnega profila
+	The PDF/X output intent has no output condition identifier	Izhodni namen PDF/X nima identifikatorja izhodnega pogoja
+	The PDF/X output intent's profile isn't an output (printer) profile	Profil izhodnega namena PDF/X ni izhodni profil (za tiskalnik)
+	DeviceRGB is used, but the PDF/X output intent isn't an RGB profile	Uporabljen je DeviceRGB, vendar izhodni namen PDF/X ni profil RGB
+	DeviceCMYK is used, but the PDF/X output intent isn't a CMYK profile	Uporabljen je DeviceCMYK, vendar izhodni namen PDF/X ni profil CMYK
+	The page has neither a TrimBox nor an ArtBox	Stran nima niti TrimBox niti ArtBox
+	The page has both a TrimBox and an ArtBox	Stran ima tako TrimBox kot ArtBox
+	A page box extends beyond the MediaBox	Okvir strani sega čez MediaBox
+	The TrimBox extends beyond the BleedBox	TrimBox sega čez BleedBox
+	A graphics state sets a transfer function	Grafično stanje nastavi funkcijo prenosa
+	An optional content configuration has no name	Konfiguracija izbirne vsebine nima imena
+	An optional content configuration has an AS entry	Konfiguracija izbirne vsebine ima vnos AS
+	A {} annotation prints inside the bleed area	Opomba {} se natisne znotraj območja za porezavo
+	Preflight report	Poročilo predpreverjanja
+	Profile: {}	Profil: {}
+	File: {}	Datoteka: {}
+	Date: {}	Datum: {}
+	No problems found.	Ni najdenih težav.
+	Problems found: {}	Najdene težave: {}
+	Pages: {}	Strani: {}
+	Can be fixed	Mogoče je popraviti
+	Verify compliance with {}	Preverjanje skladnosti s {}
+	Preflight…	Predpreverjanje…
+	Preflight fixups for {profile}	Popravki predpreverjanja za {profile}
+	Profile:	Profil:
+	Analyze	Analiziraj
+	Save report…	Shrani poročilo…
+	Analyze to see what the document needs for this profile.	Analiziraj, da vidiš, kaj dokument potrebuje za ta profil.
+	Can be fixed: {n}	Mogoče je popraviti: {n}
+	Save the Preflight report	Shrani poročilo predpreverjanja

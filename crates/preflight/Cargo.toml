@@ -1,6 +1,6 @@
 [package]
 name = "prckopis-preflight"
-description = "Standards: verify PDF/A (ISO 19005) conformance and convert documents to PDF/A-2b or 3b"
+description = "Standards: verify PDF/A (ISO 19005) and PDF/X-4 (ISO 15930-7), convert to PDF/A-2b or 3b, and run Preflight profiles"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

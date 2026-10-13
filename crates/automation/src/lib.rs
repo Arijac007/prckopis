@@ -740,6 +740,7 @@ impl Automation {
             "pdfa_verify" => self.pdfa_verify(&a)?,
             "doc_export_office" => self.doc_export_office(&a)?,
             "pdfa_convert" => self.pdfa_convert(&a)?,
+            "preflight_run" => self.preflight_run(&a)?,
             "action_run" => self.action_run(&a)?,
             "doc_compare_report" => self.doc_compare_report(&a)?,
             "doc_compare_mark" => self.doc_compare_mark(&a)?,

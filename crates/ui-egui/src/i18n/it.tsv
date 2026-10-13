@@ -2438,3 +2438,40 @@ animation effects	Off	Disattivati
 	Add alternate text to the figures.	Aggiungi testo alternativo alle figure.
 	Pages left untagged (content could not be read): {pages}	Pagine lasciate senza tag (impossibile leggere il contenuto): {pages}
 	Automatic tagging builds tags from the page content: headings, paragraphs, figures and links in content order. Check the result and add alternate text to figures.	L’aggiunta automatica di tag crea i tag dal contenuto delle pagine: titoli, paragrafi, figure e collegamenti nell’ordine del contenuto. Controlla il risultato e aggiungi testo alternativo alle figure.
+	The document has no title	Il documento non ha un titolo
+	The document has no creation date	Il documento non ha una data di creazione
+	The document has no modification date	Il documento non ha una data di modifica
+	The document doesn't say whether it is trapped (Trapped must be True or False)	Il documento non indica se è stato sottoposto a trapping (Trapped deve essere True o False)
+	The file has no identifier (ID)	Il file non ha un identificatore (ID)
+	There is no PDF/X output intent	Non c'è un output intent PDF/X
+	There is more than one PDF/X output intent	C'è più di un output intent PDF/X
+	The PDF/X output intent has no destination profile	L'output intent PDF/X non ha un profilo di destinazione
+	The PDF/X output intent has no output condition identifier	L'output intent PDF/X non ha un identificatore della condizione di output
+	The PDF/X output intent's profile isn't an output (printer) profile	Il profilo dell'output intent PDF/X non è un profilo di output (stampante)
+	DeviceRGB is used, but the PDF/X output intent isn't an RGB profile	Viene usato DeviceRGB, ma l'output intent PDF/X non è un profilo RGB
+	DeviceCMYK is used, but the PDF/X output intent isn't a CMYK profile	Viene usato DeviceCMYK, ma l'output intent PDF/X non è un profilo CMYK
+	The page has neither a TrimBox nor an ArtBox	La pagina non ha né TrimBox né ArtBox
+	The page has both a TrimBox and an ArtBox	La pagina ha sia una TrimBox sia una ArtBox
+	A page box extends beyond the MediaBox	Un riquadro della pagina esce dalla MediaBox
+	The TrimBox extends beyond the BleedBox	La TrimBox esce dalla BleedBox
+	A graphics state sets a transfer function	Uno stato grafico imposta una funzione di trasferimento
+	An optional content configuration has no name	Una configurazione di contenuto facoltativo non ha un nome
+	An optional content configuration has an AS entry	Una configurazione di contenuto facoltativo ha una voce AS
+	A {} annotation prints inside the bleed area	Un'annotazione {} viene stampata nell'area di abbondanza
+	Preflight report	Rapporto di verifica preliminare
+	Profile: {}	Profilo: {}
+	File: {}	File: {}
+	Date: {}	Data: {}
+	No problems found.	Nessun problema trovato.
+	Problems found: {}	Problemi trovati: {}
+	Pages: {}	Pagine: {}
+	Can be fixed	Correggibile
+	Verify compliance with {}	Verifica la conformità a {}
+	Preflight…	Verifica preliminare…
+	Preflight fixups for {profile}	Correzioni della verifica preliminare per {profile}
+	Profile:	Profilo:
+	Analyze	Analizza
+	Save report…	Salva rapporto…
+	Analyze to see what the document needs for this profile.	Esegui l'analisi per vedere di cosa ha bisogno il documento per questo profilo.
+	Can be fixed: {n}	Correggibili: {n}
+	Save the Preflight report	Salva il rapporto di verifica preliminare

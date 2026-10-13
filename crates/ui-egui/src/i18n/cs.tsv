@@ -2502,3 +2502,40 @@ animation effects	Off	Vypnuto
 	Add alternate text to the figures.	Přidejte k obrázkům alternativní text.
 	Pages left untagged (content could not be read): {pages}	Stránky ponechané bez značek (obsah nešlo přečíst): {pages}
 	Automatic tagging builds tags from the page content: headings, paragraphs, figures and links in content order. Check the result and add alternate text to figures.	Automatické značkování vytvoří značky z obsahu stránek: nadpisy, odstavce, obrázky a odkazy v pořadí obsahu. Zkontrolujte výsledek a přidejte k obrázkům alternativní text.
+	The document has no title	Dokument nemá název
+	The document has no creation date	Dokument nemá datum vytvoření
+	The document has no modification date	Dokument nemá datum změny
+	The document doesn't say whether it is trapped (Trapped must be True or False)	Dokument neuvádí, zda prošel trappingem (Trapped musí být True nebo False)
+	The file has no identifier (ID)	Soubor nemá identifikátor (ID)
+	There is no PDF/X output intent	Chybí výstupní záměr PDF/X
+	There is more than one PDF/X output intent	Existuje více než jeden výstupní záměr PDF/X
+	The PDF/X output intent has no destination profile	Výstupní záměr PDF/X nemá cílový profil
+	The PDF/X output intent has no output condition identifier	Výstupní záměr PDF/X nemá identifikátor výstupní podmínky
+	The PDF/X output intent's profile isn't an output (printer) profile	Profil výstupního záměru PDF/X není výstupní profil (tiskárny)
+	DeviceRGB is used, but the PDF/X output intent isn't an RGB profile	Používá se DeviceRGB, ale výstupní záměr PDF/X není profil RGB
+	DeviceCMYK is used, but the PDF/X output intent isn't a CMYK profile	Používá se DeviceCMYK, ale výstupní záměr PDF/X není profil CMYK
+	The page has neither a TrimBox nor an ArtBox	Stránka nemá TrimBox ani ArtBox
+	The page has both a TrimBox and an ArtBox	Stránka má TrimBox i ArtBox
+	A page box extends beyond the MediaBox	Rámeček stránky přesahuje MediaBox
+	The TrimBox extends beyond the BleedBox	TrimBox přesahuje BleedBox
+	A graphics state sets a transfer function	Grafický stav nastavuje přenosovou funkci
+	An optional content configuration has no name	Konfigurace volitelného obsahu nemá název
+	An optional content configuration has an AS entry	Konfigurace volitelného obsahu má položku AS
+	A {} annotation prints inside the bleed area	Anotace {} se tiskne uvnitř oblasti spadávky
+	Preflight report	Zpráva předtiskové kontroly
+	Profile: {}	Profil: {}
+	File: {}	Soubor: {}
+	Date: {}	Datum: {}
+	No problems found.	Nebyly nalezeny žádné problémy.
+	Problems found: {}	Nalezené problémy: {}
+	Pages: {}	Stránky: {}
+	Can be fixed	Lze opravit
+	Verify compliance with {}	Ověřit shodu s {}
+	Preflight…	Předtisková kontrola…
+	Preflight fixups for {profile}	Opravy předtiskové kontroly pro {profile}
+	Profile:	Profil:
+	Analyze	Analyzovat
+	Save report…	Uložit zprávu…
+	Analyze to see what the document needs for this profile.	Spusťte analýzu a zjistěte, co dokument pro tento profil potřebuje.
+	Can be fixed: {n}	Lze opravit: {n}
+	Save the Preflight report	Uložit zprávu předtiskové kontroly

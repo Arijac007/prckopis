@@ -1,6 +1,7 @@
 # Where Prckopis falls short of Acrobat Pro
 
 > **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-13 · **Change:** minor (gap 11: Automatically tag PDF for untagged documents; estimate unchanged) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
+> **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-13 · **Change:** minor (gap 9: Preflight with PDF/A-2b, PDF/A-3b and PDF/X-4 profiles, fixups and a text report; PDF/X-4 verification partial) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
 > **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-13 · **Change:** minor (gap 17: custom redaction code sets shipped; IBAN, Croatian OIB and Croatian dates added to Search & Redact; estimates unchanged) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
 > **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-13 · **Change:** minor (gap 10: field locks authored in Prepare Form, Digital Signature Properties ▸ Signed) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
 > **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-13 · **Change:** minor (gap 10: FieldMDP field locks on signing and in validation) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
@@ -35,7 +36,7 @@ update the numbers.
 | 6 | Open-issue backlog of wrong results in shipped features | stability | 45–80 | this file |
 | 7 | OCR reads only unaccented Latin | feature | 40–75 | [file-format-parity.md](file-format-parity.md) |
 | 8 | Office export weak, Office import absent | file format | 55–100 | [file-format-parity.md](file-format-parity.md) |
-| 9 | No Preflight; PDF/A partial; PDF/X and PDF/UA absent | standards | 65–115 | [pdf-spec-parity.md](pdf-spec-parity.md) |
+| 9 | Preflight has three profiles; PDF/A and PDF/X-4 partial; PDF/UA absent | standards | 55–100 | [pdf-spec-parity.md](pdf-spec-parity.md) |
 | 10 | Signatures: no PKCS #11 or online revocation; timestamp servers HTTP only | feature, hardware | 40–70 | [pdf-spec-parity.md](pdf-spec-parity.md) |
 | 11 | Accessibility: checker only, no tagging tools | feature | 40–70 | [target-app-parity.md](target-app-parity.md) |
 | 12 | No measured fidelity harness against Acrobat | quality | (in 2) | [target-app-parity.md](target-app-parity.md) |
@@ -161,16 +162,25 @@ update the numbers.
   keeps layout (20–35 h).
 - **Estimate:** 55–100 h. **Doc:** [file-format-parity.md](file-format-parity.md).
 
-### 9. No Preflight; PDF/A partial; PDF/X and PDF/UA absent
+### 9. Preflight has three profiles; PDF/A and PDF/X-4 partial; PDF/UA absent
 
-- **Missing:** Preflight (profiles, single checks and fixups, results tree, reports, droplets);
-  PDF/A-1, PDF/A-4 and conformance levels a/u; PDF/X verify and convert; PDF/UA-1/2 verify; PDF/E,
-  PDF/VT; output-intent choice; transparency flattening.
-- **Evidence:** 12 Preflight features and 9 standards features planned; `optimize.pdfa-validate`,
-  `optimize.pdfa-convert` partial (2b/3b structural rules; CMYK documents get no output intent).
-  Acrobat ships hundreds of built-in Preflight profiles.
+- **Shipped:** Preflight (Print production and Apply PDF standards ▸ Preflight, `preflight_run`):
+  the profiles PDF/A-2b, PDF/A-3b and PDF/X-4, results grouped by problem with links to their pages
+  and the clause each breaks, Fix (one undoable edit of fixups that don't change what prints) and
+  a text report. PDF/X-4 checks (ISO 15930-7): identification, dates, Trapped, file ID, the
+  GTS_PDFX output intent and its printer profile, device colour against it, page boxes, printing
+  annotations in the bleed, fonts, external streams, PostScript, alternates/OPI, transfer
+  functions, optional content configurations.
+- **Missing:** more profiles (PDF/A-1, PDF/A-4 and levels a/u, PDF/X-1a/3/4p/5, PDF/UA-1/2, PDF/E,
+  PDF/VT), single checks and custom profiles, a results tree with object details, PDF/XML reports,
+  droplets; Save as PDF/X with a chosen output intent; transparency flattening; the PDF/X checks'
+  ISO 15930-7 sub-clause numbers (they cite ISO 32000-1) and a reference-validator comparison.
+- **Evidence:** `optimize.preflight` shipped; `optimize.preflight-fix`, `-profiles`, `-results`,
+  `-reports` and `optimize.pdfx-validate` partial; `optimize.pdfa-validate`, `optimize.pdfa-convert`
+  partial (2b/3b structural rules; CMYK documents get no output intent); 6 Preflight and 8
+  standards features planned. Acrobat ships hundreds of built-in Preflight profiles.
 - **Impact:** blocks print shops, archives and accessibility compliance work.
-- **Estimate:** 65–115 h. **Doc:** [pdf-spec-parity.md](pdf-spec-parity.md).
+- **Estimate:** 55–100 h. **Doc:** [pdf-spec-parity.md](pdf-spec-parity.md).
 
 ### 10. Signatures: no PKCS #11 or online revocation; timestamp servers HTTP only
 
@@ -329,6 +339,7 @@ update the numbers.
 
 | Date | Change | Summary |
 |---|---|---|
+| 2026-10-13 | minor | Gap 9: Preflight shipped with PDF/A-2b, PDF/A-3b and PDF/X-4 profiles, grouped results with page links, fixups and a text report; PDF/X-4 verification partial. Estimate 65–115 h → 55–100 h. |
 | 2026-10-13 | minor | Gap 17: custom redaction code sets (Redaction Code Editor with import/export, kept in preferences, `redact_mark` `code_set_file`) shipped; IBAN and Croatian OIB patterns with checksums and Croatian month names added. Estimates unchanged. |
 | 2026-10-13 | minor | Gap 10: a signature field's lock (`/Lock`) is authored in Prepare Form (Digital Signature Properties ▸ Signed) and through `form_set_props`; signing applies it |
 | 2026-10-12 | minor | Exclusive image crops resize with their pixels across nested states, intervening operators and content streams; shared clips remain fixed. Synthetic engine/tool regressions and private image save/reopen checks; estimates unchanged. |

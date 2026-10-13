@@ -2450,3 +2450,40 @@ animation effects	Off	معطّلة
 	Add alternate text to the figures.	أضف نصًا بديلًا إلى الأشكال.
 	Pages left untagged (content could not be read): {pages}	صفحات بقيت دون وسوم (تعذّرت قراءة المحتوى): {pages}
 	Automatic tagging builds tags from the page content: headings, paragraphs, figures and links in content order. Check the result and add alternate text to figures.	ينشئ الوسم التلقائي الوسوم من محتوى الصفحات: العناوين والفقرات والأشكال والروابط بترتيب المحتوى. راجع النتيجة وأضف نصًا بديلًا إلى الأشكال.
+	The document has no title	ليس للمستند عنوان
+	The document has no creation date	ليس للمستند تاريخ إنشاء
+	The document has no modification date	ليس للمستند تاريخ تعديل
+	The document doesn't say whether it is trapped (Trapped must be True or False)	لا يذكر المستند ما إذا كان قد خضع للتراكب اللوني (يجب أن تكون قيمة Trapped هي True أو False)
+	The file has no identifier (ID)	ليس للملف معرّف (ID)
+	There is no PDF/X output intent	لا يوجد هدف إخراج PDF/X
+	There is more than one PDF/X output intent	يوجد أكثر من هدف إخراج PDF/X
+	The PDF/X output intent has no destination profile	ليس لهدف إخراج PDF/X ملف تعريف وجهة
+	The PDF/X output intent has no output condition identifier	ليس لهدف إخراج PDF/X معرّف لشرط الإخراج
+	The PDF/X output intent's profile isn't an output (printer) profile	ملف تعريف هدف إخراج PDF/X ليس ملف تعريف إخراج (طابعة)
+	DeviceRGB is used, but the PDF/X output intent isn't an RGB profile	يُستخدم DeviceRGB، لكن هدف إخراج PDF/X ليس ملف تعريف RGB
+	DeviceCMYK is used, but the PDF/X output intent isn't a CMYK profile	يُستخدم DeviceCMYK، لكن هدف إخراج PDF/X ليس ملف تعريف CMYK
+	The page has neither a TrimBox nor an ArtBox	ليس للصفحة TrimBox ولا ArtBox
+	The page has both a TrimBox and an ArtBox	للصفحة TrimBox وArtBox معًا
+	A page box extends beyond the MediaBox	يمتد أحد مربعات الصفحة خارج MediaBox
+	The TrimBox extends beyond the BleedBox	يمتد TrimBox خارج BleedBox
+	A graphics state sets a transfer function	تضبط حالة رسومية دالة نقل
+	An optional content configuration has no name	ليس لتكوين المحتوى الاختياري اسم
+	An optional content configuration has an AS entry	يحتوي تكوين المحتوى الاختياري على إدخال AS
+	A {} annotation prints inside the bleed area	يُطبع تعليق توضيحي من نوع {} داخل منطقة النزف
+	Preflight report	تقرير الفحص ما قبل الطباعة
+	Profile: {}	ملف التعريف: {}
+	File: {}	الملف: {}
+	Date: {}	التاريخ: {}
+	No problems found.	لم يُعثر على أي مشكلات.
+	Problems found: {}	المشكلات المعثور عليها: {}
+	Pages: {}	الصفحات: {}
+	Can be fixed	يمكن إصلاحه
+	Verify compliance with {}	التحقق من التوافق مع {}
+	Preflight…	فحص ما قبل الطباعة…
+	Preflight fixups for {profile}	إصلاحات الفحص ما قبل الطباعة لـ {profile}
+	Profile:	ملف التعريف:
+	Analyze	تحليل
+	Save report…	حفظ التقرير…
+	Analyze to see what the document needs for this profile.	حلّل لترى ما يحتاجه المستند لملف التعريف هذا.
+	Can be fixed: {n}	يمكن إصلاحه: {n}
+	Save the Preflight report	حفظ تقرير الفحص ما قبل الطباعة

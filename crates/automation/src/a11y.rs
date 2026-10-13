@@ -649,6 +649,59 @@ impl Automation {
         self.pdfa_verify(a)
     }
 
+    /// Preflight: run a profile, optionally apply its fixups first-then-again, and optionally
+    /// write the text report.
+    pub(crate) fn preflight_run(&mut self, a: &Args) -> Result<Value> {
+        use prckopis_engine::preflight::{Profile, report_text};
+        let name = a.opt_str("profile")?.unwrap_or("pdfx-4");
+        let profile = Profile::from_id(name).ok_or_else(|| {
+            let ids: Vec<&str> = Profile::ALL.iter().map(|p| p.id()).collect();
+            ToolError::InvalidArgs(format!("unknown Preflight profile {name:?} (one of {})", ids.join(", ")))
+        })?;
+        let id = self.doc(a)?.id;
+        let before = self.doc(a)?.preflight(profile);
+        let fix = a.opt_bool("fix")?.unwrap_or(false);
+        if fix && before.fixable() > 0 {
+            self.session.apply(id, prckopis_engine::Edit::PreflightFix { profile }).map_err(failed)?;
+        }
+        let doc = self.doc(a)?;
+        let r = doc.preflight(profile);
+        let issue = |i: &prckopis_engine::preflight::Issue| json!({ "standard": i.standard, "clause": i.clause, "citation": i.citation(), "message": i.message, "page": i.page.map(|p| p + 1), "fixable": i.fixable });
+        let groups: Vec<Value> = r
+            .groups()
+            .iter()
+            .map(|g| json!({ "message": g.issue.message, "count": g.count, "pages": g.pages.iter().map(|p| p + 1).collect::<Vec<_>>(), "citation": g.issue.citation(), "fixable": g.issue.fixable }))
+            .collect();
+        let mut out = json!({
+            "profile": profile.id(),
+            "label": profile.label(),
+            "passed": r.passed(),
+            "problems": r.issues.len(),
+            "fixable": r.fixable(),
+            "issues": r.issues.iter().map(issue).collect::<Vec<_>>(),
+            "groups": groups,
+        });
+        if fix {
+            // What was there before and isn't now.
+            let gone: Vec<&str> = before
+                .issues
+                .iter()
+                .filter(|b| !r.issues.iter().any(|i| i.message == b.message && i.page == b.page))
+                .map(|b| b.message.as_str())
+                .collect();
+            out["fixed"] = json!(gone);
+        }
+        if let Some(path) = a.opt_str("report")? {
+            let path = self.resolve(path, true)?;
+            let (y, m, d) = self.session.today();
+            // A script's report is in English, like the rest of what the tools say.
+            let text = report_text(&r, &doc.name, &format!("{y}-{m:02}-{d:02}"), &prckopis_engine::preflight::in_english);
+            write_atomic(&path, text.as_bytes())?;
+            out["report"] = json!(path.to_string_lossy());
+        }
+        Ok(out)
+    }
+
     pub(crate) fn action_list(&self) -> Result<Value> {
         use prckopis_engine::actions::{Step, builtin};
         let step_json = |s: &Step| json!({ "step": s.id(), "arg": s.arg() });

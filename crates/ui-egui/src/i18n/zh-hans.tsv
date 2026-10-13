@@ -2393,3 +2393,40 @@ animation effects	Off	关
 	Add alternate text to the figures.	请为图形添加替代文本。
 	Pages left untagged (content could not be read): {pages}	未添加标签的页面（无法读取内容）：{pages}
 	Automatic tagging builds tags from the page content: headings, paragraphs, figures and links in content order. Check the result and add alternate text to figures.	自动标记会根据页面内容按内容顺序创建标签：标题、段落、图形和链接。请检查结果，并为图形添加替代文本。
+	The document has no title	文档没有标题
+	The document has no creation date	文档没有创建日期
+	The document has no modification date	文档没有修改日期
+	The document doesn't say whether it is trapped (Trapped must be True or False)	文档未说明是否已陷印（Trapped 必须为 True 或 False）
+	The file has no identifier (ID)	文件没有标识符（ID）
+	There is no PDF/X output intent	没有 PDF/X 输出意图
+	There is more than one PDF/X output intent	PDF/X 输出意图不止一个
+	The PDF/X output intent has no destination profile	PDF/X 输出意图没有目标配置文件
+	The PDF/X output intent has no output condition identifier	PDF/X 输出意图没有输出条件标识符
+	The PDF/X output intent's profile isn't an output (printer) profile	PDF/X 输出意图的配置文件不是输出（打印机）配置文件
+	DeviceRGB is used, but the PDF/X output intent isn't an RGB profile	使用了 DeviceRGB，但 PDF/X 输出意图不是 RGB 配置文件
+	DeviceCMYK is used, but the PDF/X output intent isn't a CMYK profile	使用了 DeviceCMYK，但 PDF/X 输出意图不是 CMYK 配置文件
+	The page has neither a TrimBox nor an ArtBox	页面既没有 TrimBox 也没有 ArtBox
+	The page has both a TrimBox and an ArtBox	页面同时有 TrimBox 和 ArtBox
+	A page box extends beyond the MediaBox	某个页面框超出了 MediaBox
+	The TrimBox extends beyond the BleedBox	TrimBox 超出了 BleedBox
+	A graphics state sets a transfer function	某个图形状态设置了传递函数
+	An optional content configuration has no name	某个可选内容配置没有名称
+	An optional content configuration has an AS entry	某个可选内容配置含有 AS 条目
+	A {} annotation prints inside the bleed area	一个 {} 注释会打印在出血区域内
+	Preflight report	印前检查报告
+	Profile: {}	配置文件：{}
+	File: {}	文件：{}
+	Date: {}	日期：{}
+	No problems found.	未发现问题。
+	Problems found: {}	发现的问题：{}
+	Pages: {}	页面：{}
+	Can be fixed	可以修复
+	Verify compliance with {}	验证是否符合 {}
+	Preflight…	印前检查…
+	Preflight fixups for {profile}	{profile} 的印前检查修复
+	Profile:	配置文件：
+	Analyze	分析
+	Save report…	保存报告…
+	Analyze to see what the document needs for this profile.	进行分析，查看文档要符合此配置文件还需要什么。
+	Can be fixed: {n}	可以修复：{n}
+	Save the Preflight report	保存印前检查报告

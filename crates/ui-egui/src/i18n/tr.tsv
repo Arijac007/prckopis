@@ -2425,3 +2425,40 @@ animation effects	Off	Kapalı
 	Add alternate text to the figures.	Şekillere alternatif metin ekleyin.
 	Pages left untagged (content could not be read): {pages}	Etiketsiz kalan sayfalar (içerik okunamadı): {pages}
 	Automatic tagging builds tags from the page content: headings, paragraphs, figures and links in content order. Check the result and add alternate text to figures.	Otomatik etiketleme, sayfa içeriğinden etiketler oluşturur: başlıklar, paragraflar, şekiller ve bağlantılar içerik sırasıyla. Sonucu kontrol edin ve şekillere alternatif metin ekleyin.
+	The document has no title	Belgenin başlığı yok
+	The document has no creation date	Belgenin oluşturma tarihi yok
+	The document has no modification date	Belgenin değiştirme tarihi yok
+	The document doesn't say whether it is trapped (Trapped must be True or False)	Belge, trapping uygulanıp uygulanmadığını belirtmiyor (Trapped True ya da False olmalı)
+	The file has no identifier (ID)	Dosyanın tanımlayıcısı (ID) yok
+	There is no PDF/X output intent	PDF/X çıktı amacı yok
+	There is more than one PDF/X output intent	Birden fazla PDF/X çıktı amacı var
+	The PDF/X output intent has no destination profile	PDF/X çıktı amacının hedef profili yok
+	The PDF/X output intent has no output condition identifier	PDF/X çıktı amacının çıktı koşulu tanımlayıcısı yok
+	The PDF/X output intent's profile isn't an output (printer) profile	PDF/X çıktı amacının profili bir çıktı (yazıcı) profili değil
+	DeviceRGB is used, but the PDF/X output intent isn't an RGB profile	DeviceRGB kullanılıyor ancak PDF/X çıktı amacı bir RGB profili değil
+	DeviceCMYK is used, but the PDF/X output intent isn't a CMYK profile	DeviceCMYK kullanılıyor ancak PDF/X çıktı amacı bir CMYK profili değil
+	The page has neither a TrimBox nor an ArtBox	Sayfada ne TrimBox ne de ArtBox var
+	The page has both a TrimBox and an ArtBox	Sayfada hem TrimBox hem de ArtBox var
+	A page box extends beyond the MediaBox	Bir sayfa kutusu MediaBox dışına taşıyor
+	The TrimBox extends beyond the BleedBox	TrimBox, BleedBox dışına taşıyor
+	A graphics state sets a transfer function	Bir grafik durumu aktarım işlevi ayarlıyor
+	An optional content configuration has no name	İsteğe bağlı içerik yapılandırmasının adı yok
+	An optional content configuration has an AS entry	İsteğe bağlı içerik yapılandırmasında AS girdisi var
+	A {} annotation prints inside the bleed area	Bir {} ek açıklaması taşma alanının içinde yazdırılıyor
+	Preflight report	Preflight raporu
+	Profile: {}	Profil: {}
+	File: {}	Dosya: {}
+	Date: {}	Tarih: {}
+	No problems found.	Sorun bulunamadı.
+	Problems found: {}	Bulunan sorunlar: {}
+	Pages: {}	Sayfalar: {}
+	Can be fixed	Düzeltilebilir
+	Verify compliance with {}	{} uyumluluğunu doğrula
+	Preflight…	Preflight…
+	Preflight fixups for {profile}	{profile} için Preflight düzeltmeleri
+	Profile:	Profil:
+	Analyze	Analiz et
+	Save report…	Raporu kaydet…
+	Analyze to see what the document needs for this profile.	Belgenin bu profil için neye ihtiyacı olduğunu görmek için analiz edin.
+	Can be fixed: {n}	Düzeltilebilir: {n}
+	Save the Preflight report	Preflight raporunu kaydet

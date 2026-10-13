@@ -2392,3 +2392,40 @@ animation effects	Off	Изключени
 	Add alternate text to the figures.	Добавете алтернативен текст към фигурите.
 	Pages left untagged (content could not be read): {pages}	Страници без тагове (съдържанието не можа да бъде прочетено): {pages}
 	Automatic tagging builds tags from the page content: headings, paragraphs, figures and links in content order. Check the result and add alternate text to figures.	Автоматичното тагване създава тагове от съдържанието на страниците: заглавия, абзаци, фигури и връзки в реда на съдържанието. Проверете резултата и добавете алтернативен текст към фигурите.
+	The document has no title	Документът няма заглавие
+	The document has no creation date	Документът няма дата на създаване
+	The document has no modification date	Документът няма дата на промяна
+	The document doesn't say whether it is trapped (Trapped must be True or False)	Документът не посочва дали е направен трапинг (Trapped трябва да е True или False)
+	The file has no identifier (ID)	Файлът няма идентификатор (ID)
+	There is no PDF/X output intent	Няма изходно намерение за PDF/X
+	There is more than one PDF/X output intent	Има повече от едно изходно намерение за PDF/X
+	The PDF/X output intent has no destination profile	Изходното намерение за PDF/X няма целеви профил
+	The PDF/X output intent has no output condition identifier	Изходното намерение за PDF/X няма идентификатор на изходното условие
+	The PDF/X output intent's profile isn't an output (printer) profile	Профилът на изходното намерение за PDF/X не е изходен профил (за принтер)
+	DeviceRGB is used, but the PDF/X output intent isn't an RGB profile	Използва се DeviceRGB, но изходното намерение за PDF/X не е RGB профил
+	DeviceCMYK is used, but the PDF/X output intent isn't a CMYK profile	Използва се DeviceCMYK, но изходното намерение за PDF/X не е CMYK профил
+	The page has neither a TrimBox nor an ArtBox	Страницата няма нито TrimBox, нито ArtBox
+	The page has both a TrimBox and an ArtBox	Страницата има и TrimBox, и ArtBox
+	A page box extends beyond the MediaBox	Поле на страницата излиза извън MediaBox
+	The TrimBox extends beyond the BleedBox	TrimBox излиза извън BleedBox
+	A graphics state sets a transfer function	Графично състояние задава функция за пренос
+	An optional content configuration has no name	Конфигурация на незадължително съдържание няма име
+	An optional content configuration has an AS entry	Конфигурация на незадължително съдържание има запис AS
+	A {} annotation prints inside the bleed area	Анотация {} се отпечатва в зоната за обрязване
+	Preflight report	Отчет от предпечатната проверка
+	Profile: {}	Профил: {}
+	File: {}	Файл: {}
+	Date: {}	Дата: {}
+	No problems found.	Не са открити проблеми.
+	Problems found: {}	Открити проблеми: {}
+	Pages: {}	Страници: {}
+	Can be fixed	Може да се коригира
+	Verify compliance with {}	Проверка за съответствие с {}
+	Preflight…	Предпечатна проверка…
+	Preflight fixups for {profile}	Корекции от предпечатната проверка за {profile}
+	Profile:	Профил:
+	Analyze	Анализирай
+	Save report…	Запиши отчета…
+	Analyze to see what the document needs for this profile.	Анализирайте, за да видите от какво се нуждае документът за този профил.
+	Can be fixed: {n}	Може да се коригира: {n}
+	Save the Preflight report	Запиши отчета от предпечатната проверка

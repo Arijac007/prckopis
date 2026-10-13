@@ -2607,3 +2607,39 @@ signature pad	Type	Upiši
 	Add alternate text to the figures.	Dodajte zamjenski tekst slikama.
 	Pages left untagged (content could not be read): {pages}	Stranice ostale bez oznaka (sadržaj nije bilo moguće pročitati): {pages}
 	Automatic tagging builds tags from the page content: headings, paragraphs, figures and links in content order. Check the result and add alternate text to figures.	Automatsko označavanje stvara oznake iz sadržaja stranica: naslove, odlomke, slike i poveznice redoslijedom sadržaja. Provjerite rezultat i dodajte zamjenski tekst slikama.
+	The document has no creation date	Dokument nema datum izrade
+	The document has no modification date	Dokument nema datum izmjene
+	The document doesn't say whether it is trapped (Trapped must be True or False)	Dokument ne navodi je li proveden trapping (Trapped mora biti True ili False)
+	The file has no identifier (ID)	Datoteka nema identifikator (ID)
+	There is no PDF/X output intent	Nema PDF/X izlazne namjere
+	There is more than one PDF/X output intent	Postoji više od jedne PDF/X izlazne namjere
+	The PDF/X output intent has no destination profile	PDF/X izlazna namjera nema odredišni profil
+	The PDF/X output intent has no output condition identifier	PDF/X izlazna namjera nema identifikator izlaznog uvjeta
+	The PDF/X output intent's profile isn't an output (printer) profile	Profil PDF/X izlazne namjere nije izlazni profil (za pisač)
+	DeviceRGB is used, but the PDF/X output intent isn't an RGB profile	Koristi se DeviceRGB, ali PDF/X izlazna namjera nije RGB profil
+	DeviceCMYK is used, but the PDF/X output intent isn't a CMYK profile	Koristi se DeviceCMYK, ali PDF/X izlazna namjera nije CMYK profil
+	The page has neither a TrimBox nor an ArtBox	Stranica nema ni TrimBox ni ArtBox
+	The page has both a TrimBox and an ArtBox	Stranica ima i TrimBox i ArtBox
+	A page box extends beyond the MediaBox	Okvir stranice proteže se izvan okvira MediaBox
+	The TrimBox extends beyond the BleedBox	TrimBox se proteže izvan okvira BleedBox
+	A graphics state sets a transfer function	Grafičko stanje postavlja funkciju prijenosa
+	An optional content configuration has no name	Konfiguracija izbornog sadržaja nema naziv
+	An optional content configuration has an AS entry	Konfiguracija izbornog sadržaja ima unos AS
+	A {} annotation prints inside the bleed area	Bilješka {} ispisuje se unutar područja napusta
+	Preflight report	Izvješće predprovjere
+	Profile: {}	Profil: {}
+	File: {}	Datoteka: {}
+	Date: {}	Datum: {}
+	No problems found.	Nisu pronađeni problemi.
+	Problems found: {}	Pronađeni problemi: {}
+	Pages: {}	Stranice: {}
+	Can be fixed	Može se popraviti
+	Verify compliance with {}	Provjera sukladnosti s {}
+	Preflight…	Predprovjera…
+	Preflight fixups for {profile}	Popravci predprovjere za {profile}
+	Profile:	Profil:
+	Analyze	Analiziraj
+	Save report…	Spremi izvješće…
+	Analyze to see what the document needs for this profile.	Analiziraj da vidiš što dokumentu treba za ovaj profil.
+	Can be fixed: {n}	Može se popraviti: {n}
+	Save the Preflight report	Spremi izvješće predprovjere

@@ -1,5 +1,6 @@
 # PDF specification and standards parity
 
+> **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-13 · **Change:** minor (PDF/X-4 verification and Preflight with three profiles) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
 > **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-11 · **Change:** minor (§7.6.4: written encrypted files open in Acrobat, #774) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
 
 How much of ISO 32000-2 (PDF 2.0) and the PDF subset standards Prckopis implements, set against
@@ -119,16 +120,17 @@ are borrowed; PDF 2.0 additions and most subset standards are missing. **150–2
 | PDF/A-1a/b (ISO 19005-1) | verify, convert | none | |
 | PDF/A-2a/b/u, PDF/A-3a/b/u | verify, convert | **partial**: 2b and 3b structural rules and conversion (sRGB intent; not CMYK) | |
 | PDF/A-4, 4e, 4f | verify, convert | none | |
-| PDF/X-1a, X-3, X-4 (ISO 15930) | verify, convert | none | |
+| PDF/X-1a, X-3, X-4 (ISO 15930) | verify, convert | **partial**: X-4 structural checks (identification, Trapped, ID, output intent and printer profile, device colour, page boxes, bleed annotations, fonts, external streams, PostScript, OPI, transfer functions, optional content) and the fixups that don't change print; no X-1a/X-3, no conversion with a chosen output intent | |
 | PDF/UA-1, PDF/UA-2 (ISO 14289) | verify (Preflight), checker | Accessibility Checker (32 rules, Acrobat's own), no PDF/UA verification | |
 | PDF/E, PDF/VT | verify, convert | none | |
-| Preflight (profiles, fixups, reports) | hundreds of profiles | none | |
+| Preflight (profiles, fixups, reports) | hundreds of profiles | **partial**: PDF/A-2b, PDF/A-3b and PDF/X-4 profiles, grouped results with page links, Fix, text report | |
 | Factur-X / ZUGFeRD (e-invoice in PDF/A-3) | Preflight checks | none | |
-| **All subset standards** | | | **65–115** (gap 9) |
+| **All subset standards** | | | **55–100** (gap 9) |
 
 ## Revision history
 
 | Date | Change | Summary |
 |---|---|---|
+| 2026-10-13 | minor | PDF/X-4 verification and fixups; Preflight with PDF/A-2b, PDF/A-3b and PDF/X-4 profiles |
 | 2026-10-11 | minor | §7.6.4: encrypted files we write open in Acrobat (#774, fixed by #836) |
 | 2026-10-10 | major | Created from the code, `vendor/README.md` and `parity/acrobat-features.toml`, against ISO 32000-2 and Acrobat Pro 26.002.21931's documented capabilities |
