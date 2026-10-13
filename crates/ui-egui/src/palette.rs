@@ -131,7 +131,7 @@ pub fn show(app: &mut PrckopisApp, ctx: &egui::Context) {
         .fixed_pos(egui::pos2(screen.center().x, screen.top() + 96.0))
         .show(ctx, |ui| {
             egui::Frame::popup(ui.style()).corner_radius(CornerRadius::same(12)).inner_margin(egui::Margin::same(10)).show(ui, |ui| {
-                ui.set_width(560.0);
+                crate::widgets::set_fit_width(ui, 560.0);
                 ui.horizontal(|ui| {
                     ui.add(icons::image("search", 18.0, t.text_muted));
                     let r = ui.add(

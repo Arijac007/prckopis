@@ -2,7 +2,7 @@
 //! Password Security settings behind "Advanced Options" (compatibility, what to encrypt,
 //! printing, changes, copying, screen readers). Execution plan M8.1.
 
-use egui::{Align, Color32, Layout};
+use egui::Color32;
 use prckopis_engine::{Changes, Edit, Printing, Protection};
 
 use crate::theme::{self, Tokens};
@@ -97,123 +97,133 @@ pub(crate) fn body(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> (boo
     ui.label(egui::RichText::new(tl!("Protect Using Password")).font(theme::semibold(18.0)));
     ui.add_space(4.0);
     ui.separator();
-    ui.add_space(6.0);
-    ui.label(tl!("Requires user to enter a password for:"));
-    ui.add_space(4.0);
-    if radio(ui, t, d.viewing, "Viewing").clicked() {
-        d.viewing = true;
-    }
-    if radio(ui, t, !d.viewing, "Editing").clicked() {
-        d.viewing = false;
-    }
-    ui.add_space(10.0);
-    let field = |ui: &mut egui::Ui, label: &str, text: &mut String, id: &str| {
-        let l = ui.label(tl!(label));
-        ui.add(crate::widgets::line(text).password(true).desired_width(290.0).id_salt(id)).labelled_by(l.id)
-    };
-    let r = field(ui, "Type Password", &mut d.password, "protect-pw");
-    if r.changed() || !d.password.is_empty() {
-        let (s, c) = strength(&d.password);
-        if !d.password.is_empty() {
-            ui.label(egui::RichText::new(crate::i18n::fmt(tl!("Strength: {s}"), &[("s", tl!(s))])).font(theme::medium(11.5)).color(c));
+    // On a phone, with Advanced Options open, the settings scroll above the buttons.
+    crate::widgets::dialog_body(ui, "protect-body", 64.0, |ui| {
+        ui.add_space(6.0);
+        ui.label(tl!("Requires user to enter a password for:"));
+        ui.add_space(4.0);
+        if radio(ui, t, d.viewing, "Viewing").clicked() {
+            d.viewing = true;
         }
-    }
-    ui.add_space(6.0);
-    field(ui, "Re-type Password", &mut d.confirm, "protect-pw2");
-    ui.add_space(6.0);
-    let chevron = if d.advanced { "⌃" } else { "⌄" };
-    if ui
-        .add(
-            egui::Button::new(
-                egui::RichText::new(crate::i18n::fmt(tl!("Advanced Options {chevron}"), &[("chevron", chevron)])).font(theme::semibold(13.0)),
+        if radio(ui, t, !d.viewing, "Editing").clicked() {
+            d.viewing = false;
+        }
+        ui.add_space(10.0);
+        let field = |ui: &mut egui::Ui, label: &str, text: &mut String, id: &str| {
+            let l = ui.label(tl!(label));
+            ui.add(crate::widgets::line(text).password(true).desired_width(crate::widgets::fit_width(ui, 290.0)).id_salt(id)).labelled_by(l.id)
+        };
+        let r = field(ui, "Type Password", &mut d.password, "protect-pw");
+        if r.changed() || !d.password.is_empty() {
+            let (s, c) = strength(&d.password);
+            if !d.password.is_empty() {
+                ui.label(egui::RichText::new(crate::i18n::fmt(tl!("Strength: {s}"), &[("s", tl!(s))])).font(theme::medium(11.5)).color(c));
+            }
+        }
+        ui.add_space(6.0);
+        field(ui, "Re-type Password", &mut d.confirm, "protect-pw2");
+        ui.add_space(6.0);
+        let chevron = if d.advanced { "⌃" } else { "⌄" };
+        if ui
+            .add(
+                egui::Button::new(
+                    egui::RichText::new(crate::i18n::fmt(tl!("Advanced Options {chevron}"), &[("chevron", chevron)])).font(theme::semibold(13.0)),
+                )
+                .frame(false),
             )
-            .frame(false),
-        )
-        .clicked()
-    {
-        d.advanced = !d.advanced;
-    }
-    if d.advanced {
-        let p = &mut d.protection;
-        egui::Grid::new("protect-advanced").num_columns(2).spacing([12.0, 8.0]).show(ui, |ui| {
-            ui.label(tl!("Compatibility"));
-            let algos = [
-                (A::Aes256, tl!("Acrobat X and later (256-bit AES)")),
-                (A::Aes128, tl!("Acrobat 7.0 and later (128-bit AES)")),
-                (A::Rc4_128, tl!("Acrobat 5.0 and later (128-bit RC4)")),
-                (A::Rc4_40, tl!("Acrobat 3.0 and later (40-bit RC4)")),
-            ];
-            let cur = algos.iter().find(|(a, _)| *a == p.algorithm).map_or(algos[0].1, |(_, l)| *l);
-            egui::ComboBox::from_id_salt("protect-algo").width(300.0).selected_text(cur).show_ui(ui, |ui| {
-                for (a, l) in algos {
-                    ui.selectable_value(&mut p.algorithm, a, l);
+            .clicked()
+        {
+            d.advanced = !d.advanced;
+        }
+        if d.advanced {
+            let p = &mut d.protection;
+            let grid = egui::Grid::new("protect-advanced").num_columns(2).spacing([12.0, 8.0]);
+            crate::widgets::form(ui, grid, |ui| {
+                ui.label(tl!("Compatibility"));
+                let algos = [
+                    (A::Aes256, tl!("Acrobat X and later (256-bit AES)")),
+                    (A::Aes128, tl!("Acrobat 7.0 and later (128-bit AES)")),
+                    (A::Rc4_128, tl!("Acrobat 5.0 and later (128-bit RC4)")),
+                    (A::Rc4_40, tl!("Acrobat 3.0 and later (40-bit RC4)")),
+                ];
+                let cur = algos.iter().find(|(a, _)| *a == p.algorithm).map_or(algos[0].1, |(_, l)| *l);
+                egui::ComboBox::from_id_salt("protect-algo").width(crate::widgets::fit_width(ui, 300.0)).selected_text(cur).show_ui(ui, |ui| {
+                    for (a, l) in algos {
+                        ui.selectable_value(&mut p.algorithm, a, l);
+                    }
+                });
+                ui.end_row();
+                ui.label(tl!("Encrypt"));
+                ui.vertical(|ui| {
+                    widgets::radio_value(ui, &mut p.encrypt_metadata, true, tl!("All document contents"));
+                    // Unencrypted metadata needs crypt filters (Acrobat 6.0 and later).
+                    ui.add_enabled_ui(p.algorithm != A::Rc4_40 && p.algorithm != A::Rc4_128, |ui| {
+                        widgets::radio_value(ui, &mut p.encrypt_metadata, false, tl!("All document contents except metadata"));
+                    });
+                });
+                ui.end_row();
+                if !d.viewing {
+                    ui.label(tl!("Printing allowed"));
+                    let opts =
+                        [(Printing::None, tl!("None")), (Printing::Low, tl!("Low Resolution (150 dpi)")), (Printing::High, tl!("High Resolution"))];
+                    let cur = opts.iter().find(|(o, _)| *o == p.printing).map_or(tl!("High Resolution"), |(_, l)| *l);
+                    egui::ComboBox::from_id_salt("protect-print").width(crate::widgets::fit_width(ui, 300.0)).selected_text(cur).show_ui(ui, |ui| {
+                        for (o, l) in opts {
+                            ui.selectable_value(&mut p.printing, o, l);
+                        }
+                    });
+                    ui.end_row();
+                    ui.label(tl!("Changes allowed"));
+                    let opts = [
+                        (Changes::None, tl!("None")),
+                        (Changes::Pages, tl!("Inserting, deleting, and rotating pages")),
+                        (Changes::FillSign, tl!("Filling in form fields and signing existing signature fields")),
+                        (Changes::CommentFillSign, tl!("Commenting, filling in form fields, and signing existing signature fields")),
+                        (Changes::AnyExceptExtract, tl!("Any except extracting pages")),
+                    ];
+                    let cur = opts.iter().find(|(o, _)| *o == p.changes).map_or(tl!("None"), |(_, l)| *l);
+                    egui::ComboBox::from_id_salt("protect-changes").width(crate::widgets::fit_width(ui, 300.0)).selected_text(cur).show_ui(
+                        ui,
+                        |ui| {
+                            for (o, l) in opts {
+                                ui.selectable_value(&mut p.changes, o, l);
+                            }
+                        },
+                    );
+                    ui.end_row();
+                    crate::widgets::form_gap(ui);
+                    ui.vertical(|ui| {
+                        ui.add(widgets::checkbox(&mut p.copy, tl!("Enable copying of text, images, and other content")));
+                        ui.add(widgets::checkbox(
+                            &mut p.accessibility,
+                            tl!("Enable text access for screen reader devices for the visually impaired"),
+                        ));
+                    });
+                    ui.end_row();
                 }
             });
-            ui.end_row();
-            ui.label(tl!("Encrypt"));
-            ui.vertical(|ui| {
-                widgets::radio_value(ui, &mut p.encrypt_metadata, true, tl!("All document contents"));
-                // Unencrypted metadata needs crypt filters (Acrobat 6.0 and later).
-                ui.add_enabled_ui(p.algorithm != A::Rc4_40 && p.algorithm != A::Rc4_128, |ui| {
-                    widgets::radio_value(ui, &mut p.encrypt_metadata, false, tl!("All document contents except metadata"));
-                });
-            });
-            ui.end_row();
-            if !d.viewing {
-                ui.label(tl!("Printing allowed"));
-                let opts =
-                    [(Printing::None, tl!("None")), (Printing::Low, tl!("Low Resolution (150 dpi)")), (Printing::High, tl!("High Resolution"))];
-                let cur = opts.iter().find(|(o, _)| *o == p.printing).map_or(tl!("High Resolution"), |(_, l)| *l);
-                egui::ComboBox::from_id_salt("protect-print").width(300.0).selected_text(cur).show_ui(ui, |ui| {
-                    for (o, l) in opts {
-                        ui.selectable_value(&mut p.printing, o, l);
-                    }
-                });
-                ui.end_row();
-                ui.label(tl!("Changes allowed"));
-                let opts = [
-                    (Changes::None, tl!("None")),
-                    (Changes::Pages, tl!("Inserting, deleting, and rotating pages")),
-                    (Changes::FillSign, tl!("Filling in form fields and signing existing signature fields")),
-                    (Changes::CommentFillSign, tl!("Commenting, filling in form fields, and signing existing signature fields")),
-                    (Changes::AnyExceptExtract, tl!("Any except extracting pages")),
-                ];
-                let cur = opts.iter().find(|(o, _)| *o == p.changes).map_or(tl!("None"), |(_, l)| *l);
-                egui::ComboBox::from_id_salt("protect-changes").width(300.0).selected_text(cur).show_ui(ui, |ui| {
-                    for (o, l) in opts {
-                        ui.selectable_value(&mut p.changes, o, l);
-                    }
-                });
-                ui.end_row();
-                ui.label("");
-                ui.vertical(|ui| {
-                    ui.add(widgets::checkbox(&mut p.copy, tl!("Enable copying of text, images, and other content")));
-                    ui.add(widgets::checkbox(&mut p.accessibility, tl!("Enable text access for screen reader devices for the visually impaired")));
-                });
-                ui.end_row();
+            if p.algorithm == A::Rc4_40 || p.algorithm == A::Rc4_128 {
+                p.encrypt_metadata = true;
             }
-        });
-        if p.algorithm == A::Rc4_40 || p.algorithm == A::Rc4_128 {
-            p.encrypt_metadata = true;
         }
-    }
-    ui.add_space(8.0);
-    if let Some(problem) = d.problem().filter(|_| !d.password.is_empty() || !d.confirm.is_empty()) {
-        // problem() stays English (tested); only the display translates.
-        ui.label(egui::RichText::new(tl!(problem)).color(t.text_muted).font(theme::regular(12.0)));
-    }
-    ui.label(
-        egui::RichText::new(if d.viewing {
-            tl!("Anyone opening the document will need this password. It's applied when you save.")
-        } else {
-            tl!("The document opens without a password; this password is needed to change the restrictions. It's applied when you save.")
-        })
-        .color(t.text_faint)
-        .font(theme::regular(11.5)),
-    );
+        ui.add_space(8.0);
+        if let Some(problem) = d.problem().filter(|_| !d.password.is_empty() || !d.confirm.is_empty()) {
+            // problem() stays English (tested); only the display translates.
+            ui.label(egui::RichText::new(tl!(problem)).color(t.text_muted).font(theme::regular(12.0)));
+        }
+        ui.label(
+            egui::RichText::new(if d.viewing {
+                tl!("Anyone opening the document will need this password. It's applied when you save.")
+            } else {
+                tl!("The document opens without a password; this password is needed to change the restrictions. It's applied when you save.")
+            })
+            .color(t.text_faint)
+            .font(theme::regular(11.5)),
+        );
+    });
     ui.add_space(12.0);
     let (mut apply, mut cancel) = (false, false);
-    ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+    crate::widgets::buttons(ui, |ui| {
         let ok = d.problem().is_none();
         if ui.add_enabled_ui(ok, |ui| widgets::pill_button(ui, tl!("Apply"), true)).inner.clicked() {
             apply = true;

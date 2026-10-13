@@ -58,26 +58,25 @@ pub fn modal(ctx: &egui::Context, id: impl std::hash::Hash + std::fmt::Debug) ->
 pub fn show_modal<R>(ctx: &egui::Context, id: &str, content: impl FnOnce(&mut egui::Ui) -> R) -> egui::ModalResponse<R> {
     let stored = egui::Id::new(id);
     let (pad_x, pad_y) = dialog_pad(ctx);
-    let screen = ctx.content_rect();
     let narrow = narrow(ctx);
     modal(ctx, id).show(ctx, |ui| {
         begin_dialog(ui);
         let inner = if narrow {
-            let width = (screen.width() - 2.0 * f32::from(pad_x) - 16.0).max(200.0);
+            let width = narrow_dialog_width(ctx);
             // Sideways only: text wraps at the window's width, and the few controls laid out wider
             // than a phone (fixed-width grids) can be panned to instead of hanging off the screen.
             // Not up and down: buttons aligned to a dialog's bottom would be pushed out of sight,
             // and the long dialogs scroll their own bodies.
             ui.set_max_width(width);
-            egui::ScrollArea::horizontal()
-                .id_salt(stored.with("scroll"))
-                .max_width(width)
-                .auto_shrink([true, true])
-                .show(ui, |ui| {
-                    ui.set_max_width(width);
-                    content(ui)
-                })
-                .inner
+            let out = egui::ScrollArea::horizontal().id_salt(stored.with("scroll")).max_width(width).auto_shrink([true, true]).show(ui, |ui| {
+                ui.set_max_width(width);
+                content(ui)
+            });
+            // How much wider than the window the contents are (0 when nothing needs panning), for
+            // the phone layout tests.
+            let overflow = (out.content_size.x - out.inner_rect.width()).max(0.0);
+            ui.ctx().data_mut(|d| d.insert_temp(stored.with("overflow"), overflow));
+            out.inner
         } else {
             content(ui)
         };
@@ -86,6 +85,115 @@ pub fn show_modal<R>(ctx: &egui::Context, id: &str, content: impl FnOnce(&mut eg
         ui.ctx().data_mut(|d| d.insert_temp(stored.with("card"), card));
         inner
     })
+}
+
+/// The widest a dialog's contents may be on a phone-sized window (what [`show_modal`] leaves).
+fn narrow_dialog_width(ctx: &egui::Context) -> f32 {
+    (ctx.content_rect().width() - 2.0 * f32::from(NARROW_DIALOG_PAD) - 16.0).max(200.0)
+}
+
+/// `width` points; on a phone-sized window at most what the dialog has room for, so fixed-width
+/// fields, combo boxes and panels shrink to the screen instead of running off it.
+pub fn fit_width(ui: &egui::Ui, width: f32) -> f32 {
+    if narrow(ui.ctx()) {
+        // A combo box is drawn its width plus the button padding on both sides.
+        let room = ui.available_size_before_wrap().x.min(narrow_dialog_width(ui.ctx())) - 2.0 * ui.spacing().button_padding.x;
+        width.min(room).max(40.0)
+    } else {
+        width
+    }
+}
+
+/// `ui.set_width(width)`, capped on a phone-sized window ([`fit_width`]).
+pub fn set_fit_width(ui: &mut egui::Ui, width: f32) {
+    let w = if narrow(ui.ctx()) { width.min(ui.max_rect().width().min(narrow_dialog_width(ui.ctx()))) } else { width };
+    ui.set_width(w);
+}
+
+/// A dialog's body above its buttons. On a phone-sized window it scrolls when it is taller than
+/// the room left on the screen less `reserve` points (the buttons below it), so the buttons stay
+/// in sight; on a desktop it is laid out as it is.
+pub fn dialog_body<R>(ui: &mut egui::Ui, id: impl std::hash::Hash + std::fmt::Debug, reserve: f32, add: impl FnOnce(&mut egui::Ui) -> R) -> R {
+    if narrow(ui.ctx()) {
+        let room = (ui.ctx().content_rect().bottom() - ui.cursor().top() - reserve).max(120.0);
+        egui::ScrollArea::vertical().id_salt(id).max_height(room).auto_shrink([false, true]).show(ui, add).inner
+    } else {
+        add(ui)
+    }
+}
+
+/// A row of controls: one line on a desktop; on a phone-sized window it wraps onto more lines
+/// instead of running off the side of the dialog. A control that doesn't fit at the end of a line
+/// moves to the next one whole (its label isn't squeezed into a sliver of the line's end).
+pub fn row<R>(ui: &mut egui::Ui, add: impl FnOnce(&mut egui::Ui) -> R) -> egui::InnerResponse<R> {
+    if narrow(ui.ctx()) {
+        ui.horizontal_wrapped(|ui| {
+            ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
+            add(ui)
+        })
+    } else {
+        ui.horizontal(add)
+    }
+}
+
+/// Controls side by side on a desktop; one above the other on a phone-sized window (a grid cell
+/// with a field and its button, which a wrapping row would let spill into the next grid row).
+pub fn row_or_column<R>(ui: &mut egui::Ui, add: impl FnOnce(&mut egui::Ui) -> R) -> egui::InnerResponse<R> {
+    if narrow(ui.ctx()) { ui.vertical(add) } else { ui.horizontal(add) }
+}
+
+/// Dialog buttons, laid out from the right (the primary one rightmost). On a phone-sized window
+/// they stay within the screen's width even when something above them is wider (and pans).
+pub fn buttons<R>(ui: &mut egui::Ui, add: impl FnOnce(&mut egui::Ui) -> R) -> egui::InnerResponse<R> {
+    let layout = egui::Layout::right_to_left(egui::Align::Center);
+    if narrow(ui.ctx()) {
+        let width = ui.available_width().min(narrow_dialog_width(ui.ctx()));
+        let height = ui.spacing().interact_size.y;
+        ui.allocate_ui_with_layout(vec2(width, height), layout, add)
+    } else {
+        ui.with_layout(layout, add)
+    }
+}
+
+/// In a [`row`] on a phone-sized window, start a new line unless `width` points still fit on this
+/// one. For controls that are placed as one block where the line has room left (combo boxes,
+/// sliders) and so can't move to the next line by themselves.
+pub fn wrap_before(ui: &mut egui::Ui, width: f32) {
+    if narrow(ui.ctx()) && ui.layout().main_wrap && ui.cursor().left() > ui.max_rect().left() + 1.0 && ui.available_size_before_wrap().x < width {
+        ui.end_row();
+    }
+}
+
+/// Buttons aligned to the end of a [`row`] that starts with others (Back, Clear, Configure…). On a
+/// phone-sized window they take a line of their own, so they neither run off the screen nor over
+/// the buttons before them.
+pub fn trailing<R>(ui: &mut egui::Ui, add: impl FnOnce(&mut egui::Ui) -> R) -> egui::InnerResponse<R> {
+    // Only after other buttons: first in the row, they already have it to themselves.
+    if narrow(ui.ctx()) && ui.min_rect().width() > 0.0 {
+        ui.end_row();
+    }
+    buttons(ui, add)
+}
+
+/// A label-and-control grid on a desktop; on a phone-sized window, where two columns don't fit
+/// beside each other, each label sits above its control (`end_row` does nothing in a vertical
+/// layout).
+pub fn form<R>(ui: &mut egui::Ui, grid: egui::Grid, add: impl FnOnce(&mut egui::Ui) -> R) -> R {
+    if narrow(ui.ctx()) { ui.vertical(add).inner } else { grid.show(ui, add).inner }
+}
+
+/// The empty first cell of a [`form`] row whose control has no label of its own (nothing on a
+/// phone, where it would be a blank line).
+pub fn form_gap(ui: &mut egui::Ui) {
+    if !narrow(ui.ctx()) {
+        ui.label("");
+    }
+}
+
+/// Columns side by side (top-aligned) on a desktop; one above the other on a phone-sized window,
+/// where two columns don't fit.
+pub fn side_by_side<R>(ui: &mut egui::Ui, add: impl FnOnce(&mut egui::Ui) -> R) -> egui::InnerResponse<R> {
+    if narrow(ui.ctx()) { ui.vertical(add) } else { ui.horizontal_top(add) }
 }
 
 /// Outlined controls at a shared 30-point height, with a focus stroke and 4-point corners.
@@ -290,28 +398,32 @@ pub fn radio_value<'a, V: PartialEq>(ui: &mut egui::Ui, current: &mut V, alterna
 /// - on the light theme, the plain fill (`Tokens::hover`), as dialogs have: the field colour is
 ///   the panels' white, so the box would vanish;
 /// - for a checkbox, a corner radius small enough to keep the box square.
+///
+/// The visuals are set and restored around the widget rather than in a child scope: a scope is
+/// laid out as one block, so in a wrapping row (a phone's dialogs) the widget couldn't move to the
+/// next line and ran off the side instead.
 fn toggle<'a>(widget: impl egui::Widget + 'a, radius: Option<u8>) -> impl egui::Widget + 'a {
     move |ui: &mut egui::Ui| {
-        ui.scope(|ui| {
-            let t = Tokens::get(ui.ctx());
-            let w = &mut ui.visuals_mut().widgets;
-            if let Some(radius) = radius {
-                for v in [&mut w.noninteractive, &mut w.inactive, &mut w.hovered, &mut w.active, &mut w.open] {
-                    v.corner_radius = CornerRadius::same(radius);
-                }
+        let saved = ui.visuals().widgets.clone();
+        let t = Tokens::get(ui.ctx());
+        let w = &mut ui.visuals_mut().widgets;
+        if let Some(radius) = radius {
+            for v in [&mut w.noninteractive, &mut w.inactive, &mut w.hovered, &mut w.active, &mut w.open] {
+                v.corner_radius = CornerRadius::same(radius);
             }
-            if !t.dark() && w.inactive.bg_fill == t.field {
-                w.inactive.bg_fill = t.hover;
-            }
-            if w.inactive.bg_stroke.is_empty() {
-                w.inactive.bg_stroke = Stroke::new(1.0, t.border);
-            }
-            if w.hovered.bg_stroke.is_empty() {
-                w.hovered.bg_stroke = Stroke::new(1.0, t.text_muted);
-            }
-            ui.add(widget)
-        })
-        .inner
+        }
+        if !t.dark() && w.inactive.bg_fill == t.field {
+            w.inactive.bg_fill = t.hover;
+        }
+        if w.inactive.bg_stroke.is_empty() {
+            w.inactive.bg_stroke = Stroke::new(1.0, t.border);
+        }
+        if w.hovered.bg_stroke.is_empty() {
+            w.hovered.bg_stroke = Stroke::new(1.0, t.text_muted);
+        }
+        let response = ui.add(widget);
+        ui.visuals_mut().widgets = saved;
+        response
     }
 }
 

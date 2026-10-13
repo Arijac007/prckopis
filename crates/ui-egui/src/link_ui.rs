@@ -220,7 +220,7 @@ impl PrckopisApp {
 
 /// Link Properties. Returns (apply, cancel).
 pub(crate) fn body(ui: &mut egui::Ui, d: &mut LinkDraft, pages: usize, t: &Tokens) -> (bool, bool) {
-    ui.set_width(460.0);
+    crate::widgets::set_fit_width(ui, 460.0);
     ui.label(egui::RichText::new(if d.index.is_some() { tl!("Link Properties") } else { tl!("Create Link") }).font(theme::semibold(18.0)));
     ui.add_space(8.0);
     widgets::section_title(ui, tl!("Link Appearance"));
@@ -286,14 +286,14 @@ pub(crate) fn body(ui: &mut egui::Ui, d: &mut LinkDraft, pages: usize, t: &Token
     } else {
         widgets::radio_value(ui, &mut d.web, true, tl!("Open a web page"));
         ui.add_enabled_ui(d.web, |ui| {
-            ui.horizontal(|ui| {
+            crate::widgets::row(ui, |ui| {
                 ui.add_space(24.0);
-                ui.add(crate::widgets::line(&mut d.url).desired_width(360.0).hint_text("https://example.org"));
+                ui.add(crate::widgets::line(&mut d.url).desired_width(crate::widgets::fit_width(ui, 360.0)).hint_text("https://example.org"));
             });
         });
         widgets::radio_value(ui, &mut d.web, false, tl!("Go to a page view"));
         ui.add_enabled_ui(!d.web, |ui| {
-            ui.horizontal(|ui| {
+            crate::widgets::row(ui, |ui| {
                 ui.add_space(24.0);
                 ui.label(tl!("Page"));
                 ui.add(egui::DragValue::new(&mut d.target).range(1..=pages.max(1)));
@@ -307,7 +307,7 @@ pub(crate) fn body(ui: &mut egui::Ui, d: &mut LinkDraft, pages: usize, t: &Token
     }
     ui.add_space(12.0);
     let (mut a, mut c) = (false, false);
-    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+    crate::widgets::buttons(ui, |ui| {
         if ui.add_enabled_ui(ok, |ui| widgets::pill_button(ui, tl!("OK"), true)).inner.clicked() {
             a = true;
         }

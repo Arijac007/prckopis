@@ -7,8 +7,6 @@
 
 use std::sync::Arc;
 
-use egui::{Align, Layout};
-
 use crate::{PrckopisApp, theme, widgets};
 
 /// Where every Prckopis release is listed.
@@ -117,7 +115,7 @@ pub(crate) fn dialog(app: &mut PrckopisApp, ctx: &egui::Context) {
     let mut close = false;
     let mut download: Option<String> = None;
     let modal = crate::widgets::show_modal(ctx, "updates", |ui| {
-        ui.set_width(420.0);
+        crate::widgets::set_fit_width(ui, 420.0);
         ui.horizontal(|ui| {
             ui.add(crate::icons::image("cloud", 22.0, t.accent));
             ui.label(egui::RichText::new(tl!("Check for updates")).font(theme::semibold(16.0)));
@@ -167,7 +165,7 @@ pub(crate) fn dialog(app: &mut PrckopisApp, ctx: &egui::Context) {
                 .small(),
         );
         ui.add_space(12.0);
-        ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+        crate::widgets::buttons(ui, |ui| {
             if let Some(url) = download.take() {
                 let get = widgets::pill_button(ui, tl!("Download"), true).clicked();
                 let later = widgets::pill_button(ui, tl!("Later"), false).clicked();

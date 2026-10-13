@@ -240,41 +240,46 @@ pub(crate) fn body(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> bool
     if app.wizard.selected.as_ref().is_none_or(|s| !actions.iter().any(|a| &a.name == s)) {
         app.wizard.selected = actions.first().map(|a| a.name.clone());
     }
-    ui.horizontal_top(|ui| {
-        ui.vertical(|ui| {
-            ui.set_width(220.0);
-            egui::Frame::new().fill(t.hover).corner_radius(egui::CornerRadius::same(6)).inner_margin(egui::Margin::same(6)).show(ui, |ui| {
-                ui.set_width(208.0);
-                ui.set_min_height(260.0);
-                for a in &actions {
-                    let on = app.wizard.selected.as_deref() == Some(a.name.as_str());
-                    let name = if a.builtin { tl!(&a.name) } else { &a.name };
-                    if ui.selectable_label(on, name).clicked() {
-                        app.wizard.selected = Some(a.name.clone());
+    // On a phone the list sits above the selected action, both scrolling above the buttons.
+    let narrow = widgets::narrow(ui.ctx());
+    crate::widgets::dialog_body(ui, "wizard-body", 64.0, |ui| {
+        crate::widgets::side_by_side(ui, |ui| {
+            ui.vertical(|ui| {
+                let list = if narrow { ui.available_width() } else { 220.0 };
+                ui.set_width(list);
+                egui::Frame::new().fill(t.hover).corner_radius(egui::CornerRadius::same(6)).inner_margin(egui::Margin::same(6)).show(ui, |ui| {
+                    ui.set_width(list - 12.0);
+                    ui.set_min_height(if narrow { 0.0 } else { 260.0 });
+                    for a in &actions {
+                        let on = app.wizard.selected.as_deref() == Some(a.name.as_str());
+                        let name = if a.builtin { tl!(&a.name) } else { &a.name };
+                        if ui.selectable_label(on, name).clicked() {
+                            app.wizard.selected = Some(a.name.clone());
+                        }
                     }
+                });
+            });
+            ui.vertical(|ui| {
+                let Some(a) = actions.iter().find(|a| app.wizard.selected.as_deref() == Some(a.name.as_str())) else { return };
+                let name = if a.builtin { tl!(&a.name) } else { &a.name };
+                ui.label(egui::RichText::new(name).font(theme::semibold(15.0)));
+                if !a.description.is_empty() {
+                    let description = if a.builtin { tl!(&a.description) } else { &a.description };
+                    ui.label(egui::RichText::new(description).color(t.text_muted));
+                }
+                ui.add_space(6.0);
+                ui.label(egui::RichText::new(tl!("Steps")).font(theme::semibold(13.0)));
+                for (i, s) in a.steps.iter().enumerate() {
+                    let arg = s.arg().filter(|x| !x.is_empty()).map(|x| format!(": {x}")).unwrap_or_default();
+                    ui.label(format!("{}. {}{arg}", i + 1, tl!(s.label())));
                 }
             });
-        });
-        ui.vertical(|ui| {
-            let Some(a) = actions.iter().find(|a| app.wizard.selected.as_deref() == Some(a.name.as_str())) else { return };
-            let name = if a.builtin { tl!(&a.name) } else { &a.name };
-            ui.label(egui::RichText::new(name).font(theme::semibold(15.0)));
-            if !a.description.is_empty() {
-                let description = if a.builtin { tl!(&a.description) } else { &a.description };
-                ui.label(egui::RichText::new(description).color(t.text_muted));
-            }
-            ui.add_space(6.0);
-            ui.label(egui::RichText::new(tl!("Steps")).font(theme::semibold(13.0)));
-            for (i, s) in a.steps.iter().enumerate() {
-                let arg = s.arg().filter(|x| !x.is_empty()).map(|x| format!(": {x}")).unwrap_or_default();
-                ui.label(format!("{}. {}{arg}", i + 1, tl!(s.label())));
-            }
-        });
+        })
     });
     ui.add_space(10.0);
     let selected_custom = app.wizard.selected.as_ref().and_then(|n| app.custom_actions.iter().position(|a| &a.name == n));
     let mut close = false;
-    ui.horizontal(|ui| {
+    crate::widgets::row(ui, |ui| {
         if ui.button(tl!("New Action…")).clicked() {
             app.wizard.editing = Some((None, Action { name: String::new(), description: String::new(), steps: Vec::new(), builtin: false }));
         }
@@ -288,7 +293,7 @@ pub(crate) fn body(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> bool
                 app.wizard.selected = None;
             }
         }
-        ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+        crate::widgets::trailing(ui, |ui| {
             if widgets::pill_button(ui, tl_ctx!("action wizard", "Start"), true).clicked() {
                 close = true;
                 app.start_selected_action();
@@ -307,10 +312,10 @@ fn edit_body(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> bool {
     ui.add_space(8.0);
     egui::Grid::new("action-edit").num_columns(2).spacing([12.0, 8.0]).show(ui, |ui| {
         ui.label(tl!("Action name:"));
-        ui.add(crate::widgets::line(&mut a.name).desired_width(320.0).id_salt("action-name"));
+        ui.add(crate::widgets::line(&mut a.name).desired_width(crate::widgets::fit_width(ui, 320.0)).id_salt("action-name"));
         ui.end_row();
         ui.label(tl!("Description:"));
-        ui.add(crate::widgets::line(&mut a.description).desired_width(320.0).id_salt("action-description"));
+        ui.add(crate::widgets::line(&mut a.description).desired_width(crate::widgets::fit_width(ui, 320.0)).id_salt("action-description"));
         ui.end_row();
     });
     ui.add_space(6.0);
@@ -323,10 +328,10 @@ fn edit_body(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> bool {
         }
         for (i, s) in a.steps.iter_mut().enumerate() {
             ui.push_id(i, |ui| {
-                ui.horizontal(|ui| {
+                crate::widgets::row(ui, |ui| {
                     ui.label(format!("{}. {}", i + 1, tl!(s.label())));
                     if let Some(arg) = s.arg_mut() {
-                        ui.add(crate::widgets::line(arg).desired_width(220.0));
+                        ui.add(crate::widgets::line(arg).desired_width(crate::widgets::fit_width(ui, 220.0)));
                     }
                     ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                         if ui.button(tl!("Remove")).clicked() {
@@ -342,12 +347,15 @@ fn edit_body(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> bool {
     }
     let all = Step::all();
     let add = &mut app.wizard.add;
-    ui.horizontal(|ui| {
-        egui::ComboBox::from_id_salt("action-add-step").selected_text(tl!(all[(*add).min(all.len() - 1)].label())).width(240.0).show_ui(ui, |ui| {
-            for (i, s) in all.iter().enumerate() {
-                ui.selectable_value(add, i, tl!(s.label()));
-            }
-        });
+    crate::widgets::row(ui, |ui| {
+        egui::ComboBox::from_id_salt("action-add-step")
+            .selected_text(tl!(all[(*add).min(all.len() - 1)].label()))
+            .width(crate::widgets::fit_width(ui, 240.0))
+            .show_ui(ui, |ui| {
+                for (i, s) in all.iter().enumerate() {
+                    ui.selectable_value(add, i, tl!(s.label()));
+                }
+            });
         if ui.button(tl!("Add Step")).clicked() {
             a.steps.push(all[(*add).min(all.len() - 1)].clone());
         }
@@ -361,8 +369,8 @@ fn edit_body(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> bool {
     }
     let (mut done, mut cancel) = (false, false);
     let ok = !name.is_empty() && !taken && !a.steps.is_empty();
-    ui.horizontal(|ui| {
-        ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+    crate::widgets::row(ui, |ui| {
+        crate::widgets::trailing(ui, |ui| {
             if ui.add_enabled_ui(ok, |ui| widgets::pill_button(ui, tl!("Save"), true)).inner.clicked() {
                 done = true;
             }

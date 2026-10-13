@@ -78,7 +78,9 @@ impl PageSelectionInput {
         ui.horizontal(|ui| {
             let label = tl!("Selected pages");
             ui.label(label);
-            let field = ui.add(egui::TextEdit::singleline(&mut self.text).id(id).desired_width(300.0).char_limit(16_384).hint_text("1, 12, 16-18"));
+            // On a phone the field leaves room for Apply beside it.
+            let width = if crate::widgets::narrow(ui.ctx()) { (ui.available_width() - 70.0).clamp(80.0, 300.0) } else { 300.0 };
+            let field = ui.add(egui::TextEdit::singleline(&mut self.text).id(id).desired_width(width).char_limit(16_384).hint_text("1, 12, 16-18"));
             field.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::TextEdit, ui.is_enabled(), label));
             let apply = ui.button(tl!("Apply")).clicked();
             commit = ui.is_enabled() && !cancel && (field.lost_focus() || apply);

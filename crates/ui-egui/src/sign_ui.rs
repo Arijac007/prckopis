@@ -5,7 +5,7 @@
 use prckopis_platform::tsa::TimestampServer;
 use std::path::PathBuf;
 
-use egui::{Align, Color32, CornerRadius, Layout, Pos2, Rect, Stroke, vec2};
+use egui::{Color32, CornerRadius, Pos2, Rect, Stroke, vec2};
 use prckopis_engine::sign::{self, Appearance, Certificate, DigitalId, Modification, Name, PrivateKey};
 use prckopis_engine::{SignOptions, SignatureImage, SignatureInfo, SignatureStatus};
 
@@ -643,12 +643,12 @@ fn choose(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> bool {
         }
     });
     ui.add_space(10.0);
-    ui.horizontal(|ui| {
+    crate::widgets::row(ui, |ui| {
         if widgets::pill_button(ui, tl!("Configure New Digital ID"), false).clicked() {
             d.step = SignStep::Configure;
             d.error = None;
         }
-        ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+        crate::widgets::trailing(ui, |ui| {
             if ui.add_enabled_ui(d.selected.is_some(), |ui| widgets::pill_button(ui, tl!("Continue"), true)).inner.clicked() {
                 d.step = SignStep::SignAs;
                 d.error = None;
@@ -682,13 +682,14 @@ fn configure(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> bool {
                 (tl!("Email Address"), &mut n.email),
             ] {
                 let l = ui.label(label);
-                ui.add(crate::widgets::line(value).desired_width(260.0)).labelled_by(l.id);
+                ui.add(crate::widgets::line(value).desired_width(crate::widgets::fit_width(ui, 260.0))).labelled_by(l.id);
                 ui.end_row();
             }
             let l = ui.label(tl!("Country/Region"));
             ui.add(crate::widgets::line(&mut n.country).hint_text("US").char_limit(2).desired_width(60.0)).labelled_by(l.id);
             ui.end_row();
             ui.label(tl!("Key Algorithm"));
+            crate::widgets::wrap_before(ui, 120.0);
             egui::ComboBox::from_id_salt("key-alg").selected_text(KEY_ALGORITHMS[n.key].0).show_ui(ui, |ui| {
                 for (i, (label, _)) in KEY_ALGORITHMS.iter().enumerate() {
                     ui.selectable_value(&mut n.key, i, *label);
@@ -696,10 +697,10 @@ fn configure(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> bool {
             });
             ui.end_row();
             let l = ui.label(tl!("Password"));
-            ui.add(crate::widgets::line(&mut n.password).password(true).desired_width(200.0)).labelled_by(l.id);
+            ui.add(crate::widgets::line(&mut n.password).password(true).desired_width(crate::widgets::fit_width(ui, 200.0))).labelled_by(l.id);
             ui.end_row();
             let l = ui.label(tl!("Confirm Password"));
-            ui.add(crate::widgets::line(&mut n.confirm).password(true).desired_width(200.0)).labelled_by(l.id);
+            ui.add(crate::widgets::line(&mut n.confirm).password(true).desired_width(crate::widgets::fit_width(ui, 200.0))).labelled_by(l.id);
             ui.end_row();
         });
         ui.label(
@@ -710,8 +711,8 @@ fn configure(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> bool {
     } else {
         egui::Grid::new("id-file").num_columns(2).spacing([12.0, 8.0]).show(ui, |ui| {
             let l = ui.label(tl!("File (.p12, .pfx)"));
-            ui.horizontal(|ui| {
-                ui.add(crate::widgets::line(&mut n.file).desired_width(220.0)).labelled_by(l.id);
+            crate::widgets::row(ui, |ui| {
+                ui.add(crate::widgets::line(&mut n.file).desired_width(crate::widgets::fit_width(ui, 220.0))).labelled_by(l.id);
                 #[cfg(not(target_arch = "wasm32"))]
                 if ui.button(tl!("Browse…")).clicked() {
                     browse = true;
@@ -719,18 +720,18 @@ fn configure(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> bool {
             });
             ui.end_row();
             let l = ui.label(tl!("Password"));
-            ui.add(crate::widgets::line(&mut n.file_password).password(true).desired_width(200.0)).labelled_by(l.id);
+            ui.add(crate::widgets::line(&mut n.file_password).password(true).desired_width(crate::widgets::fit_width(ui, 200.0))).labelled_by(l.id);
             ui.end_row();
         });
     }
     ui.add_space(6.0);
     error(ui, &d.error);
-    ui.horizontal(|ui| {
+    crate::widgets::row(ui, |ui| {
         if !app.digital_ids.is_empty() && widgets::pill_button(ui, tl!("Back"), false).clicked() {
             d.step = SignStep::Choose;
             d.error = None;
         }
-        ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+        crate::widgets::trailing(ui, |ui| {
             if widgets::pill_button(ui, if d.new_id.create { tl!("Save") } else { tl!("Continue") }, true).clicked() {
                 go = true;
             }
@@ -881,7 +882,8 @@ fn sign_as(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> bool {
     } else {
         ui.label(egui::RichText::new(tl!("The signature will be invisible.")).color(t.text_muted));
     }
-    egui::Grid::new("sign-as").num_columns(2).spacing([12.0, 8.0]).show(ui, |ui| {
+    let grid = egui::Grid::new("sign-as").num_columns(2).spacing([12.0, 8.0]);
+    crate::widgets::form(ui, grid, |ui| {
         if d.certify.is_some() {
             ui.label(tl!("Permitted actions after certifying"));
             let mut p = d.certify.unwrap_or(2);
@@ -890,7 +892,7 @@ fn sign_as(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> bool {
                 3 => tl!("Annotations, form fill-in, and digital signatures"),
                 _ => tl!("Form fill-in and digital signatures"),
             };
-            egui::ComboBox::from_id_salt("certify-p").selected_text(label(p)).width(300.0).show_ui(ui, |ui| {
+            egui::ComboBox::from_id_salt("certify-p").selected_text(label(p)).width(crate::widgets::fit_width(ui, 300.0)).show_ui(ui, |ui| {
                 for v in [1u8, 2, 3] {
                     ui.selectable_value(&mut p, v, label(v));
                 }
@@ -908,13 +910,14 @@ fn sign_as(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> bool {
             ui.end_row();
         }
         let l = ui.label(tl!("Reason"));
-        ui.add(crate::widgets::line(&mut d.reason).hint_text(tl!("Optional")).desired_width(260.0)).labelled_by(l.id);
+        ui.add(crate::widgets::line(&mut d.reason).hint_text(tl!("Optional")).desired_width(crate::widgets::fit_width(ui, 260.0))).labelled_by(l.id);
         ui.end_row();
         let l = ui.label(tl!("Location"));
-        ui.add(crate::widgets::line(&mut d.location).hint_text(tl!("Optional")).desired_width(260.0)).labelled_by(l.id);
+        ui.add(crate::widgets::line(&mut d.location).hint_text(tl!("Optional")).desired_width(crate::widgets::fit_width(ui, 260.0)))
+            .labelled_by(l.id);
         ui.end_row();
         if in_os_key_store {
-            ui.label("");
+            crate::widgets::form_gap(ui);
             ui.label(
                 egui::RichText::new(if entry.path.starts_with("windows:") {
                     tl!("The key is in the Windows certificate store, which may ask to allow Prckopis to use it.")
@@ -926,7 +929,8 @@ fn sign_as(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> bool {
             );
         } else {
             let l = ui.label(tl!("Digital ID password"));
-            let r = ui.add(crate::widgets::line(&mut d.password).password(true).desired_width(200.0)).labelled_by(l.id);
+            let r =
+                ui.add(crate::widgets::line(&mut d.password).password(true).desired_width(crate::widgets::fit_width(ui, 200.0))).labelled_by(l.id);
             if r.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
                 go = true;
             }
@@ -935,12 +939,12 @@ fn sign_as(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens) -> bool {
     });
     ui.add_space(6.0);
     error(ui, &d.error);
-    ui.horizontal(|ui| {
+    crate::widgets::row(ui, |ui| {
         if widgets::pill_button(ui, tl!("Back"), false).clicked() {
             d.step = SignStep::Choose;
             d.error = None;
         }
-        ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+        crate::widgets::trailing(ui, |ui| {
             if widgets::pill_button(ui, tl!("Sign"), true).clicked() {
                 go = true;
             }
@@ -1028,7 +1032,7 @@ pub enum PanelAction {
 /// The Signatures panel body.
 pub(crate) fn panel(ui: &mut egui::Ui, t: &Tokens, sigs: &[SignatureInfo], expanded: &mut Vec<String>) -> Option<PanelAction> {
     let mut action = None;
-    ui.horizontal(|ui| {
+    crate::widgets::row(ui, |ui| {
         if widgets::pill_button(ui, tl!("Validate all"), false).clicked() {
             action = Some(PanelAction::Validate);
         }
@@ -1219,13 +1223,13 @@ pub(crate) fn cert_viewer(ui: &mut egui::Ui, v: &mut CertViewer, trusted: &[Cert
     ui.add_space(8.0);
     let mut action = None;
     v.selected = v.selected.min(v.chain.len().saturating_sub(1));
-    ui.horizontal_top(|ui| {
+    crate::widgets::side_by_side(ui, |ui| {
         // The chain, root at the top (as Acrobat shows it).
         ui.vertical(|ui| {
-            ui.set_width(200.0);
+            crate::widgets::set_fit_width(ui, 200.0);
             for (depth, i) in (0..v.chain.len()).rev().enumerate() {
                 let c = &v.chain[i];
-                ui.horizontal(|ui| {
+                crate::widgets::row(ui, |ui| {
                     ui.add_space(depth as f32 * 12.0);
                     if ui.selectable_label(v.selected == i, c.display_name()).clicked() {
                         v.selected = i;
@@ -1235,9 +1239,9 @@ pub(crate) fn cert_viewer(ui: &mut egui::Ui, v: &mut CertViewer, trusted: &[Cert
         });
         ui.add_space(16.0);
         ui.vertical(|ui| {
-            ui.set_width(440.0);
+            crate::widgets::set_fit_width(ui, 440.0);
             let Some(c) = v.chain.get(v.selected).cloned() else { return };
-            ui.horizontal(|ui| {
+            crate::widgets::row(ui, |ui| {
                 for (tab, label) in [(CertTab::Summary, tl!("Summary")), (CertTab::Details, tl!("Details")), (CertTab::Trust, tl!("Trust"))] {
                     if widgets::pill_button(ui, label, v.tab == tab).clicked() {
                         v.tab = tab;
@@ -1306,7 +1310,7 @@ pub(crate) fn cert_viewer(ui: &mut egui::Ui, v: &mut CertViewer, trusted: &[Cert
     });
     ui.add_space(10.0);
     let mut close = false;
-    ui.horizontal(|ui| ui.with_layout(Layout::right_to_left(Align::Center), |ui| close = widgets::pill_button(ui, tl!("OK"), true).clicked()));
+    crate::widgets::row(ui, |ui| crate::widgets::buttons(ui, |ui| close = widgets::pill_button(ui, tl!("OK"), true).clicked()));
     (close, action)
 }
 
@@ -1406,7 +1410,7 @@ pub(crate) fn timestamp_servers_section(ui: &mut egui::Ui, app: &mut PrckopisApp
     let mut remove = None;
     let mut first = None;
     for (i, s) in app.timestamp_servers.iter().enumerate() {
-        ui.horizontal(|ui| {
+        crate::widgets::row(ui, |ui| {
             if ui.add(widgets::radio(i == 0, &s.name)).on_hover_text(tl!("Use this server by default")).clicked() {
                 first = Some(i);
             }
@@ -1427,19 +1431,27 @@ pub(crate) fn timestamp_servers_section(ui: &mut egui::Ui, app: &mut PrckopisApp
     let mut add = false;
     egui::Grid::new("tsa-new").num_columns(2).spacing([12.0, 6.0]).show(ui, |ui| {
         let l = ui.label(tl!("Server address"));
-        ui.add(crate::widgets::line(&mut n.url).hint_text("http://timestamp.digicert.com").desired_width(280.0).char_limit(2048)).labelled_by(l.id);
+        ui.add(
+            crate::widgets::line(&mut n.url)
+                .hint_text("http://timestamp.digicert.com")
+                .desired_width(crate::widgets::fit_width(ui, 280.0))
+                .char_limit(2048),
+        )
+        .labelled_by(l.id);
         ui.end_row();
         let l = ui.label(tl!("Name"));
-        ui.add(crate::widgets::line(&mut n.name).hint_text(tl!("Optional")).desired_width(200.0).char_limit(100)).labelled_by(l.id);
+        ui.add(crate::widgets::line(&mut n.name).hint_text(tl!("Optional")).desired_width(crate::widgets::fit_width(ui, 200.0)).char_limit(100))
+            .labelled_by(l.id);
         ui.end_row();
         let l = ui.label(tl!("User name"));
         let mut user = n.username.clone().unwrap_or_default();
-        ui.add(crate::widgets::line(&mut user).hint_text(tl!("Optional")).desired_width(200.0).char_limit(256)).labelled_by(l.id);
+        ui.add(crate::widgets::line(&mut user).hint_text(tl!("Optional")).desired_width(crate::widgets::fit_width(ui, 200.0)).char_limit(256))
+            .labelled_by(l.id);
         n.username = Some(user).filter(|u| !u.is_empty());
         ui.end_row();
         let l = ui.label(tl!("Password"));
         let mut pw = n.password.clone().unwrap_or_default();
-        ui.add(crate::widgets::line(&mut pw).password(true).desired_width(200.0).char_limit(256)).labelled_by(l.id);
+        ui.add(crate::widgets::line(&mut pw).password(true).desired_width(crate::widgets::fit_width(ui, 200.0)).char_limit(256)).labelled_by(l.id);
         n.password = Some(pw).filter(|p| !p.is_empty());
         ui.end_row();
     });

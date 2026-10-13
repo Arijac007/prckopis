@@ -34,7 +34,7 @@ pub(crate) fn image_import_body(ui: &mut egui::Ui, app: &mut PrckopisApp) -> (bo
     ui.add_space(12.0);
     let mut go = false;
     let mut cancel = false;
-    ui.horizontal(|ui| {
+    crate::widgets::row(ui, |ui| {
         go = crate::widgets::pill_button(ui, tl!("Create"), true).clicked();
         cancel = crate::widgets::pill_button(ui, tl!("Cancel"), false).clicked();
     });

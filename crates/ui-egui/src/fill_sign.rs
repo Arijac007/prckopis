@@ -728,7 +728,7 @@ pub(crate) fn signature_pad(
     let what = if d.initials { tl!("initials") } else { tl!("signature") };
     let title = if d.editing { tl!("Change {what}") } else { tl!("Create {what}") };
     ui.label(egui::RichText::new(crate::i18n::fmt(title, &[("what", what)])).font(crate::theme::semibold(18.0)));
-    ui.horizontal(|ui| {
+    crate::widgets::row(ui, |ui| {
         if crate::widgets::pill_button(ui, tl_ctx!("signature pad", "Type"), !d.drawing && !d.image_mode && !d.scan_mode).clicked() {
             d.drawing = false;
             d.image_mode = false;
@@ -761,7 +761,7 @@ pub(crate) fn signature_pad(
     if d.image_mode {
         ui.label(egui::RichText::new(tl!("Choose a PNG or JPEG image (up to 4 MiB). Transparency is preserved.")).color(t.text_muted));
         let browse = crate::widgets::ghost_button(ui, "folder", tl!("Browse…")).clicked();
-        let (rect, _) = ui.allocate_exact_size(vec2(460.0, 150.0), Sense::hover());
+        let (rect, _) = ui.allocate_exact_size(vec2(crate::widgets::fit_width(ui, 460.0), 150.0), Sense::hover());
         ui.painter().rect_filled(rect, CornerRadius::same(6), Color32::WHITE);
         ui.painter().rect_stroke(rect, CornerRadius::same(6), Stroke::new(1.0, t.border), egui::StrokeKind::Inside);
         if let Some(image) = &d.image {
@@ -775,11 +775,11 @@ pub(crate) fn signature_pad(
         ui.add(
             egui::TextEdit::singleline(&mut d.text)
                 .char_limit(prckopis_engine::MAX_SIGNATURE_CHARS)
-                .desired_width(460.0)
+                .desired_width(crate::widgets::fit_width(ui, 460.0))
                 .hint_text(tl!(if d.initials { "Initials" } else { "Your name" })),
         )
         .labelled_by(l.id);
-        let (rect, _) = ui.allocate_exact_size(vec2(460.0, 150.0), Sense::hover());
+        let (rect, _) = ui.allocate_exact_size(vec2(crate::widgets::fit_width(ui, 460.0), 150.0), Sense::hover());
         let painter = ui.painter_at(rect);
         painter.rect_filled(rect, CornerRadius::same(6), Color32::WHITE);
         painter.rect_stroke(rect, CornerRadius::same(6), Stroke::new(1.0, t.border), egui::StrokeKind::Inside);
@@ -796,7 +796,7 @@ pub(crate) fn signature_pad(
     }
     ui.label(egui::RichText::new(crate::i18n::fmt(tl!("Draw your {what} below."), &[("what", what)])).color(t.text_muted));
     let strokes = &mut d.strokes;
-    let (rect, resp) = ui.allocate_exact_size(vec2(460.0, 150.0), Sense::drag());
+    let (rect, resp) = ui.allocate_exact_size(vec2(crate::widgets::fit_width(ui, 460.0), 150.0), Sense::drag());
     let painter = ui.painter_at(rect);
     painter.rect_filled(rect, CornerRadius::same(6), Color32::WHITE);
     painter.rect_stroke(rect, CornerRadius::same(6), Stroke::new(1.0, t.border), egui::StrokeKind::Inside);
@@ -837,7 +837,7 @@ fn scan_tab(
         .color(t.text_muted),
     );
     let mut browse = false;
-    ui.horizontal(|ui| {
+    crate::widgets::row(ui, |ui| {
         browse = crate::widgets::ghost_button(ui, "camera", tl!("Choose photo…")).clicked();
         if let Some(scan) = d.scan.as_mut() {
             ui.add_space(8.0);
@@ -849,7 +849,7 @@ fn scan_tab(
             }
         }
     });
-    let (area, resp) = ui.allocate_exact_size(vec2(460.0, 230.0), Sense::drag());
+    let (area, resp) = ui.allocate_exact_size(vec2(crate::widgets::fit_width(ui, 460.0), 230.0), Sense::drag());
     let painter = ui.painter_at(area);
     painter.rect_filled(area, CornerRadius::same(6), t.pasteboard);
     painter.rect_stroke(area, CornerRadius::same(6), Stroke::new(1.0, t.border), egui::StrokeKind::Inside);
@@ -966,7 +966,7 @@ fn scan_tab(
     }
 
     ui.add_space(6.0);
-    ui.horizontal(|ui| {
+    crate::widgets::row(ui, |ui| {
         let l = ui.label(tl!("Ink sensitivity"));
         let slider = ui.add(egui::Slider::new(&mut scan.sensitivity, 0..=100)).labelled_by(l.id);
         if slider.changed() {
@@ -978,7 +978,7 @@ fn scan_tab(
         }
     });
     ui.add_space(4.0);
-    let (rect, _) = ui.allocate_exact_size(vec2(460.0, 110.0), Sense::hover());
+    let (rect, _) = ui.allocate_exact_size(vec2(crate::widgets::fit_width(ui, 460.0), 110.0), Sense::hover());
     ui.painter().rect_filled(rect, CornerRadius::same(6), Color32::WHITE);
     ui.painter().rect_stroke(rect, CornerRadius::same(6), Stroke::new(1.0, t.border), egui::StrokeKind::Inside);
     if let Some(image) = &d.image {
@@ -1017,7 +1017,7 @@ fn image_preview(ui: &egui::Ui, rect: egui::Rect, image: &SignatureImage, cache:
 fn pad_buttons(ui: &mut egui::Ui, d: &mut SigDraft) -> (bool, bool) {
     ui.add_space(10.0);
     let (mut apply, mut cancel) = (false, false);
-    ui.horizontal(|ui| {
+    crate::widgets::row(ui, |ui| {
         if ui.button(tl!("Clear")).clicked() {
             d.strokes.clear();
             d.text.clear();
@@ -1026,7 +1026,7 @@ fn pad_buttons(ui: &mut egui::Ui, d: &mut SigDraft) -> (bool, bool) {
                 d.scan = None;
             }
         }
-        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+        crate::widgets::trailing(ui, |ui| {
             let ready = d.ready();
             if ui.add_enabled_ui(ready, |ui| crate::widgets::pill_button(ui, tl!("Apply"), true)).inner.clicked() {
                 apply = true;
