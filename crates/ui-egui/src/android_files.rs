@@ -2,12 +2,34 @@
 //! `prckopis-file-dialog`'s shim, which queues each dialog for the app to answer. This draws them as
 //! an in-app file browser over shared storage (`/storage/emulated/0`), one at a time.
 //!
-//! Reading shared storage needs Android's "All files access" for the app (Settings ▸ Apps ▸
-//! Prckopis ▸ Permissions); without it a folder can't be listed and the browser says so.
+//! Reading shared storage needs Android's "All files access" for the app. Without it, Android 11
+//! and later list only the app's own files (no error: the PDFs are simply missing). The host asks
+//! for it ([`set_file_access_request`]): once when the browser first opens, and from its "Allow
+//! access to files" button; a folder that showed nothing is read again every second, so the files
+//! appear once access is granted.
 
 use std::cell::RefCell;
 use std::path::{Path, PathBuf};
-use std::sync::Once;
+use std::sync::{Once, OnceLock};
+
+type AccessRequest = Box<dyn Fn() + Send + Sync>;
+
+fn access_request() -> &'static OnceLock<AccessRequest> {
+    static REQUEST: OnceLock<AccessRequest> = OnceLock::new();
+    &REQUEST
+}
+
+/// How the host asks Android for file access (Settings ▸ All files access, or the storage
+/// permissions on older versions). Set once, before the first file dialog.
+pub fn set_file_access_request(f: impl Fn() + Send + Sync + 'static) {
+    let _ = access_request().set(Box::new(f));
+}
+
+fn ask_for_access() {
+    if let Some(f) = access_request().get() {
+        f();
+    }
+}
 
 use rfd::host::{Kind, Request};
 
@@ -29,6 +51,9 @@ struct Browser {
 
 impl Browser {
     fn new(request: Request) -> Self {
+        // The first time in a session, ask for access (nothing happens when it is already there).
+        static ASKED: Once = Once::new();
+        ASKED.call_once(ask_for_access);
         let start = request
             .directory
             .clone()
@@ -84,6 +109,22 @@ pub(crate) fn show(ctx: &egui::Context) {
             *current = rfd::host::next().map(Browser::new);
         }
         let Some(b) = current.as_mut() else { return };
+        // A folder that couldn't be read, or showed nothing to pick, may fill once access is
+        // granted: read it again every second while the browser is open.
+        let empty = match &b.listing {
+            Err(_) => true,
+            Ok(entries) => b.request.kind != Kind::Folder && entries.iter().all(|(_, is_dir)| *is_dir),
+        };
+        if empty {
+            let now = ctx.input(|i| i.time);
+            let due = ctx.data(|d| d.get_temp::<f64>(egui::Id::new("android-files-reread"))).is_none_or(|t| now - t >= 1.0);
+            if due {
+                ctx.data_mut(|d| d.insert_temp(egui::Id::new("android-files-reread"), now));
+                let dir = b.dir.clone();
+                b.go(dir);
+            }
+            ctx.request_repaint_after(std::time::Duration::from_secs(1));
+        }
         let mut answer: Option<Vec<PathBuf>> = None;
         let title = b.request.title.clone().unwrap_or_else(|| {
             match b.request.kind {
@@ -111,6 +152,9 @@ pub(crate) fn show(ctx: &egui::Context) {
                 }
             });
             ui.label(egui::RichText::new(b.dir.to_string_lossy()).small());
+            if empty && ui.button(tl!("Allow access to files")).clicked() {
+                ask_for_access();
+            }
             ui.separator();
             let mut go_to = None;
             egui::ScrollArea::vertical().max_height((screen.height() - 260.0).max(160.0)).show(ui, |ui| match &b.listing {

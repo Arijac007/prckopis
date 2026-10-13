@@ -2423,3 +2423,4 @@ animation effects	Off	Ki
 	{name} is not a redaction code set file.	A(z) {name} nem kitakarási kódkészletfájl.
 	Bank Account Numbers (IBAN)	Bankszámlaszámok (IBAN)
 	Croatian Personal ID Numbers (OIB)	Horvát személyi azonosító számok (OIB)
+	Allow access to files	Fájlhozzáférés engedélyezése

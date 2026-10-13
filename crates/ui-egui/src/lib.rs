@@ -26,6 +26,8 @@ mod a11y_ui;
 mod actions_ui;
 #[cfg(target_os = "android")]
 mod android_files;
+#[cfg(target_os = "android")]
+pub use android_files::set_file_access_request;
 mod appearance;
 pub mod canvas;
 mod chrome;

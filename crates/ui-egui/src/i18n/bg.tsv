@@ -2387,3 +2387,4 @@ animation effects	Off	Изключени
 	{name} is not a redaction code set file.	{name} не е файл с набор от кодове за заличаване.
 	Bank Account Numbers (IBAN)	Номера на банкови сметки (IBAN)
 	Croatian Personal ID Numbers (OIB)	Хърватски лични идентификационни номера (OIB)
+	Allow access to files	Разрешаване на достъп до файловете

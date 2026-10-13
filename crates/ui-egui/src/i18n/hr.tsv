@@ -2602,3 +2602,4 @@ signature pad	Type	Upiši
 	{name} is not a redaction code set file.	{name} nije datoteka skupa kodova zacrnjivanja.
 	Bank Account Numbers (IBAN)	Brojevi bankovnih računa (IBAN)
 	Croatian Personal ID Numbers (OIB)	Hrvatski osobni identifikacijski brojevi (OIB)
+	Allow access to files	Dopusti pristup datotekama

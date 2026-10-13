@@ -25,6 +25,8 @@ egui = { workspace = true }
 winit = { version = "0.30", default-features = false, features = ["android-native-activity"] }
 log = { workspace = true }
 android_logger = "0.15"
+# Asks Android for file access (Settings intents, runtime permissions) through the activity.
+jni = "0.21"
 
 # `cargo apk build -p prckopis-android --release` (docs/android.md). The release keystore is never
 # in the repository: CARGO_APK_RELEASE_KEYSTORE and CARGO_APK_RELEASE_KEYSTORE_PASSWORD name it.
@@ -55,6 +57,9 @@ name = "android.permission.MANAGE_EXTERNAL_STORAGE"
 
 [package.metadata.android.application]
 label = "Prckopis"
+# Not full screen: the app is laid out below the status bar (and the camera cut-out in it) and
+# above the navigation bar, where touches reach it.
+theme = "@android:style/Theme.DeviceDefault.NoActionBar"
 
 [package.metadata.android.application.activity]
 config_changes = "orientation|screenSize|screenLayout|keyboardHidden|keyboard|uiMode|density"

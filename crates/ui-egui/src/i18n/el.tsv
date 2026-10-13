@@ -2439,3 +2439,4 @@ animation effects	Off	Ανενεργά
 	{name} is not a redaction code set file.	Το {name} δεν είναι αρχείο συνόλου κωδικών απόκρυψης.
 	Bank Account Numbers (IBAN)	Αριθμοί τραπεζικών λογαριασμών (IBAN)
 	Croatian Personal ID Numbers (OIB)	Κροατικοί αριθμοί προσωπικής ταυτοποίησης (OIB)
+	Allow access to files	Να επιτρέπεται η πρόσβαση στα αρχεία

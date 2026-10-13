@@ -1,6 +1,6 @@
 # Prckopis on Android
 
-> **Status:** test builds, phone layout (2026-10-13) · **Revision history:** 2026-10-13 created (NativeActivity APK, in-app file browser, release signing); 2026-10-13 phone layout, soft keyboard, Back
+> **Status:** test builds, phone layout (2026-10-13) · **Revision history:** 2026-10-13 created (NativeActivity APK, in-app file browser, release signing); 2026-10-13 phone layout, soft keyboard, Back; 2026-10-13 system bars and camera cut-out, file access
 
 `apps/prckopis-android` runs the same egui app as the desktop build inside an Android
 NativeActivity (`android_main`). All of it is Rust: no Java, Kotlin or Gradle.
@@ -49,8 +49,14 @@ Check a build with `apksigner verify --print-certs prckopis.apk`.
 - **Files:** rfd has no Android backend. `crates/file-dialog` (used as `rfd`) is rfd itself
   elsewhere and, on Android, the same API answered by the app's own file browser
   (`crates/ui-egui/src/android_files.rs`) over shared storage (`/storage/emulated/0`). On
-  Android 11 and later the browser needs "All files access": Settings ▸ Apps ▸ Prckopis ▸
-  Permissions ▸ Files and media ▸ Allow management of all files.
+  Android 11 and later that needs "All files access" (without it Android lists only the app's own
+  files, so PDFs are missing without an error): the first file dialog opens Android's All files
+  access screen for Prckopis (`apps/prckopis-android/src/files.rs`, through JNI), the browser has
+  an "Allow access to files" button, and an empty folder is read again every second so the files
+  appear once access is granted. Android 10 and earlier get the storage permission prompt.
+- **System bars:** the activity uses `Theme.DeviceDefault.NoActionBar` (not full screen), so the
+  app sits below the status bar and the camera cut-out and above the navigation bar; the shell
+  also keeps clear of whatever Android's content rectangle excludes.
 - **Settings, crash recovery:** the app's internal storage (`app.ron`, `recovery/`).
 - **Logs:** logcat, tag `Prckopis` (`adb logcat -s Prckopis`).
 - **Not available yet:** the clipboard (Create ▸ Clipboard, snapshot to clipboard), screen
