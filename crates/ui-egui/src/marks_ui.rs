@@ -196,7 +196,9 @@ pub(crate) fn body(ui: &mut egui::Ui, app: &mut PrckopisApp, t: &Tokens, kind: M
                 ui.add_space(8.0);
                 if widgets::narrow(ui.ctx()) {
                     // A phone has room for one box across: the six one under the other.
-                    let w = ui.available_width();
+                    // Within the dialog's room on the screen (the body scrolls, and a scroll area's
+                    // width is not the screen's), less the field's frame.
+                    let w = crate::widgets::fit_width(ui, ui.available_width());
                     for (k, (name, text)) in BOX_NAMES.iter().zip(d.hf.text.iter_mut()).enumerate() {
                         ui.label(egui::RichText::new(tl!(*name)).small());
                         let r = ui.add_sized([w, 40.0], crate::widgets::block(text).desired_rows(2).id_salt(("hf-box", k)));

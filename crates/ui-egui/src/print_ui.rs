@@ -1081,7 +1081,8 @@ pub(crate) fn body(
                 ui.end_row();
                 ui.label(tl!("Copies:"));
                 ui.add_enabled_ui(!browser, |ui| {
-                    crate::widgets::row(ui, |ui| {
+                    // A grid cell: a wrapping row would spill into the next row on a phone.
+                    crate::widgets::row_or_column(ui, |ui| {
                         ui.add(egui::DragValue::new(&mut d.copies).range(1..=999));
                         ui.add(widgets::checkbox(&mut d.collate, tl!("Collate")));
                         ui.add(widgets::checkbox(&mut d.grayscale, tl!("Print in grayscale")));
@@ -1395,7 +1396,7 @@ pub(crate) fn body(
     ui.add_space(12.0);
     let (mut go, mut cancel) = (false, false);
     crate::widgets::buttons(ui, |ui| {
-        let label = if d.printer.is_some() { "Print" } else { "Save as PDF" };
+        let label = if d.printer.is_some() { tl!("Print") } else { tl!("Save as PDF") };
         if ui.add_enabled_ui(settings.is_ok() && !sheets.is_empty(), |ui| widgets::pill_button(ui, label, true)).inner.clicked() {
             go = true;
         }
