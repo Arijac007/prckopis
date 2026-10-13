@@ -1,5 +1,6 @@
 # Where Prckopis falls short of Acrobat Pro
 
+> **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-13 · **Change:** minor (gap 11: Automatically tag PDF for untagged documents; estimate unchanged) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
 > **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-13 · **Change:** minor (gap 17: custom redaction code sets shipped; IBAN, Croatian OIB and Croatian dates added to Search & Redact; estimates unchanged) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
 > **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-13 · **Change:** minor (gap 10: field locks authored in Prepare Form, Digital Signature Properties ▸ Signed) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
 > **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-13 · **Change:** minor (gap 10: FieldMDP field locks on signing and in validation) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
@@ -190,13 +191,22 @@ update the numbers.
 
 ### 11. Accessibility: checker only, no tagging tools
 
-- **Missing:** autotag (document and fields), Tags, Order and Content panels, tag properties,
-  Reading Order tool, artifact marking, table editor, role map, Make Accessible action, Read Out
-  Loud; full keyboard operation of Prckopis itself and a screen-reader audit.
-- **Evidence:** all 32 checker rules shipped, but 21 tagging and reading features planned;
-  `a11y.keyboard-only` (P0) planned, `a11y.app-screen-reader` partial.
-- **Impact:** remediation work is impossible; Prckopis itself is not yet usable without a mouse.
-- **Estimate:** 40–70 h. **Doc:** [target-app-parity.md](target-app-parity.md).
+- **Done:** Automatically tag PDF (`a11y.autotag`, `accessibility_autotag`, and a button in the
+  empty Tags panel) builds a conformant structure tree for an untagged document — headings by
+  size, paragraphs, figures, artifacts, Link/Form/Annot elements, MCIDs, parent tree, MarkInfo,
+  structure tab order — as one undoable, incrementally saved edit; the checker's tagging rules
+  pass afterwards. The Tags panel edits tag properties and the headless tool moves tags.
+- **Missing:** autotag quality (reading order by layout and columns, lists, tables, replacing
+  existing tags), Order and Content panels, adding and deleting tags, the visual Reading Order
+  tool, artifact marking by hand, table editor, role map, Make Accessible action, Read Out Loud;
+  full keyboard operation of Prckopis itself and a screen-reader audit.
+- **Evidence:** all 32 checker rules shipped; `a11y.autotag` and `a11y.autotag-fields` partial,
+  15 tagging and reading features still planned; `a11y.keyboard-only` (P0) planned,
+  `a11y.app-screen-reader` partial.
+- **Impact:** an untagged document can now be tagged and then fixed figure by figure, but
+  structural remediation (lists, tables, reordering by drawing) still needs another tool;
+  Prckopis itself is not yet usable without a mouse.
+- **Estimate:** 40–70 h (unchanged: autotag quality and the panels are most of it). **Doc:** [target-app-parity.md](target-app-parity.md).
 
 ### 12. No measured fidelity harness against Acrobat
 

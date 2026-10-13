@@ -2446,3 +2446,7 @@ animation effects	Off	معطّلة
 	Bank Account Numbers (IBAN)	أرقام الحسابات المصرفية (IBAN)
 	Croatian Personal ID Numbers (OIB)	أرقام الهوية الشخصية الكرواتية (OIB)
 	Allow access to files	السماح بالوصول إلى الملفات
+	Tags added. Headings: {headings}, paragraphs: {paragraphs}, figures: {figures}, annotations: {annotations}.	أُضيفت الوسوم. العناوين: {headings}، الفقرات: {paragraphs}، الأشكال: {figures}، التعليقات التوضيحية: {annotations}.
+	Add alternate text to the figures.	أضف نصًا بديلًا إلى الأشكال.
+	Pages left untagged (content could not be read): {pages}	صفحات بقيت دون وسوم (تعذّرت قراءة المحتوى): {pages}
+	Automatic tagging builds tags from the page content: headings, paragraphs, figures and links in content order. Check the result and add alternate text to figures.	ينشئ الوسم التلقائي الوسوم من محتوى الصفحات: العناوين والفقرات والأشكال والروابط بترتيب المحتوى. راجع النتيجة وأضف نصًا بديلًا إلى الأشكال.

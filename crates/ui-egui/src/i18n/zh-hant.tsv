@@ -2298,3 +2298,7 @@ animation effects	Off	關
 	Bank Account Numbers (IBAN)	銀行帳號 (IBAN)
 	Croatian Personal ID Numbers (OIB)	克羅埃西亞個人識別號碼 (OIB)
 	Allow access to files	允許存取檔案
+	Tags added. Headings: {headings}, paragraphs: {paragraphs}, figures: {figures}, annotations: {annotations}.	已新增標籤。標題：{headings}，段落：{paragraphs}，圖形：{figures}，註解：{annotations}。
+	Add alternate text to the figures.	請為圖形新增替代文字。
+	Pages left untagged (content could not be read): {pages}	未新增標籤的頁面（無法讀取內容）：{pages}
+	Automatic tagging builds tags from the page content: headings, paragraphs, figures and links in content order. Check the result and add alternate text to figures.	自動標記會依頁面內容的順序建立標籤：標題、段落、圖形和連結。請檢查結果，並為圖形新增替代文字。

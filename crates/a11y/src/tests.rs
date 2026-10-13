@@ -675,3 +675,218 @@ fn a_nested_finding_says_itself() {
     // Both wordings are translated, each on its own, and the document's words are left alone.
     assert_eq!(f.said(&|w: &str| format!("«{w}»")), "«Table element on page 3: «rows have between 1 and 2 columns»»");
 }
+
+// ------------------------------------------------------------------------------------------------
+// Autotag
+
+/// An untagged one-page document: content, annotations, a picture, a link and two forms.
+fn untagged(content: &str, annots: &str) -> Vec<String> {
+    vec![
+        "<< /Type /Catalog /Pages 2 0 R /Lang (en-US) >>".into(),
+        "<< /Type /Pages /Kids [3 0 R] /Count 1 >>".into(),
+        format!(
+            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R {annots} \
+             /Resources << /Font << /F1 5 0 R >> /XObject << /Im 6 0 R /Fm 8 0 R /Tx 9 0 R >> >> >>"
+        ),
+        stream(content),
+        FONT.into(),
+        "<< /Type /XObject /Subtype /Image /Width 1 /Height 1 /ColorSpace /DeviceGray /BitsPerComponent 8 /Length 1 >>\nstream\n\x7f\nendstream".into(),
+        "<< /Type /Annot /Subtype /Link /Rect [20 500 120 520] /A << /S /URI /URI (https://example.org) >> >>".into(),
+        // 8: a form that only draws a line; 9: a form that draws text.
+        "<< /Type /XObject /Subtype /Form /BBox [0 0 10 10] /Length 13 >>\nstream\n0 0 10 1 re f\nendstream".into(),
+        "<< /Type /XObject /Subtype /Form /BBox [0 0 100 20] /Resources << /Font << /F1 5 0 R >> >> /Length 33 >>\nstream\nBT /F1 9 Tf 0 5 Td (Footer) Tj ET\nendstream".into(),
+    ]
+}
+
+const LETTER: &str = "BT /F1 24 Tf 20 760 Td (Title) Tj ET \
+     BT /F1 12 Tf 20 720 Td (First line of a paragraph) Tj ET \
+     BT /F1 12 Tf 20 706 Td (second line of it) Tj ET \
+     0 0 1 rg 20 690 200 1 re f \
+     BT /F1 12 Tf 20 660 Td (Another paragraph) Tj 0 -14 Td (with two lines) Tj ET \
+     q 50 0 0 50 20 580 cm /Im Do Q \
+     /Fm Do /Tx Do";
+
+fn content_text(doc: &Document, page: usize) -> String {
+    let pages = prckopis_model::pages(doc);
+    let c = doc.resolve(pages[page].dict.get(b"Contents").unwrap());
+    let prckopis_cos::Object::Stream(c) = &*c else { panic!("one content stream") };
+    String::from_utf8(c.decoded().unwrap()).unwrap()
+}
+
+/// The content with dictionaries written without inner spaces, for comparison.
+fn compact(text: &str) -> String {
+    text.replace("<< ", "<<").replace(" >>", ">>")
+}
+
+#[test]
+fn autotag_builds_a_structure_tree_the_checker_accepts() {
+    let mut objs = untagged(LETTER, "/Annots [7 0 R 10 0 R]");
+    objs.push("<< /Type /Annot /Subtype /Widget /FT /Tx /T (name) /TU (Your name) /Rect [20 400 200 420] /P 3 0 R >>".into());
+    let mut doc = pdf(&objs, "");
+    let before = check(&doc, &Options::default());
+    assert!(failed(&before).contains(&Rule::TaggedPdf) && failed(&before).contains(&Rule::TaggedContent));
+    let s = autotag(&mut doc).unwrap();
+    assert_eq!(s, AutotagSummary { pages: 1, headings: 1, paragraphs: 3, figures: 1, annotations: 2, artifacts: 2, skipped_pages: Vec::new() });
+    let kinds: Vec<(String, usize)> = tags(&doc).into_iter().map(|t| (t.kind, t.depth)).collect();
+    let kinds: Vec<(&str, usize)> = kinds.iter().map(|(k, d)| (k.as_str(), *d)).collect();
+    assert_eq!(kinds, [("Document", 0), ("H1", 1), ("P", 1), ("P", 1), ("Figure", 1), ("P", 1), ("Link", 1), ("Form", 1)]);
+    // The page content: every painting operator is in tagged or artifact content, in order.
+    let text = compact(&content_text(&doc, 0));
+    let mut at = 0;
+    for needle in [
+        "/H1 <</MCID 0>> BDC",
+        "/P <</MCID 1>> BDC",
+        "/P <</MCID 2>> BDC",
+        "/Artifact BMC",
+        "/P <</MCID 3>> BDC",
+        "/Figure <</MCID 4>> BDC",
+        "/P <</MCID 5>> BDC",
+    ] {
+        let found = text[at..].find(needle).unwrap_or_else(|| panic!("{needle} after {at} in {text}"));
+        at += found + needle.len();
+    }
+    assert_eq!(text.matches("BDC").count() + text.matches("BMC").count(), text.matches("EMC").count(), "{text}");
+    // The checker: tagging, content, annotations, tab order and heading nesting now pass; the
+    // figure still needs its alternate text, which only a person can write.
+    let after = check(&doc, &Options::default());
+    for rule in [Rule::TaggedPdf, Rule::TaggedContent, Rule::TaggedAnnotations, Rule::TaggedFormFields, Rule::TabOrder, Rule::HeadingNesting] {
+        assert_eq!(status(&after, rule), Status::Passed, "{rule:?}: {:?}", after.result(rule));
+    }
+    assert_eq!(failed(&after), [Rule::Title, Rule::FiguresAltText]);
+    // The parent tree maps each MCID to its element and the link to its element.
+    let root = crate::alt::tree_root(&doc).unwrap();
+    let tree = doc.resolve(root.get(b"ParentTree").unwrap());
+    let nums = tree.as_dict().unwrap().get(b"Nums").unwrap().as_array().unwrap().clone();
+    assert_eq!(nums.len(), 6, "page 0, the link and the field");
+    assert_eq!(nums[1].as_array().unwrap().len(), 6);
+    assert_eq!(root.int(b"ParentTreeNextKey"), Some(3));
+    let widget = doc.get(prckopis_cos::ObjRef::new(10, 0));
+    assert_eq!(widget.as_dict().unwrap().int(b"StructParent"), Some(2));
+    let form = doc.resolve(&nums[5]);
+    let objr = form.as_dict().unwrap().get(b"K").unwrap().as_dict().unwrap().clone();
+    assert_eq!((objr.name(b"Type"), objr.get(b"Obj").and_then(|o| o.as_ref())), (Some(&b"OBJR"[..]), ref_(10)));
+    let figure = &figures(&doc)[0];
+    assert_eq!(figure.page, Some(0));
+    assert!(figure.bbox.is_some(), "the figure's content is found again through its MCID");
+    // Already tagged: refused, nothing changes.
+    assert_eq!(autotag(&mut doc), Err(AutotagError::AlreadyTagged));
+}
+
+#[test]
+fn autotag_round_trips_through_an_incremental_save() {
+    let mut doc = pdf(&untagged(LETTER, "/Annots [7 0 R]"), "");
+    let original = doc.bytes().as_ref().clone();
+    autotag(&mut doc).unwrap();
+    let tags_before: Vec<String> = tags(&doc).into_iter().map(|t| t.kind).collect();
+    let saved = prckopis_cos::write_incremental(&doc, &prckopis_cos::SaveOptions::default()).unwrap();
+    assert!(saved.starts_with(&original), "an incremental update keeps the original bytes");
+    let reopened = Document::open(Arc::new(saved)).unwrap();
+    assert_eq!(tags(&reopened).into_iter().map(|t| t.kind).collect::<Vec<_>>(), tags_before);
+    let r = check(&reopened, &Options::default());
+    assert_eq!(failed(&r), [Rule::Title, Rule::FiguresAltText]);
+    let cat = reopened.get(reopened.root().unwrap());
+    let cat = cat.as_dict().unwrap();
+    let mark = reopened.resolve(cat.get(b"MarkInfo").unwrap());
+    assert!(matches!(mark.as_dict().unwrap().get(b"Marked"), Some(prckopis_cos::Object::Bool(true))));
+    assert_eq!(cat.get(b"Lang").and_then(|l| l.as_string()).map(|s| s.to_text()).as_deref(), Some("en-US"), "kept");
+}
+
+#[test]
+fn autotag_levels_headings_without_skipping() {
+    // Sizes 18 (first), 30, 24 and body 10: the first heading can't be an H2.
+    let content = "BT /F1 18 Tf 20 760 Td (Small heading) Tj ET \
+         BT /F1 10 Tf 20 700 Td (Body text that is long enough to be the body of this page) Tj ET \
+         BT /F1 30 Tf 20 600 Td (Big) Tj ET \
+         BT /F1 24 Tf 20 500 Td (Middle) Tj ET \
+         BT /F1 10 Tf 20 400 Td (More body text that is also long enough to count) Tj ET";
+    let mut doc = pdf(&untagged(content, ""), "");
+    autotag(&mut doc).unwrap();
+    let kinds: Vec<String> = tags(&doc).into_iter().map(|t| t.kind).collect();
+    assert_eq!(kinds, ["Document", "H1", "P", "H1", "H2", "P"]);
+    assert_eq!(status(&checked(&doc, &[Rule::HeadingNesting]), Rule::HeadingNesting), Status::Passed);
+}
+
+#[test]
+fn autotag_keeps_existing_marked_content_and_nests_inside_it() {
+    // An optional-content group around text, an artifact header, and an orphaned MCID.
+    let content = "/OC /L1 BDC BT /F1 12 Tf 20 700 Td (Layered) Tj ET EMC \
+         /Artifact BMC BT /F1 8 Tf 20 780 Td (Header) Tj ET EMC \
+         /Span << /MCID 7 >> BDC BT /F1 12 Tf 20 600 Td (Old) Tj ET EMC";
+    let mut doc = pdf(&untagged(content, ""), "");
+    let s = autotag(&mut doc).unwrap();
+    assert_eq!((s.paragraphs, s.headings), (1, 0));
+    let text = compact(&content_text(&doc, 0));
+    let oc = text.find("/OC /L1 BDC").unwrap();
+    let ours = text.find("/MCID 8").expect("new MCIDs continue after the existing ones");
+    assert!(oc < ours && text[ours..].contains("(Layered)"), "{text}");
+    assert_eq!(text.matches("/MCID").count(), 2, "the artifact and the old MCID are left alone: {text}");
+    let r = checked(&doc, &[Rule::TaggedContent]);
+    assert_eq!(status(&r, Rule::TaggedContent), Status::Passed);
+}
+
+#[test]
+fn autotag_refuses_documents_it_cannot_tag_and_never_panics() {
+    // Nothing to tag.
+    let mut empty = pdf(&untagged("", ""), "");
+    assert_eq!(autotag(&mut empty), Err(AutotagError::NothingToTag));
+    // No pages.
+    let mut none = pdf(&["<< /Type /Catalog /Pages 2 0 R >>".into(), "<< /Type /Pages /Kids [] /Count 0 >>".into()], "");
+    assert_eq!(autotag(&mut none), Err(AutotagError::NoPages));
+    // Unreadable content (stray bytes) on the only page: left untouched.
+    let mut broken = pdf(&untagged("BT /F1 12 Tf ) 20 700 Td (Text) Tj ET", ""), "");
+    let before = content_text(&broken, 0);
+    assert_eq!(autotag(&mut broken), Err(AutotagError::NothingToTag));
+    assert_eq!(content_text(&broken, 0), before);
+    // A huge existing MCID: the page is skipped (and said), not given a giant parent-tree array.
+    let mut huge = pdf(&untagged("/P << /MCID 99999999 >> BDC BT /F1 12 Tf (x) Tj ET EMC BT (y) Tj ET", "/Annots [7 0 R]"), "");
+    let s = autotag(&mut huge).unwrap();
+    assert_eq!((s.skipped_pages.clone(), s.annotations, s.pages), (vec![0], 1, 0));
+    assert!(huge.repair_log().iter().any(|l| l.contains("untagged")), "{:?}", huge.repair_log());
+    // Malformed operands, a self-referencing form, unbalanced EMC/Q and odd annotations.
+    let content = "BT /F1 1e308 Tf 1e308 1e308 Td (a) Tj 0 0 0 0 0 0 Tm (b) Tj ET EMC EMC Q Q q /Self Do /Missing Do \
+                   BT /F1 12 Tf T* ' \" (c) Tj ET f sh /Sh sh";
+    let mut objs = untagged(content, "/Annots [7 0 R 99 0 R << /Subtype /Link >> 3 0 R]");
+    objs[2] = objs[2].replace("/Tx 9 0 R", "/Tx 9 0 R /Self 10 0 R");
+    objs.push(
+        "<< /Type /XObject /Subtype /Form /BBox [0 0 1 1] /Resources << /XObject << /Self 10 0 R >> >> /Length 8 >>\nstream\n/Self Do\nendstream"
+            .into(),
+    );
+    let mut odd = pdf(&objs, "");
+    let s = autotag(&mut odd).unwrap();
+    assert_eq!(s.annotations, 1, "only the real link annotation");
+    assert_eq!(status(&check(&odd, &Options::default()), Rule::TaggedPdf), Status::Passed);
+    // Forms nested past the depth limit are classified without recursing forever.
+    let mut deep = untagged("/F0 Do", "");
+    let mut xobjects = String::new();
+    for i in 0..20 {
+        let n = 10 + i;
+        xobjects.push_str(&format!("/F{i} {n} 0 R "));
+        let next = format!("/F{} Do", i + 1);
+        deep.push(format!(
+            "<< /Type /XObject /Subtype /Form /BBox [0 0 1 1] /Resources << /XObject << /F{} {} 0 R >> >> /Length {} >>\nstream\n{next}\nendstream",
+            i + 1,
+            n + 1,
+            next.len()
+        ));
+    }
+    deep.push("<< /Type /XObject /Subtype /Form /BBox [0 0 1 1] /Resources << /Font << /F1 5 0 R >> >> /Length 24 >>\nstream\nBT /F1 9 Tf (deep) Tj ET\nendstream".into());
+    deep[2] = deep[2].replace("/Tx 9 0 R", &format!("/Tx 9 0 R {xobjects}"));
+    let mut deep = pdf(&deep, "");
+    let s = autotag(&mut deep).unwrap();
+    assert_eq!((s.artifacts, s.paragraphs), (1, 0), "too deep to look into: an artifact");
+}
+
+#[test]
+fn autotag_tags_long_pages_quickly() {
+    let mut content = String::new();
+    for i in 0..20_000 {
+        content.push_str(&format!("BT /F1 10 Tf 20 {} Td (Line {i}) Tj ET 0 0 1 1 re f ", 780 - (i % 70) * 11));
+    }
+    let mut doc = pdf(&untagged(&content, ""), "");
+    let started = std::time::Instant::now();
+    let s = autotag(&mut doc).unwrap();
+    assert!(started.elapsed().as_secs() < 30);
+    assert_eq!(s.artifacts, 20_000);
+    assert!(s.paragraphs >= 1);
+    assert_eq!(status(&checked(&doc, &[Rule::TaggedContent]), Rule::TaggedContent), Status::Passed);
+}

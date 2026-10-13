@@ -251,3 +251,61 @@ fn checker_finding_opens_its_structure_tag() {
     h.run_steps(2);
     assert_eq!(h.state().right, Some(RightPanel::Accessibility), "an unfinished tag edit is preserved");
 }
+
+fn tag_kinds(h: &Harness<'static, PrckopisApp>) -> Vec<String> {
+    let s = h.state();
+    s.session.get(s.views[0].id).unwrap().tags().into_iter().map(|t| t.kind).collect()
+}
+
+/// Automatically tag PDF from the empty Tags panel and from the command, on a desktop window and
+/// on a phone: one undo step, the new tags listed, and the checker's tagging rules passing.
+#[test]
+fn autotag_from_the_tags_panel_and_the_command() {
+    for (size, compact) in [(egui::vec2(1400.0, 900.0), false), (egui::vec2(384.0, 854.0), true)] {
+        let mut h = Harness::builder().with_size(size).build_eframe(move |_cc| {
+            let mut app = PrckopisApp::new();
+            app.set_option("language", "en").unwrap();
+            app.set_compact(compact);
+            app.open_bytes("hello.pdf", None, FIXTURE.to_vec()).unwrap();
+            app
+        });
+        h.run_steps(4);
+        assert!(h.state_mut().execute("a11y.tags"));
+        h.run_steps(2);
+        assert_eq!(h.state().right, Some(RightPanel::Tags));
+        h.get_by_label("This document has no editable structure tags.");
+        let button = h.get_by_role_and_label(Role::Button, "Automatically tag PDF");
+        assert!(button.rect().max.x <= size.x, "the button fits the window ({compact})");
+        button.click();
+        h.run_steps(3);
+        assert_eq!(tag_kinds(&h), ["Document", "P"], "{compact}");
+        let toast = h.state().toast.as_ref().map(|t| t.0.clone()).unwrap_or_default();
+        assert!(toast.starts_with("Tags added. Headings: 0, paragraphs: 1"), "{toast}");
+        {
+            let s = h.state();
+            assert_eq!(s.session.get(s.views[0].id).unwrap().can_undo(), Some("Automatically tag PDF"));
+        }
+        let document = {
+            let s = h.state();
+            s.session.get(s.views[0].id).unwrap().tags()[0].object.num
+        };
+        h.get_by_label(&format!("Document · {document}"));
+        h.state_mut().run_accessibility_check();
+        h.run_steps(2);
+        assert_eq!(status(&h, Rule::TaggedPdf), Status::Passed);
+        assert_eq!(status(&h, Rule::TaggedContent), Status::Passed);
+        // Undo takes the tags away; the command tags the document again.
+        h.state_mut().undo();
+        h.run_steps(2);
+        assert!(tag_kinds(&h).is_empty());
+        assert!(h.state_mut().execute("a11y.autotag"));
+        h.run_steps(2);
+        assert_eq!(tag_kinds(&h), ["Document", "P"]);
+        assert_eq!(h.state().right, Some(RightPanel::Tags));
+        // A tagged document is refused, with the reason.
+        assert!(h.state_mut().execute("a11y.autotag"));
+        h.run_steps(1);
+        let toast = h.state().toast.as_ref().map(|t| t.0.clone()).unwrap_or_default();
+        assert!(toast.contains("already tagged"), "{toast}");
+    }
+}

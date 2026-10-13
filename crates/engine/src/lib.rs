@@ -312,6 +312,8 @@ pub struct Document {
     /// What the last successful [`Session::apply`] wrote that its fonts can't draw: kept as typed,
     /// drawn with `?` in its place (see [`TextNotice`]). The interface shows it; tools return it.
     pub edit_notices: Vec<TextNotice>,
+    /// What the last successful [`Session::apply`] tagged, when it was [`Edit::Autotag`].
+    pub autotag_summary: Option<a11y::AutotagSummary>,
 }
 
 /// Text an edit stored as typed but drew with `?` in place of `ch`, because the font it is drawn
@@ -1248,6 +1250,9 @@ pub enum Edit {
     MarkDecorative {
         figure: u32,
     },
+    /// Automatically tag PDF: build a structure tree for an untagged document (headings,
+    /// paragraphs, figures, artifacts and annotations; see [`a11y::autotag`]).
+    Autotag,
     /// Document JavaScripts: add, replace (`script`) or remove (`None`) the document-level
     /// script `name`.
     SetDocumentScript {
@@ -1589,6 +1594,7 @@ pub const EDIT_LABELS: &[&str] = &[
     "Change initial view",
     "Set alternate text",
     "Mark figure as decorative",
+    "Automatically tag PDF",
     "Recognize text",
     "Run JavaScript",
     "Run form script",
@@ -1713,6 +1719,7 @@ impl Edit {
             Edit::SetTagProperty { .. } => Label::of("Change tag properties"),
             Edit::MoveTag { .. } => Label::of("Move object"),
             Edit::MarkDecorative { .. } => Label::of("Mark figure as decorative"),
+            Edit::Autotag => Label::of("Automatically tag PDF"),
             Edit::AddOcrText { .. } => Label::of("Recognize text"),
             Edit::ApplyScriptChanges { .. } => Label::of("Run JavaScript"),
             Edit::XfaEvent { .. } => Label::of("Run form script"),
@@ -1903,6 +1910,7 @@ fn check_permission(edit: &Edit, p: &prckopis_cos::Permissions) -> Result<(), Ed
         | Edit::SetTagProperty { .. }
         | Edit::MoveTag { .. }
         | Edit::MarkDecorative { .. }
+        | Edit::Autotag
         | Edit::AddOcrText { .. }
         | Edit::SetDocumentScript { .. }
         | Edit::SetFieldScript { .. }
@@ -1945,6 +1953,8 @@ struct EditCtx {
     /// Fields the edit renamed to keep imported names separate (old → new), for the repair
     /// log and the undo label.
     renamed_fields: Vec<(String, String)>,
+    /// What [`Edit::Autotag`] tagged.
+    autotag: Option<a11y::AutotagSummary>,
 }
 
 impl EditCtx {
@@ -1970,6 +1980,7 @@ impl EditCtx {
             seed,
             count: 0,
             renamed_fields: Vec::new(),
+            autotag: None,
         }
     }
 
@@ -2238,6 +2249,9 @@ fn run_edit(doc: &mut prckopis_cos::Document, edit: &Edit, cx: &mut EditCtx) -> 
         Edit::MarkDecorative { figure } => {
             let r = prckopis_cos::ObjRef::new(*figure, doc.generation(*figure));
             a11y::mark_decorative(doc, r).map_err(|e| EditError::Accessibility(e.to_string()))?;
+        }
+        Edit::Autotag => {
+            cx.autotag = Some(a11y::autotag(doc).map_err(|e| EditError::Accessibility(e.to_string()))?);
         }
         Edit::AddHeaderFooter { pages, settings, replace } => {
             let date = cx.today;
@@ -3112,6 +3126,7 @@ impl Session {
             fonts_stale: false,
             xfa_warnings: Vec::new(),
             edit_notices: Vec::new(),
+            autotag_summary: None,
         });
         Ok(id)
     }
@@ -3127,6 +3142,7 @@ impl Session {
         let js_off = self.js_off;
         let doc = self.doc_mut(id)?;
         doc.edit_notices.clear();
+        doc.autotag_summary = None;
         let name = doc.name.clone();
         let is_xfa = doc.info.xfa.is_some();
         let mut cx = EditCtx::new(now, doc.generation ^ (id.0 << 48));
@@ -3266,6 +3282,7 @@ impl Session {
         doc.dirty = true;
         doc.generation += 1;
         doc.edit_notices = notices;
+        doc.autotag_summary = cx.autotag.take();
         note_warnings(&mut doc.xfa_warnings, &xfa_notes);
         let notes = doc.xfa_warnings.clone();
         note_warnings(&mut doc.info.warnings, &notes);

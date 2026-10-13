@@ -111,8 +111,21 @@ pub(crate) fn panel(ui: &mut Ui, t: &Tokens, doc: DocId, tags: &[TagInfo], state
         state.collapsed.clear();
     }
     if tags.is_empty() {
-        ui.label(tl!("This document has no editable structure tags."));
-        return (None, None);
+        ui.add(egui::Label::new(tl!("This document has no editable structure tags.")).wrap());
+        ui.add_space(6.0);
+        ui.add(
+            egui::Label::new(
+                egui::RichText::new(tl!(
+                    "Automatic tagging builds tags from the page content: headings, paragraphs, figures and links in content order. Check the result and add alternate text to figures."
+                ))
+                .small()
+                .color(t.text_muted),
+            )
+            .wrap(),
+        );
+        ui.add_space(6.0);
+        let autotag = ui.add_enabled_ui(can_edit, |ui| widgets::pill_button(ui, tl!("Automatically tag PDF"), true)).inner.clicked();
+        return (None, autotag.then_some(Edit::Autotag));
     }
     if state.selected.is_none_or(|r| !tags.iter().any(|t| t.object == r)) {
         state.selected = Some(tags[0].object);

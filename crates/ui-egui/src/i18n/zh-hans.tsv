@@ -2389,3 +2389,7 @@ animation effects	Off	关
 	Bank Account Numbers (IBAN)	银行账号 (IBAN)
 	Croatian Personal ID Numbers (OIB)	克罗地亚个人识别号码 (OIB)
 	Allow access to files	允许访问文件
+	Tags added. Headings: {headings}, paragraphs: {paragraphs}, figures: {figures}, annotations: {annotations}.	已添加标签。标题：{headings}，段落：{paragraphs}，图形：{figures}，注释：{annotations}。
+	Add alternate text to the figures.	请为图形添加替代文本。
+	Pages left untagged (content could not be read): {pages}	未添加标签的页面（无法读取内容）：{pages}
+	Automatic tagging builds tags from the page content: headings, paragraphs, figures and links in content order. Check the result and add alternate text to figures.	自动标记会根据页面内容按内容顺序创建标签：标题、段落、图形和链接。请检查结果，并为图形添加替代文本。

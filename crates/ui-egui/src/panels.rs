@@ -724,7 +724,11 @@ pub fn right_panel(app: &mut PrckopisApp, ui: &mut egui::Ui) {
         app.choose_right_panel(None);
     }
     if let Some(e) = panel_edit {
-        app.apply_edit(e);
+        if matches!(e, prckopis_engine::Edit::Autotag) {
+            app.autotag_document();
+        } else {
+            app.apply_edit(e);
+        }
     }
     if let Some((name, widget)) = field_properties {
         app.open_field_props(&name, widget);

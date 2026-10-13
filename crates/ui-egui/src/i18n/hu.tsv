@@ -2424,3 +2424,7 @@ animation effects	Off	Ki
 	Bank Account Numbers (IBAN)	Bankszámlaszámok (IBAN)
 	Croatian Personal ID Numbers (OIB)	Horvát személyi azonosító számok (OIB)
 	Allow access to files	Fájlhozzáférés engedélyezése
+	Tags added. Headings: {headings}, paragraphs: {paragraphs}, figures: {figures}, annotations: {annotations}.	Címkék hozzáadva. Címsorok: {headings}, bekezdések: {paragraphs}, ábrák: {figures}, megjegyzések: {annotations}.
+	Add alternate text to the figures.	Adjon helyettesítő szöveget az ábrákhoz.
+	Pages left untagged (content could not be read): {pages}	Címke nélkül maradt oldalak (a tartalom nem olvasható): {pages}
+	Automatic tagging builds tags from the page content: headings, paragraphs, figures and links in content order. Check the result and add alternate text to figures.	Az automatikus címkézés az oldalak tartalmából hoz létre címkéket: címsorokat, bekezdéseket, ábrákat és hivatkozásokat a tartalom sorrendjében. Ellenőrizze az eredményt, és adjon helyettesítő szöveget az ábrákhoz.

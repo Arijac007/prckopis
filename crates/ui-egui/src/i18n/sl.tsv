@@ -2430,3 +2430,7 @@ animation effects	Off	Izklopljeni
 	Bank Account Numbers (IBAN)	Številke bančnih računov (IBAN)
 	Croatian Personal ID Numbers (OIB)	Hrvaške osebne identifikacijske številke (OIB)
 	Allow access to files	Dovoli dostop do datotek
+	Tags added. Headings: {headings}, paragraphs: {paragraphs}, figures: {figures}, annotations: {annotations}.	Oznake so dodane. Naslovi: {headings}, odstavki: {paragraphs}, slike: {figures}, pripombe: {annotations}.
+	Add alternate text to the figures.	Slikam dodajte nadomestno besedilo.
+	Pages left untagged (content could not be read): {pages}	Strani, ki so ostale brez oznak (vsebine ni bilo mogoče prebrati): {pages}
+	Automatic tagging builds tags from the page content: headings, paragraphs, figures and links in content order. Check the result and add alternate text to figures.	Samodejno označevanje ustvari oznake iz vsebine strani: naslove, odstavke, slike in povezave v vrstnem redu vsebine. Preverite rezultat in slikam dodajte nadomestno besedilo.

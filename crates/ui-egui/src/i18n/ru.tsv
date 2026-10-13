@@ -2338,3 +2338,7 @@ animation effects	Off	Выкл
 	Bank Account Numbers (IBAN)	Номера банковских счетов (IBAN)
 	Croatian Personal ID Numbers (OIB)	Хорватские личные идентификационные номера (OIB)
 	Allow access to files	Разрешить доступ к файлам
+	Tags added. Headings: {headings}, paragraphs: {paragraphs}, figures: {figures}, annotations: {annotations}.	Теги добавлены. Заголовки: {headings}, абзацы: {paragraphs}, рисунки: {figures}, аннотации: {annotations}.
+	Add alternate text to the figures.	Добавьте альтернативный текст к рисункам.
+	Pages left untagged (content could not be read): {pages}	Страницы без тегов (не удалось прочитать содержимое): {pages}
+	Automatic tagging builds tags from the page content: headings, paragraphs, figures and links in content order. Check the result and add alternate text to figures.	Автоматическая разметка создаёт теги из содержимого страниц: заголовки, абзацы, рисунки и ссылки в порядке содержимого. Проверьте результат и добавьте альтернативный текст к рисункам.

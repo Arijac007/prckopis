@@ -443,6 +443,19 @@ impl Automation {
         self.accessibility_tags(a)
     }
 
+    pub(crate) fn accessibility_autotag(&mut self, a: &Args) -> Result<Value> {
+        let id = self.doc(a)?.id;
+        self.session.apply(id, prckopis_engine::Edit::Autotag).map_err(failed)?;
+        let doc = self.doc(a)?;
+        let s = doc.autotag_summary.clone().unwrap_or_default();
+        Ok(json!({
+            "pages": s.pages, "headings": s.headings, "paragraphs": s.paragraphs, "figures": s.figures,
+            "annotations": s.annotations, "artifacts": s.artifacts,
+            "skipped_pages": s.skipped_pages.iter().map(|p| p + 1).collect::<Vec<_>>(),
+            "tags": doc.tags().len(),
+        }))
+    }
+
     pub(crate) fn accessibility_move_tag(&mut self, a: &Args) -> Result<Value> {
         let reference = |number: &str, generation: &str| -> Result<prckopis_cos::ObjRef> {
             let n = u32::try_from(a.int(number)?).map_err(|_| ToolError::InvalidArgs(format!("{number} must be a positive tag object number")))?;

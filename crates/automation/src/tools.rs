@@ -1039,6 +1039,9 @@ pub fn tools() -> Vec<ToolDef> {
                 "property": { "type": "string", "enum": ["type", "title", "actual_text", "alternate_text", "language"] },
                 "value": { "type": "string" },
             }), &["doc", "object", "generation", "property"])),
+        t("accessibility_autotag", "Automatically tag PDF", "Tag an untagged document: build a structure tree under one Document element from the page content in content order (text blocks become P, or H1-H6 when clearly larger than the body text, with levels that never skip; images and image forms become Figure; forms with text become P; paths and shadings become artifacts; links, widgets and other annotations become Link, Form and Annot elements, and their pages tab in structure order), with MCIDs in the content, a parent tree and MarkInfo Marked true. Refuses already-tagged documents. Pages whose content can't be read completely are left untouched and listed in skipped_pages. Returns what was tagged. Figures still need alternate text (accessibility_set_alt). Undoable.")
+            .cmd("a11y.autotag")
+            .with(schema(json!({ "doc": doc() }), &["doc"])),
         t("accessibility_move_tag", "Move structure tag", "Move a reachable indirect structure tag before or after a direct sibling in their parent's /K array, changing tagged reading order without changing page appearance. Use object and generation values from accessibility_tags. Rejects distinct parents, duplicate references and positions that are already current. Undoable.")
             .with(schema(json!({
                 "doc": doc(), "object": { "type": "integer", "minimum": 1 },

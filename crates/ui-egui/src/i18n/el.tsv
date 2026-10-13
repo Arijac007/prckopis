@@ -2440,3 +2440,7 @@ animation effects	Off	Ανενεργά
 	Bank Account Numbers (IBAN)	Αριθμοί τραπεζικών λογαριασμών (IBAN)
 	Croatian Personal ID Numbers (OIB)	Κροατικοί αριθμοί προσωπικής ταυτοποίησης (OIB)
 	Allow access to files	Να επιτρέπεται η πρόσβαση στα αρχεία
+	Tags added. Headings: {headings}, paragraphs: {paragraphs}, figures: {figures}, annotations: {annotations}.	Οι ετικέτες προστέθηκαν. Επικεφαλίδες: {headings}, παράγραφοι: {paragraphs}, εικόνες: {figures}, σχολιασμοί: {annotations}.
+	Add alternate text to the figures.	Προσθέστε εναλλακτικό κείμενο στις εικόνες.
+	Pages left untagged (content could not be read): {pages}	Σελίδες χωρίς ετικέτες (δεν ήταν δυνατή η ανάγνωση του περιεχομένου): {pages}
+	Automatic tagging builds tags from the page content: headings, paragraphs, figures and links in content order. Check the result and add alternate text to figures.	Η αυτόματη προσθήκη ετικετών δημιουργεί ετικέτες από το περιεχόμενο των σελίδων: επικεφαλίδες, παραγράφους, εικόνες και συνδέσμους με τη σειρά του περιεχομένου. Ελέγξτε το αποτέλεσμα και προσθέστε εναλλακτικό κείμενο στις εικόνες.

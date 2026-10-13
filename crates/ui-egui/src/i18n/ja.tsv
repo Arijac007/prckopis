@@ -2425,3 +2425,7 @@ animation effects	Off	オフ
 	Bank Account Numbers (IBAN)	銀行口座番号 (IBAN)
 	Croatian Personal ID Numbers (OIB)	クロアチアの個人識別番号 (OIB)
 	Allow access to files	ファイルへのアクセスを許可
+	Tags added. Headings: {headings}, paragraphs: {paragraphs}, figures: {figures}, annotations: {annotations}.	タグを追加しました。見出し: {headings}、段落: {paragraphs}、図: {figures}、注釈: {annotations}。
+	Add alternate text to the figures.	図に代替テキストを追加してください。
+	Pages left untagged (content could not be read): {pages}	タグが付かなかったページ (内容を読み取れませんでした): {pages}
+	Automatic tagging builds tags from the page content: headings, paragraphs, figures and links in content order. Check the result and add alternate text to figures.	自動タグ付けは、ページの内容から見出し・段落・図・リンクのタグを内容の順序で作成します。結果を確認し、図に代替テキストを追加してください。
