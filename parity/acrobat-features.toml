@@ -6066,10 +6066,10 @@ area = "H"
 tier = "P1"
 milestone = "M9"
 status = "partial"
-commands = ["sign.digital", "sign.certify", "sign.certify_invisible"]
-tools = ["sign_document", "sign_list"]
-evidence = ["crates/sign/tests/field_lock.rs::signing_locks_the_named_fields_and_a_later_change_to_them_is_not_permitted", "crates/sign/tests/field_lock.rs::signing_a_field_applies_the_lock_it_asks_for", "crates/automation/tests/automation.rs::signing_locks_form_fields_through_tools", "crates/ui-egui/tests/signing.rs::certifying_without_a_visible_signature"]
-notes = "Signing writes a FieldMDP reference (All / Include / Exclude), makes the locked fields read-only and honours a signature field's /Lock; validation reads the lock, says which fields it covers and reports any later change to a locked field (signing one included) as not permitted. The sign dialog offers 'lock all form fields'; the tool takes any lock. Missing: authoring /Lock in Prepare Form (Signature field properties > Signed: mark as read-only), choosing individual fields in the sign dialog, the PDF 2.0 /P entry of a field lock"
+commands = ["sign.digital", "sign.certify", "sign.certify_invisible", "form.add.signature"]
+tools = ["sign_document", "sign_list", "form_set_props", "form_fields"]
+evidence = ["crates/sign/tests/field_lock.rs::signing_locks_the_named_fields_and_a_later_change_to_them_is_not_permitted", "crates/sign/tests/field_lock.rs::signing_a_field_applies_the_lock_it_asks_for", "crates/automation/tests/automation.rs::signing_locks_form_fields_through_tools", "crates/ui-egui/tests/signing.rs::certifying_without_a_visible_signature", "crates/forms/src/tests.rs::a_signature_field_lock_is_written_read_back_and_removed", "crates/forms/src/tests.rs::a_malformed_signature_field_lock_is_ignored", "crates/engine/src/tests.rs::a_signature_fields_lock_is_set_saved_and_undone", "crates/automation/tests/automation.rs::a_signature_fields_lock_is_authored_through_tools_and_applied_on_signing", "crates/ui-egui/tests/prepare.rs::signed_tab_marks_fields_read_only_when_the_signature_field_is_signed"]
+notes = "Signing writes a FieldMDP reference (All / Include / Exclude), makes the locked fields read-only and honours a signature field's /Lock; validation reads the lock, says which fields it covers and reports any later change to a locked field (signing one included) as not permitted. The sign dialog offers 'lock all form fields'; the tool takes any lock. Prepare Form authors a signature field's /Lock (Digital Signature Properties > Signed: nothing happens / mark as read-only all fields, all except these, just these; undoable), form_set_props takes lock and form_fields reports it. Missing: choosing individual fields in the sign dialog, the PDF 2.0 /P entry of a field lock, Acrobat's 'This script executes when field is signed' option on the Signed tab"
 
 [[feature]]
 id = "sign.document-timestamp"

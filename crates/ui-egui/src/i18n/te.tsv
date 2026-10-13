@@ -2307,3 +2307,11 @@ animation effects	Off	ఆఫ్
 	Downloads	డౌన్‌లోడ్‌లు
 	Choose this folder	ఈ ఫోల్డర్‌ను ఎంచుకో
 	This folder can't be read ({e}). Allow Prckopis to access files in Android Settings ▸ Apps ▸ Prckopis ▸ Permissions.	ఈ ఫోల్డర్‌ను చదవలేము ({e}). Android సెట్టింగ్‌లు > యాప్‌లు > Prckopis > అనుమతులు లో Prckopis‌కు ఫైళ్ల యాక్సెస్ అనుమతించండి.
+	Signed	సంతకం చేసినప్పుడు
+	Nothing happens when signed	సంతకం చేసినప్పుడు ఏమీ జరగదు
+	Mark as read-only:	చదవడానికి మాత్రమే చేయి:
+	All fields	అన్ని ఫీల్డ్‌లు
+	All fields except these	ఇవి తప్ప అన్ని ఫీల్డ్‌లు
+	Just these fields	ఈ ఫీల్డ్‌లు మాత్రమే
+	This document has no other fields.	ఈ పత్రంలో ఇతర ఫీల్డ్‌లు లేవు.
+	Choose at least one field.	కనీసం ఒక ఫీల్డ్‌ను ఎంచుకోండి.

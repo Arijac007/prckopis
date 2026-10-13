@@ -2358,3 +2358,11 @@ animation effects	Off	Изключени
 	Downloads	Изтегляния
 	Choose this folder	Избор на тази папка
 	This folder can't be read ({e}). Allow Prckopis to access files in Android Settings ▸ Apps ▸ Prckopis ▸ Permissions.	Тази папка не може да бъде прочетена ({e}). Разрешете на Prckopis достъп до файловете от Настройки на Android > Приложения > Prckopis > Разрешения.
+	Signed	Подписано
+	Nothing happens when signed	Нищо не се случва при подписване
+	Mark as read-only:	Само за четене:
+	All fields	Всички полета
+	All fields except these	Всички полета освен тези
+	Just these fields	Само тези полета
+	This document has no other fields.	Този документ няма други полета.
+	Choose at least one field.	Изберете поне едно поле.

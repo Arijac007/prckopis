@@ -1508,6 +1508,35 @@ fn preparing_a_form_adds_renames_and_deletes_fields() {
 }
 
 #[test]
+fn a_signature_fields_lock_is_set_saved_and_undone() {
+    let (mut s, id) = session_with(1);
+    let add = |kind: NewField, y: f64| Edit::AddField { page: 0, rect: [20.0, y, 180.0, y + 22.0], kind, name: None };
+    s.apply(id, add(NewField::Text { multiline: false }, 250.0)).unwrap();
+    s.apply(id, add(NewField::Signature, 150.0)).unwrap();
+    let lock = |l: Option<SignatureLock>| Edit::SetFieldProps {
+        name: "Signature1".into(),
+        props: Box::new(FieldProps { signature_lock: Some(l), ..Default::default() }),
+    };
+    s.apply(id, lock(Some(SignatureLock::Include(vec!["Text1".into()])))).unwrap();
+    assert_eq!(s.get(id).unwrap().field_signature_lock("Signature1"), Some(SignatureLock::Include(vec!["Text1".into()])));
+    assert_eq!(s.get(id).unwrap().field_signature_lock("Text1"), None);
+    assert_eq!(s.get(id).unwrap().can_undo(), Some("Change field properties"));
+    let saved = s.save_bytes(id).unwrap();
+    let mut s2 = Session::new();
+    let id2 = s2.open("f.pdf", None, saved, None).unwrap();
+    assert_eq!(s2.get(id2).unwrap().field_signature_lock("Signature1"), Some(SignatureLock::Include(vec!["Text1".into()])));
+    s.apply(id, lock(None)).unwrap();
+    assert_eq!(s.get(id).unwrap().field_signature_lock("Signature1"), None);
+    s.undo(id).unwrap();
+    assert_eq!(s.get(id).unwrap().field_signature_lock("Signature1"), Some(SignatureLock::Include(vec!["Text1".into()])));
+    s.undo(id).unwrap();
+    assert_eq!(s.get(id).unwrap().field_signature_lock("Signature1"), None);
+    // A lock naming a field that doesn't exist is refused and changes nothing.
+    assert!(s.apply(id, lock(Some(SignatureLock::Exclude(vec!["nope".into()])))).is_err());
+    assert_eq!(s.get(id).unwrap().field_signature_lock("Signature1"), None);
+}
+
+#[test]
 fn redaction_marks_apply_for_good_and_undo() {
     let (mut s, id) = session_with(2);
     // "Page 1" at 24 pt from x 20: the "1" starts near x 82.7 (Helvetica widths).

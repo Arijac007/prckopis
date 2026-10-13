@@ -2359,3 +2359,11 @@ animation effects	Off	关
 	Downloads	下载
 	Choose this folder	选择此文件夹
 	This folder can't be read ({e}). Allow Prckopis to access files in Android Settings ▸ Apps ▸ Prckopis ▸ Permissions.	无法读取此文件夹（{e}）。请在 Android 设置 > 应用 > Prckopis > 权限 中允许 Prckopis 访问文件。
+	Signed	签名时
+	Nothing happens when signed	签名时不执行任何操作
+	Mark as read-only:	设为只读：
+	All fields	所有字段
+	All fields except these	除这些以外的所有字段
+	Just these fields	仅这些字段
+	This document has no other fields.	此文档没有其他字段。
+	Choose at least one field.	请至少选择一个字段。

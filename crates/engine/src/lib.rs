@@ -51,8 +51,8 @@ pub use prckopis_edit::{
 };
 pub use prckopis_forms::{
     BorderStyle, CheckStyle, Field as FormField, FieldAction, FieldChange, FieldFont, FieldKind as FormFieldKind, FieldProps, FieldValue,
-    Look as FieldLook, LookPatch as FieldLookPatch, NewField, TabOrder, Trigger as FieldTrigger, Widget as FormWidget, af as form_scripts,
-    flags as field_flags,
+    Look as FieldLook, LookPatch as FieldLookPatch, NewField, SignatureLock, TabOrder, Trigger as FieldTrigger, Widget as FormWidget,
+    af as form_scripts, flags as field_flags,
 };
 
 pub use prckopis_a11y as a11y;
@@ -657,6 +657,14 @@ impl Document {
         let e = self.editor.as_ref()?;
         let f = self.form.iter().find(|f| f.name == name)?;
         matches!(f.kind, FormFieldKind::CheckBox | FormFieldKind::Radio).then(|| prckopis_forms::check_style(&e.cos, f))
+    }
+
+    /// A signature field's lock: the fields signing it marks as read-only (Digital Signature
+    /// Properties ▸ Signed). `None` for other fields and fields without a (valid) lock.
+    pub fn field_signature_lock(&self, name: &str) -> Option<SignatureLock> {
+        let e = self.editor.as_ref()?;
+        let f = self.form.iter().find(|f| f.name == name)?;
+        prckopis_forms::signature_lock(&e.cos, f)
     }
 
     /// Remove Hidden Information: what each category would remove.

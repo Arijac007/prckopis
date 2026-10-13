@@ -2468,3 +2468,11 @@ animation effects	Off	Vypnuto
 	Downloads	Stažené soubory
 	Choose this folder	Vybrat tuto složku
 	This folder can't be read ({e}). Allow Prckopis to access files in Android Settings ▸ Apps ▸ Prckopis ▸ Permissions.	Tuto složku nelze přečíst ({e}). Povolte aplikaci Prckopis přístup k souborům v Nastavení Androidu > Aplikace > Prckopis > Oprávnění.
+	Signed	Podepsáno
+	Nothing happens when signed	Při podpisu se nic nestane
+	Mark as read-only:	Označit jen pro čtení:
+	All fields	Všechna pole
+	All fields except these	Všechna pole kromě těchto
+	Just these fields	Pouze tato pole
+	This document has no other fields.	Tento dokument nemá žádná další pole.
+	Choose at least one field.	Vyberte alespoň jedno pole.

@@ -2409,3 +2409,11 @@ animation effects	Off	Desativados
 	Downloads	Downloads
 	Choose this folder	Escolher esta pasta
 	This folder can't be read ({e}). Allow Prckopis to access files in Android Settings ▸ Apps ▸ Prckopis ▸ Permissions.	Não é possível ler esta pasta ({e}). Permita que o Prckopis acesse arquivos em Configurações do Android > Apps > Prckopis > Permissões.
+	Signed	Assinado
+	Nothing happens when signed	Nada acontece ao assinar
+	Mark as read-only:	Marcar como somente leitura:
+	All fields	Todos os campos
+	All fields except these	Todos os campos exceto estes
+	Just these fields	Somente estes campos
+	This document has no other fields.	Este documento não tem outros campos.
+	Choose at least one field.	Escolha pelo menos um campo.

@@ -410,7 +410,7 @@ fn lock_json(lock: &FieldLock) -> Value {
 }
 
 /// `sign_document`'s `lock`: `"all"`, `{"include": [names]}` or `{"exclude": [names]}`.
-fn parse_lock(v: &Value) -> Result<FieldLock> {
+pub(crate) fn parse_lock(v: &Value) -> Result<FieldLock> {
     const USAGE: &str = "lock is \"all\", {\"include\": [field names]} or {\"exclude\": [field names]}";
     let names = |list: &Value| -> Result<Vec<String>> {
         let list = list.as_array().ok_or_else(|| bad(USAGE))?;

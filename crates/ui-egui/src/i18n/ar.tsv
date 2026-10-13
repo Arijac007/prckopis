@@ -2416,3 +2416,11 @@ animation effects	Off	معطّلة
 	Downloads	التنزيلات
 	Choose this folder	اختيار هذا المجلد
 	This folder can't be read ({e}). Allow Prckopis to access files in Android Settings ▸ Apps ▸ Prckopis ▸ Permissions.	تتعذر قراءة هذا المجلد ({e}). اسمح لـ Prckopis بالوصول إلى الملفات من إعدادات Android > التطبيقات > Prckopis > الأذونات.
+	Signed	التوقيع
+	Nothing happens when signed	لا يحدث شيء عند التوقيع
+	Mark as read-only:	جعل الحقول للقراءة فقط:
+	All fields	كل الحقول
+	All fields except these	كل الحقول باستثناء هذه
+	Just these fields	هذه الحقول فقط
+	This document has no other fields.	لا يحتوي هذا المستند على حقول أخرى.
+	Choose at least one field.	اختر حقلاً واحداً على الأقل.

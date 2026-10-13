@@ -497,3 +497,64 @@ fn actions_tab_adds_and_removes_actions() {
         ]
     );
 }
+
+#[test]
+fn signed_tab_marks_fields_read_only_when_the_signature_field_is_signed() {
+    use prckopis_engine::SignatureLock;
+    use prckopis_ui_egui::prepare::LockScope;
+    let mut h = harness();
+    h.state_mut().apply_edit(prckopis_engine::Edit::AddField {
+        page: 0,
+        rect: [40.0, 300.0, 220.0, 336.0],
+        kind: prckopis_engine::NewField::Signature,
+        name: Some("Approval".into()),
+    });
+    let lock = |h: &Harness<'static, PrckopisApp>| {
+        let s = h.state();
+        s.session.get(s.views[0].id).unwrap().field_signature_lock("Approval")
+    };
+    h.state_mut().open_field_props("Approval", 0);
+    h.run_steps(2);
+    h.get_by_label("Signed").click();
+    h.run_steps(2);
+    h.get_by_label("Nothing happens when signed");
+    assert!(!h.state().field_props.as_ref().unwrap().lock_on);
+    h.get_by_label("Mark as read-only:").click();
+    h.run_steps(2);
+    {
+        let d = h.state().field_props.as_ref().unwrap();
+        assert!(d.lock_on && d.lock_scope == LockScope::All, "all fields by default");
+    }
+    // "Just these fields" needs a field: OK keeps the dialog open until one is chosen.
+    h.state_mut().field_props.as_mut().unwrap().lock_scope = LockScope::Just;
+    h.run_steps(2);
+    h.get_by_label("Choose at least one field.");
+    h.get_by_label("OK").click();
+    h.run_steps(3);
+    assert!(h.state().field_props.is_some(), "still open");
+    assert_eq!(lock(&h), None);
+    h.get_by_label("city").click();
+    h.run_steps(2);
+    h.get_by_label("OK").click();
+    h.run_steps(3);
+    assert!(h.state().field_props.is_none());
+    assert_eq!(lock(&h), Some(SignatureLock::Include(vec!["city".into()])));
+    // Reopened, the tab shows the lock; "Nothing happens when signed" removes it.
+    h.state_mut().open_field_props("Approval", 0);
+    h.run_steps(2);
+    {
+        let d = h.state().field_props.as_ref().unwrap();
+        assert!(d.lock_on && d.lock_scope == LockScope::Just && d.lock_fields == ["city"]);
+    }
+    h.get_by_label("Signed").click();
+    h.run_steps(2);
+    h.get_by_label("Nothing happens when signed").click();
+    h.run_steps(2);
+    h.get_by_label("OK").click();
+    h.run_steps(3);
+    assert_eq!(lock(&h), None);
+    // Other fields have no Signed tab.
+    h.state_mut().open_field_props("city", 0);
+    h.run_steps(2);
+    assert!(h.query_by_label("Signed").is_none());
+}

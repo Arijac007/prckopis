@@ -2573,3 +2573,11 @@ signature pad	Type	Upiši
 	Downloads	Preuzimanja
 	Choose this folder	Odaberi ovu mapu
 	This folder can't be read ({e}). Allow Prckopis to access files in Android Settings ▸ Apps ▸ Prckopis ▸ Permissions.	Ova mapa se ne može pročitati ({e}). Dopusti Prckopisu pristup datotekama u Android postavkama > Aplikacije > Prckopis > Dopuštenja.
+	Signed	Potpisano
+	Nothing happens when signed	Ništa se ne događa pri potpisivanju
+	Mark as read-only:	Označi samo za čitanje:
+	All fields	Sva polja
+	All fields except these	Sva polja osim ovih
+	Just these fields	Samo ova polja
+	This document has no other fields.	Ovaj dokument nema drugih polja.
+	Choose at least one field.	Odaberite barem jedno polje.

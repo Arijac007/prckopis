@@ -98,6 +98,9 @@ pub struct FieldProps {
     /// Changing between horizontal and vertical swaps that widget's width and height around its
     /// center, unless [`Self::rect`] is also set.
     pub rotation: Option<(usize, i64)>,
+    /// Signature fields: the fields signing it marks as read-only (`/Lock`, Digital Signature
+    /// Properties ▸ Signed). `Some(None)` removes the lock.
+    pub signature_lock: Option<Option<crate::SignatureLock>>,
 }
 
 fn invalid<T>(m: impl Into<String>) -> Result<T, FormError> {
@@ -888,6 +891,9 @@ pub fn set_props(doc: &mut Document, name: &str, props: &FieldProps) -> Result<S
         if *props == (FieldProps { locked: props.locked, ..FieldProps::default() }) {
             return Ok(name.to_string());
         }
+    }
+    if let Some(lock) = &props.signature_lock {
+        crate::sig_lock::set_signature_lock(doc, &all, &f, lock.as_ref())?;
     }
     if let Some(acts) = &props.actions {
         crate::set_field_actions(doc, name, acts)?;

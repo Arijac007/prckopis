@@ -1488,6 +1488,54 @@ fn signing_locks_form_fields_through_tools() {
 }
 
 #[test]
+fn a_signature_fields_lock_is_authored_through_tools_and_applied_on_signing() {
+    let dir = workdir("sign-field-lock");
+    let mut a = auto(&dir);
+    ok(&mut a, "sign_id_create", json!({ "name": "Ada Lovelace", "key": "p256", "password": "secret1", "path": "ada.p12" }));
+    let doc = ok(&mut a, "doc_open", json!({ "path": "a.pdf" }))["doc"].as_u64().unwrap();
+    ok(&mut a, "form_add_field", json!({ "doc": doc, "page": 1, "type": "text", "rect": [20, 20, 180, 42], "name": "City" }));
+    ok(&mut a, "form_add_field", json!({ "doc": doc, "page": 1, "type": "text", "rect": [20, 60, 180, 82], "name": "Note" }));
+    ok(&mut a, "form_add_field", json!({ "doc": doc, "page": 1, "type": "signature", "rect": [200, 20, 380, 70], "name": "Approval" }));
+    for bad in [json!("some"), json!({ "include": [] }), json!({ "include": ["Nowhere"] }), json!({ "exclude": [1] })] {
+        let r = a.call("form_set_props", &json!({ "doc": doc, "field": "Approval", "lock": bad }));
+        assert!(r.is_err(), "{bad}: {r:?}");
+    }
+    let r = a.call("form_set_props", &json!({ "doc": doc, "field": "City", "lock": "all" }));
+    assert!(r.is_err(), "only signature fields lock: {r:?}");
+    // Signed tab: "All fields except these", then "Just these fields".
+    ok(&mut a, "form_set_props", json!({ "doc": doc, "field": "Approval", "lock": { "exclude": ["Note"] } }));
+    let lock_of = |a: &mut Automation| {
+        let fields = ok(a, "form_fields", json!({ "doc": doc }));
+        fields["fields"].as_array().unwrap().iter().find(|f| f["name"] == "Approval").unwrap()["lock"].clone()
+    };
+    assert_eq!(lock_of(&mut a), json!({ "exclude": ["Note"] }));
+    ok(&mut a, "form_set_props", json!({ "doc": doc, "field": "Approval", "lock": "none" }));
+    assert_eq!(lock_of(&mut a), Value::Null, "nothing happens when signed");
+    ok(&mut a, "edit_undo", json!({ "doc": doc }));
+    assert_eq!(lock_of(&mut a), json!({ "exclude": ["Note"] }), "undone");
+    ok(&mut a, "form_set_props", json!({ "doc": doc, "field": "Approval", "lock": { "include": ["City"] } }));
+    assert_eq!(lock_of(&mut a), json!({ "include": ["City"] }));
+    ok(&mut a, "form_fill", json!({ "doc": doc, "values": { "City": "Zagreb" } }));
+    ok(&mut a, "doc_save", json!({ "doc": doc, "path": "form.pdf" }));
+    // Signing the field without a lock argument applies the one the field asks for.
+    let r = ok(&mut a, "sign_document", json!({ "doc": doc, "id": "ada.p12", "password": "secret1", "field": "Approval", "out": "signed.pdf" }));
+    assert_eq!(r["signature"]["locked_fields"], json!({ "include": ["City"] }), "{r}");
+    let mut b = auto(&dir);
+    ok(&mut b, "sign_trust", json!({ "paths": ["ada.p12"], "password": "secret1" }));
+    let signed = ok(&mut b, "doc_open", json!({ "path": "signed.pdf" }))["doc"].as_u64().unwrap();
+    let list = ok(&mut b, "sign_list", json!({ "doc": signed }));
+    let sig = list["signatures"].as_array().unwrap().iter().find(|s| s["signed"] == true).unwrap().clone();
+    assert_eq!((sig["status"].as_str(), sig["locked_fields"].clone()), (Some("valid"), json!({ "include": ["City"] })), "{list}");
+    let fields = ok(&mut b, "form_fields", json!({ "doc": signed }));
+    let read_only = |name: &str| fields["fields"].as_array().unwrap().iter().find(|f| f["name"] == name).unwrap()["read_only"].as_bool();
+    assert_eq!((read_only("City"), read_only("Note")), (Some(true), Some(false)), "{fields}");
+    match b.call("form_fill", &json!({ "doc": signed, "values": { "City": "Split" } })) {
+        Err(ToolError::Failed(m)) => assert!(m.contains("read-only"), "{m}"),
+        other => panic!("a locked field is read-only: {other:?}"),
+    }
+}
+
+#[test]
 fn combine_opens_protected_files_with_their_passwords() {
     let dir = workdir("combine-passwords");
     let mut a = auto(&dir);

@@ -2395,3 +2395,11 @@ animation effects	Off	オフ
 	Downloads	ダウンロード
 	Choose this folder	このフォルダを選択
 	This folder can't be read ({e}). Allow Prckopis to access files in Android Settings ▸ Apps ▸ Prckopis ▸ Permissions.	このフォルダを読み取れません ({e})。Android の設定 > アプリ > Prckopis > 権限 で Prckopis にファイルへのアクセスを許可してください。
+	Signed	署名時
+	Nothing happens when signed	署名しても何も起こらない
+	Mark as read-only:	読み取り専用にする:
+	All fields	すべてのフィールド
+	All fields except these	これら以外のすべてのフィールド
+	Just these fields	これらのフィールドのみ
+	This document has no other fields.	この文書には他のフィールドがありません。
+	Choose at least one field.	フィールドを 1 つ以上選択してください。
