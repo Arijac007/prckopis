@@ -539,6 +539,11 @@ pub struct PrckopisApp {
     pub password_prompt: Option<PasswordPrompt>,
     pub unlock_prompt: Option<UnlockPrompt>,
     pub full_screen: bool,
+    /// The phone layout (Android): one bar on top, page navigation at the bottom, panels as a
+    /// sheet over the page, bigger touch targets. It applies while the window is narrower than
+    /// [`COMPACT_MAX_WIDTH`], so a tablet in landscape keeps the desktop layout. Not saved: the
+    /// host sets it ([`Self::set_compact`]).
+    pub compact: bool,
     /// Files delivered asynchronously (web drag-and-drop, web file picker).
     pub inbox: Inbox,
     /// The browser's startup `?file=` download. Unlike a deliberate Open or drop, a late
@@ -854,6 +859,7 @@ impl PrckopisApp {
             password_prompt: None,
             unlock_prompt: None,
             full_screen: false,
+            compact: false,
             inbox: Default::default(),
             startup_inbox: Default::default(),
             startup_superseded: false,
@@ -979,7 +985,7 @@ impl PrckopisApp {
     fn apply_initial_view(&mut self, index: usize, v: &prckopis_engine::InitialView) {
         use prckopis_engine::{InitialLayout as L, Magnification as M, Navigation as N};
         let pages = self.session.get(self.views[index].id).map_or(0, |d| d.info.pages.len());
-        if self.active == Some(index) {
+        if self.active == Some(index) && !self.compact {
             match v.navigation {
                 N::PageOnly => {}
                 N::Bookmarks => self.right = Some(RightPanel::Bookmarks),
@@ -1073,7 +1079,7 @@ impl PrckopisApp {
         // Acrobat opens straight to the Comments panel when a document has comments.
         // Read mode opens with the panes closed; the rail still opens them (#932).
         let opening_mode = self.mode_override.unwrap_or(self.default_mode);
-        if activate && self.right.is_none() && opening_mode != Mode::Read {
+        if activate && self.right.is_none() && opening_mode != Mode::Read && !self.compact {
             self.right = if !doc.info.annotations.is_empty() {
                 Some(RightPanel::Comments)
             } else if !doc.info.outline.is_empty() {
@@ -2018,6 +2024,8 @@ impl PrckopisApp {
                 self.select_tool(g.id);
             }
             ("left", _) => self.left_open = value != "closed",
+            // `--compact on`: the phone layout (Android sets it; here for screenshots and tests).
+            ("compact", _) => self.set_compact(value != "off"),
             ("home", _) => self.active = None,
             ("dialog", _) => {
                 self.dialog = match value {
@@ -2278,6 +2286,17 @@ impl PrckopisApp {
             return;
         }
         self.registry_shortcuts(ctx);
+        // On a phone, Back (Escape) closes the sheet over the page: the tools, then a side panel.
+        if self.compact_layout(ctx)
+            && (self.left_open || self.right.is_some())
+            && ctx.input_mut(|i| i.consume_key(egui::Modifiers::NONE, Key::Escape))
+        {
+            if self.left_open {
+                self.left_open = false;
+            } else {
+                self.choose_right_panel(None);
+            }
+        }
         // (Esc closes a Combine file shown large first.)
         if self.full_screen && self.combine_tab.preview.is_none() && ctx.input(|i| i.key_pressed(Key::Escape)) {
             self.set_full_screen(ctx, false);
@@ -2576,6 +2595,17 @@ impl eframe::App for PrckopisApp {
             self.finish_render_frame(&ctx);
             return;
         }
+        if self.compact_layout(&ctx) {
+            self.compact_ui(ui, &ctx);
+            self.process_pending_edits();
+            palette::show(self, &ctx);
+            dialogs::show(self, &ctx);
+            self.show_progress(&ctx);
+            widgets::toast(self, &ctx);
+            self.finish_render_frame(&ctx);
+            return;
+        }
+        canvas::set_side(canvas::DESKTOP_SIDE);
         chrome::tab_strip(self, ui);
         chrome::mode_bar(self, ui);
         if self.active.is_some() {
@@ -2613,7 +2643,43 @@ impl eframe::App for PrckopisApp {
     }
 }
 
+/// The widest window (points) the phone layout is used in, when the host asks for it.
+pub const COMPACT_MAX_WIDTH: f32 = 840.0;
+
 impl PrckopisApp {
+    /// Use the phone layout (see [`Self::compact`]). Turning it on closes the side panels, which
+    /// on a phone would cover the page.
+    pub fn set_compact(&mut self, on: bool) {
+        self.compact = on;
+        if on {
+            self.left_open = false;
+            self.right = None;
+        }
+    }
+
+    /// Whether this frame uses the phone layout.
+    pub(crate) fn compact_layout(&self, ctx: &egui::Context) -> bool {
+        self.compact && ctx.content_rect().width() < COMPACT_MAX_WIDTH
+    }
+
+    /// The phone layout: a top bar, the page, page navigation at the bottom, and the tools or a
+    /// side panel as a sheet between them.
+    fn compact_ui(&mut self, ui: &mut egui::Ui, ctx: &egui::Context) {
+        canvas::set_side(canvas::COMPACT_SIDE);
+        theme::touch_spacing(ctx);
+        chrome::compact_top_bar(self, ui);
+        if self.active.is_some() {
+            chrome::compact_bottom_bar(self, ui);
+        }
+        chrome::compact_sheet(self, ui);
+        let t = theme::Tokens::get(ctx);
+        egui::CentralPanel::default().frame(egui::Frame::NONE.fill(t.pasteboard)).show(ui, |ui| match self.active {
+            None if self.combine_showing() => combine_ui::page(self, ui),
+            None => home::show(self, ui),
+            Some(index) => canvas::document_area(self, index, ui),
+        });
+    }
+
     fn finish_render_frame(&mut self, ctx: &egui::Context) {
         // The Combine grid's thumbnails, whichever tab shows (renders under way still finish).
         self.combine_thumbs_frame(ctx);

@@ -5,6 +5,7 @@ use egui::{Align, Align2, Color32, CornerRadius, Layout, Rect, Sense, Stroke, ve
 use crate::canvas::{DocView, Fit, PageLayout};
 use crate::theme::{self, ThemePreference, Tokens};
 use crate::{Dialog, Mode, PrckopisApp, PropsTab, RightPanel, icons, widgets};
+use prckopis_engine::DocId;
 
 /// Height of the tab strip when it doubles as the macOS title bar (#789). AppKit draws the traffic
 /// lights itself, centred in the standard 28 pt title-bar band at the top of the window, and moving
@@ -678,6 +679,207 @@ fn rail_view_menu(ui: &mut egui::Ui, view: &mut DocView) -> Option<&'static str>
         ui.close();
     }
     picked
+}
+
+// The phone layout (`PrckopisApp::compact`): one bar on top, page navigation at the bottom, and
+// the tools or a side panel as a sheet over the lower part of the page.
+
+/// Height of the phone layout's top and bottom bars.
+const COMPACT_BAR: f32 = 52.0;
+/// Icon buttons in the phone layout: a finger-sized box.
+const COMPACT_ICON: f32 = 40.0;
+
+/// The side panels the phone layout's panel button offers, with their icons.
+const COMPACT_PANELS: [(RightPanel, &str, &str); 7] = [
+    (RightPanel::Pages, "files", "Page thumbnails"),
+    (RightPanel::Bookmarks, "bookmark", "Bookmarks"),
+    (RightPanel::Comments, "message-square-text", "Comments"),
+    (RightPanel::Fields, "text-cursor-input", "Form fields"),
+    (RightPanel::Signatures, "signature", "Signatures"),
+    (RightPanel::Attachments, "paperclip", "Attachments"),
+    (RightPanel::Layers, "layers", "Layers"),
+];
+
+/// The phone layout's top bar: Menu, All tools, the document (tap to switch to another open one),
+/// then Find tools and commands, Open and Save.
+pub fn compact_top_bar(app: &mut PrckopisApp, ui: &mut egui::Ui) {
+    let t = Tokens::get(ui.ctx());
+    egui::Panel::top("compact_top_bar")
+        .exact_size(COMPACT_BAR)
+        .frame(egui::Frame::NONE.fill(t.chrome).inner_margin(egui::Margin::symmetric(4, 0)).stroke(Stroke::new(1.0, t.divider)))
+        .show(ui, |ui| {
+            ui.horizontal_centered(|ui| {
+                ui.spacing_mut().item_spacing.x = 2.0;
+                main_menu(app, ui);
+                if icons::button(ui, "layout-grid", COMPACT_ICON, app.left_open, tl!("All tools")).clicked() {
+                    app.left_open = !app.left_open;
+                    if app.left_open {
+                        app.right = None;
+                    }
+                }
+                let has_doc = app.active.is_some();
+                ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                    ui.spacing_mut().item_spacing.x = 2.0;
+                    if has_doc {
+                        let tip = crate::commands::command_tip(ui.ctx(), tl!("Save ({key})"), "file.save");
+                        if icons::button(ui, "save", COMPACT_ICON, false, &tip).clicked() {
+                            app.run_command("file.save");
+                        }
+                    }
+                    if icons::button(ui, "folder-open", COMPACT_ICON, false, tl!("Open")).clicked() {
+                        app.open_dialog();
+                    }
+                    if icons::button(ui, "search", COMPACT_ICON, false, tl!("Find tools and commands")).clicked() {
+                        app.palette_open = true;
+                    }
+                    // The rest of the bar: the open document, or Home.
+                    ui.with_layout(Layout::left_to_right(Align::Center), |ui| document_switcher(app, ui));
+                });
+            });
+        });
+}
+
+/// The name of the document shown (or Home); tapping it lists the open documents, Home and Close.
+fn document_switcher(app: &mut PrckopisApp, ui: &mut egui::Ui) {
+    let t = Tokens::get(ui.ctx());
+    let names: Vec<(DocId, String, bool)> =
+        app.views.iter().filter_map(|v| app.session.get(v.id).map(|d| (v.id, d.display_name(), d.dirty))).collect();
+    let current = app.active.and_then(|i| names.get(i)).map_or_else(
+        || tl!("Home").to_owned(),
+        |(_, n, dirty)| {
+            let n = tab_name(n);
+            if *dirty { format!("{n} •") } else { n }
+        },
+    );
+    let width = ui.available_width().max(60.0);
+    let label = egui::RichText::new(current).font(theme::medium(14.0)).color(t.text);
+    let resp = ui.add_sized([width, COMPACT_ICON], egui::Button::new(label).frame(false).truncate());
+    let mut action = None;
+    egui::Popup::menu(&resp).show(|ui| {
+        ui.set_min_width(240.0);
+        if ui.add(egui::Button::selectable(app.active.is_none(), tl!("Home"))).clicked() {
+            app.active = None;
+            app.combine_tab.focused = false;
+            ui.close();
+        }
+        if !names.is_empty() {
+            ui.separator();
+        }
+        for (i, (_, name, dirty)) in names.iter().enumerate() {
+            let shown = if *dirty { format!("{} •", tab_name(name)) } else { tab_name(name) };
+            if ui.add(egui::Button::selectable(app.active == Some(i), shown)).clicked() {
+                app.active = Some(i);
+                ui.close();
+            }
+        }
+        if let Some((id, _, _)) = app.active.and_then(|i| names.get(i)) {
+            ui.separator();
+            if ui.button(tl!("Close Tab")).clicked() {
+                action = Some(crate::tab_context::Action::Close(*id));
+                ui.close();
+            }
+        }
+    });
+    if let Some(action) = action {
+        app.tab_action(action);
+    }
+}
+
+/// The phone layout's bottom bar: previous page, the page number (type to go), next page, zoom
+/// out, the zoom (tap: fit width / fit page), zoom in, and the side panels.
+pub fn compact_bottom_bar(app: &mut PrckopisApp, ui: &mut egui::Ui) {
+    let t = Tokens::get(ui.ctx());
+    let Some((index, id)) = app.active_ids() else { return };
+    let Some(doc) = app.session.get(id) else { return };
+    let page_count = doc.info.pages.len();
+    let labels: Vec<String> = doc.info.pages.iter().map(|p| p.label.clone()).collect();
+    let mut panel = None;
+    egui::Panel::bottom("compact_bottom_bar")
+        .exact_size(COMPACT_BAR)
+        .frame(egui::Frame::NONE.fill(t.chrome).inner_margin(egui::Margin::symmetric(4, 0)).stroke(Stroke::new(1.0, t.divider)))
+        .show(ui, |ui| {
+            ui.horizontal_centered(|ui| {
+                ui.spacing_mut().item_spacing.x = 2.0;
+                let Some(view) = app.views.get_mut(index) else { return };
+                if icons::button(ui, "chevron-left", COMPACT_ICON, false, tl!("Previous page")).clicked() {
+                    view.step_page(false);
+                }
+                let edit = egui::TextEdit::singleline(&mut view.page_input)
+                    .id(egui::Id::new("page-input"))
+                    .desired_width(36.0)
+                    .horizontal_align(Align::Center)
+                    .font(theme::medium(14.0));
+                let r = ui.add(edit).on_hover_text(tl!("Current page — type a page number or label (such as iv) and press Enter"));
+                if r.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
+                    let typed = view.page_input.clone();
+                    if !view.go_to_typed(&typed, &labels) {
+                        view.page_input = (view.current + 1).to_string();
+                    }
+                }
+                ui.label(egui::RichText::new(format!("/ {page_count}")).font(theme::regular(13.0)).color(t.text_muted));
+                if icons::button(ui, "chevron-right", COMPACT_ICON, false, tl!("Next page")).clicked() {
+                    view.step_page(true);
+                }
+                ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                    ui.spacing_mut().item_spacing.x = 2.0;
+                    let showing = app.right.is_some();
+                    let resp = icons::button(ui, "panel-right", COMPACT_ICON, showing, tl!("Side panels"));
+                    egui::Popup::menu(&resp).show(|ui| {
+                        ui.set_min_width(220.0);
+                        for (p, icon, label) in COMPACT_PANELS {
+                            let row = ui.horizontal(|ui| {
+                                ui.add(icons::image(icon, 18.0, t.text_muted));
+                                ui.add(egui::Button::selectable(app.right == Some(p), tl!(label)))
+                            });
+                            if row.inner.clicked() {
+                                panel = Some(if app.right == Some(p) { None } else { Some(p) });
+                                ui.close();
+                            }
+                        }
+                    });
+                    let Some(view) = app.views.get_mut(index) else { return };
+                    if icons::button(ui, "zoom-in", COMPACT_ICON, false, tl!("Zoom in")).clicked() {
+                        view.zoom_step(true);
+                    }
+                    let zoom = egui::RichText::new(format!("{:.0}%", view.zoom * 100.0)).font(theme::medium(13.0)).color(t.text_muted);
+                    if ui.add(egui::Button::new(zoom).frame(false)).on_hover_text(tl!("Toggle fit page / fit width")).clicked() {
+                        view.fit = if view.fit == Fit::Width { Fit::Page } else { Fit::Width };
+                        view.goto = Some((view.current, 0.0));
+                    }
+                    if icons::button(ui, "zoom-out", COMPACT_ICON, false, tl!("Zoom out")).clicked() {
+                        view.zoom_step(false);
+                    }
+                });
+            });
+        });
+    if let Some(p) = panel {
+        app.left_open = false;
+        app.choose_right_panel(p);
+    }
+}
+
+/// The tools (All tools or a tool's options) or the chosen side panel, as a resizable sheet over
+/// the lower part of the page. The panels bring their own title and close button; Back closes
+/// the sheet too.
+pub fn compact_sheet(app: &mut PrckopisApp, ui: &mut egui::Ui) {
+    let showing_panel = app.right.is_some() && app.active.is_some();
+    if !app.left_open && !showing_panel {
+        return;
+    }
+    let t = Tokens::get(ui.ctx());
+    let height = ui.ctx().content_rect().height();
+    egui::Panel::bottom("compact_sheet")
+        .resizable(true)
+        .default_size((height * 0.5).max(200.0))
+        .size_range(160.0..=(height * 0.85).max(200.0))
+        .frame(egui::Frame::NONE.fill(t.pasteboard).stroke(Stroke::new(1.0, t.divider)).inner_margin(egui::Margin::symmetric(4, 6)))
+        .show(ui, |ui| {
+            if app.left_open {
+                crate::panels::left_panel(app, ui);
+            } else {
+                crate::panels::right_panel(app, ui);
+            }
+        });
 }
 
 #[cfg(test)]

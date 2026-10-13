@@ -20,7 +20,22 @@ pub const PT: f32 = 96.0 / 72.0;
 const GAP: f32 = 14.0;
 const MARGIN: f32 = 28.0;
 /// Horizontal gutter that keeps pages clear of the floating quick-action bar.
-const SIDE: f32 = 70.0;
+pub(crate) const DESKTOP_SIDE: f32 = 70.0;
+/// The phone layout's gutter: the page uses nearly the whole width.
+pub(crate) const COMPACT_SIDE: f32 = 10.0;
+
+/// The gutter beside the pages now: [`DESKTOP_SIDE`], or [`COMPACT_SIDE`] in the phone layout.
+/// One value for the whole UI (one window), set by the layout each frame (`set_side`).
+fn side() -> f32 {
+    f32::from_bits(SIDE_BITS.load(std::sync::atomic::Ordering::Relaxed))
+}
+
+static SIDE_BITS: std::sync::atomic::AtomicU32 = std::sync::atomic::AtomicU32::new(DESKTOP_SIDE.to_bits());
+
+/// Choose the gutter beside the pages (see [`side`]).
+pub(crate) fn set_side(gutter: f32) {
+    SIDE_BITS.store(gutter.to_bits(), std::sync::atomic::Ordering::Relaxed);
+}
 const THUMB_TAG: u64 = 1 << 63;
 const TEXT_TAG: u64 = 1 << 62;
 /// A page rendered for the organize grid at the size it is drawn there.
@@ -1014,7 +1029,7 @@ impl DocView {
         let point = |x: Option<f32>, y: Option<f32>| p.dest_fraction(x, y, self.rotation);
         // The window's top-left as far as pages go: its left edge is the gutter that keeps them
         // clear of the floating quick-action bar, so `left` 0 shows the page's edge beside it.
-        let corner = vec2(SIDE, 0.0);
+        let corner = vec2(side(), 0.0);
         let (fx, fy, rel) = match dest {
             DestView::Top => return,
             DestView::Xyz { left, top, zoom } => {
@@ -1645,7 +1660,7 @@ impl DocView {
         } else {
             (max_w, largest(|s| s.1))
         };
-        let avail_w = (self.viewport_w - 2.0 * SIDE).max(100.0);
+        let avail_w = (self.viewport_w - 2.0 * side()).max(100.0);
         let per_row = if self.layout == PageLayout::TwoUp { 2.0 } else { 1.0 };
         match self.fit {
             Fit::Width => self.zoom = (avail_w - GAP * (per_row - 1.0)) / (w * PT * per_row),
@@ -1667,7 +1682,7 @@ impl DocView {
         let shown = info.pages.iter().enumerate().filter(|&(i, _)| single.is_none_or(|c| c == i));
         let max_w = shown.map(|(_, p)| self.display_size(p).0).fold(0.0, f32::max);
         let per_row = if self.layout == PageLayout::TwoUp { 2.0 } else { 1.0 };
-        (max_w * self.zoom * PT * per_row + 2.0 * SIDE).max(avail_w)
+        (max_w * self.zoom * PT * per_row + 2.0 * side()).max(avail_w)
     }
 
     /// Page rects in content coordinates (origin at the scroll content's top-left).
@@ -1680,7 +1695,7 @@ impl DocView {
                 for p in &info.pages {
                     let (w, h) = self.display_size(p);
                     let size = vec2(w * s, h * s);
-                    rects.push(Rect::from_min_size(pos2(((content_w - size.x) / 2.0).max(SIDE), y), size));
+                    rects.push(Rect::from_min_size(pos2(((content_w - size.x) / 2.0).max(side()), y), size));
                     y += size.y + GAP;
                 }
             }
@@ -1695,7 +1710,8 @@ impl DocView {
                     let sizes: Vec<Vec2> = pair.iter().map(|p| self.display_size(p)).map(|(w, h)| vec2(w * s, h * s)).collect();
                     let row_w: f32 = sizes.iter().map(|v| v.x).sum::<f32>() + GAP * (sizes.len() as f32 - 1.0);
                     let row_h = sizes.iter().map(|v| v.y).fold(0.0, f32::max);
-                    let mut x = if self.cover && ri == 0 { (content_w / 2.0 + GAP / 2.0).max(SIDE) } else { ((content_w - row_w) / 2.0).max(SIDE) };
+                    let mut x =
+                        if self.cover && ri == 0 { (content_w / 2.0 + GAP / 2.0).max(side()) } else { ((content_w - row_w) / 2.0).max(side()) };
                     for size in sizes {
                         rects.push(Rect::from_min_size(pos2(x, y + (row_h - size.y) / 2.0), size));
                         x += size.x + GAP;
@@ -4465,11 +4481,11 @@ pub(crate) fn compare_side_pane(
             vec2(w.max(1.0) * s, h.max(1.0) * s)
         })
         .collect();
-    let content_w = (sizes.iter().map(|v| v.x).fold(0.0, f32::max) + 2.0 * SIDE).max(avail.width());
+    let content_w = (sizes.iter().map(|v| v.x).fold(0.0, f32::max) + 2.0 * side()).max(avail.width());
     let mut rects = Vec::with_capacity(sizes.len());
     let mut y = MARGIN;
     for size in &sizes {
-        rects.push(Rect::from_min_size(pos2(((content_w - size.x) / 2.0).max(SIDE), y), *size));
+        rects.push(Rect::from_min_size(pos2(((content_w - size.x) / 2.0).max(side()), y), *size));
         y += size.y + GAP;
     }
     let content_h = y - GAP + MARGIN;
@@ -5281,7 +5297,7 @@ trailer << /Root 1 0 R >>
         let narrow = v.zoom;
         // The shown page fills the width between the side gutters, not centred for the wide page.
         let shown = v.layout(&info, v.content_width(&info, 1000.0))[0];
-        assert!((shown.left() - SIDE).abs() < 1e-2 && (shown.width() - 860.0).abs() < 1e-2, "{shown:?}");
+        assert!((shown.left() - DESKTOP_SIDE).abs() < 1e-2 && (shown.width() - 860.0).abs() < 1e-2, "{shown:?}");
         v.current = 1;
         v.fit_zoom(&info);
         assert!((narrow / v.zoom - 2.0).abs() < 1e-3, "the narrow page gets twice the zoom of the wide one");
@@ -5321,18 +5337,18 @@ trailer << /Root 1 0 R >>
         assert_eq!((v.current, v.goto, v.goto_point, v.fit), (1, Some((1, 0.0)), None, Fit::Width));
         // /XYZ with a null zoom keeps the zoom mode; its point is a quarter down page 3.
         v.go_to_dest(2, DestView::Xyz { left: None, top: Some(300.0), zoom: None }, &info);
-        assert_eq!((v.current, v.fit, v.goto_point), (2, Fit::Width, Some((2, None, Some(0.25), vec2(SIDE, 0.0)))));
+        assert_eq!((v.current, v.fit, v.goto_point), (2, Fit::Width, Some((2, None, Some(0.25), vec2(DESKTOP_SIDE, 0.0)))));
         v.go_to_dest(0, DestView::Xyz { left: Some(150.0), top: None, zoom: Some(2.5) }, &info);
-        assert_eq!((v.fit, v.zoom, v.goto_point), (Fit::None, 2.5, Some((0, Some(0.5), None, vec2(SIDE, 0.0)))));
+        assert_eq!((v.fit, v.zoom, v.goto_point), (Fit::None, 2.5, Some((0, Some(0.5), None, vec2(DESKTOP_SIDE, 0.0)))));
         // A zoom beyond the view's range is clamped to it.
         v.go_to_dest(0, DestView::Xyz { left: None, top: None, zoom: Some(1e30) }, &info);
         assert_eq!((v.zoom, v.goto_point), (64.0, None));
         v.go_to_dest(0, DestView::Fit, &info);
         assert_eq!((v.fit, v.goto_point), (Fit::Page, None));
         v.go_to_dest(0, DestView::FitH { top: Some(100.0) }, &info);
-        assert_eq!((v.fit, v.goto_point), (Fit::Width, Some((0, None, Some(0.75), vec2(SIDE, 0.0)))));
+        assert_eq!((v.fit, v.goto_point), (Fit::Width, Some((0, None, Some(0.75), vec2(DESKTOP_SIDE, 0.0)))));
         v.go_to_dest(0, DestView::FitV { left: Some(75.0) }, &info);
-        assert_eq!((v.fit, v.goto_point), (Fit::Height, Some((0, Some(0.25), None, vec2(SIDE, 0.0)))));
+        assert_eq!((v.fit, v.goto_point), (Fit::Height, Some((0, Some(0.25), None, vec2(DESKTOP_SIDE, 0.0)))));
         // /FitR: the zoom that fits a 100×50 pt rectangle in an 800×600 window, centred.
         (v.viewport_w, v.viewport_h) = (800.0, 600.0);
         v.go_to_dest(0, DestView::FitR { rect: [0.0, 300.0, 100.0, 350.0] }, &info);

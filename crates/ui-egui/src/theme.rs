@@ -370,6 +370,24 @@ pub fn semibold(size: f32) -> FontId {
     FontId::new(size, FontFamily::Name("semibold".into()))
 }
 
+/// The minimum height of a control in the phone layout: a comfortable finger target.
+pub const TOUCH_TARGET: f32 = 40.0;
+
+/// Spacing for fingers (the phone layout): taller controls and more room between them. Applied
+/// only when it changes something, so it doesn't restyle every frame.
+pub fn touch_spacing(ctx: &egui::Context) {
+    if ctx.global_style().spacing.interact_size.y >= TOUCH_TARGET {
+        return;
+    }
+    ctx.all_styles_mut(|s| {
+        s.spacing.interact_size.y = TOUCH_TARGET;
+        s.spacing.button_padding = egui::vec2(12.0, 9.0);
+        s.spacing.item_spacing = egui::vec2(10.0, 8.0);
+        s.spacing.menu_margin = egui::Margin::same(8);
+        s.spacing.scroll.bar_width = 10.0;
+    });
+}
+
 pub fn apply(ctx: &egui::Context, kind: ThemeKind) {
     // Keep the native window inherited. A concrete egui theme pins macOS's
     // NSWindow appearance and prevents winit from delivering ThemeChanged.

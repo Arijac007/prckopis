@@ -1,6 +1,6 @@
 # Prckopis on Android
 
-> **Status:** first test build (2026-10-13) · **Revision history:** 2026-10-13 created (NativeActivity APK, in-app file browser, release signing)
+> **Status:** test builds, phone layout (2026-10-13) · **Revision history:** 2026-10-13 created (NativeActivity APK, in-app file browser, release signing); 2026-10-13 phone layout, soft keyboard, Back
 
 `apps/prckopis-android` runs the same egui app as the desktop build inside an Android
 NativeActivity (`android_main`). All of it is Rust: no Java, Kotlin or Gradle.
@@ -37,6 +37,15 @@ Check a build with `apksigner verify --print-certs prckopis.apk`.
 
 ## What differs from the desktop
 
+- **Phone layout** (`PrckopisApp::compact`, below 840 points wide; a tablet in landscape keeps
+  the desktop layout): one top bar (Menu, All tools, the open document — tap to switch, go Home
+  or close — Find tools and commands, Open, Save), page navigation and zoom at the bottom with
+  the side panels behind its panel button, the tools and side panels as a resizable sheet over
+  the lower part of the page, a 10-point gutter so the page fills the width, and 40-point touch
+  targets. Back closes the sheet (and dialogs, as Escape does). `--compact on` shows it on the
+  desktop for screenshots (`cargo run -p prckopis-ui-egui --example shot -- out.png doc.pdf
+  --size 400x860 --compact on`); `crates/ui-egui/tests/compact.rs` tests it.
+- **Soft keyboard:** shown while a text field has focus, hidden after.
 - **Files:** rfd has no Android backend. `crates/file-dialog` (used as `rfd`) is rfd itself
   elsewhere and, on Android, the same API answered by the app's own file browser
   (`crates/ui-egui/src/android_files.rs`) over shared storage (`/storage/emulated/0`). On
@@ -51,6 +60,6 @@ Check a build with `apksigner verify --print-certs prckopis.apk`.
 
 ## Next
 
-Opening PDFs from other apps and the system picker (Storage Access Framework through JNI); a
-compact layout for phones (single panel, larger touch targets, back button, soft keyboard); app
-icon; an x86_64 build for emulators; CI.
+Opening PDFs from other apps and the system picker (Storage Access Framework through JNI);
+long-press menus; dialogs that fit a phone (several use fixed 300–380 point widths); app icon; an
+x86_64 build for emulators; CI.
