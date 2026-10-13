@@ -1,5 +1,6 @@
 # Where Prckopis falls short of Acrobat Pro
 
+> **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-13 · **Change:** minor (gap 17: custom redaction code sets shipped; IBAN, Croatian OIB and Croatian dates added to Search & Redact; estimates unchanged) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
 > **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-13 · **Change:** minor (gap 10: field locks authored in Prepare Form, Digital Signature Properties ▸ Signed) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
 > **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-13 · **Change:** minor (gap 10: FieldMDP field locks on signing and in validation) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
 > **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-12 · **Change:** minor (gap 21: side-by-side compare with synchronised scrolling shipped) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
@@ -258,8 +259,10 @@ update the numbers.
 ### 17. Certificate security and other protect gaps
 
 - **Missing:** encrypting for certificate recipients (and opening such files), security policies,
-  attachment-only encryption, redaction pattern locales and partial-word redaction, folder
-  redaction, protected view, URL and attachment trust.
+  attachment-only encryption, redaction pattern locales beyond the U.S. and European/Croatian
+  sets (IBAN, OIB) and a per-country pattern picker, partial-word redaction, folder
+  redaction, protected view, URL and attachment trust. Custom redaction code sets (Redaction
+  Code Editor, import/export) shipped 2026-10-13.
 - **Estimate:** 15–30 h. **Doc:** [pdf-spec-parity.md](pdf-spec-parity.md).
 
 ### 18. Print production tools absent
@@ -316,6 +319,7 @@ update the numbers.
 
 | Date | Change | Summary |
 |---|---|---|
+| 2026-10-13 | minor | Gap 17: custom redaction code sets (Redaction Code Editor with import/export, kept in preferences, `redact_mark` `code_set_file`) shipped; IBAN and Croatian OIB patterns with checksums and Croatian month names added. Estimates unchanged. |
 | 2026-10-13 | minor | Gap 10: a signature field's lock (`/Lock`) is authored in Prepare Form (Digital Signature Properties ▸ Signed) and through `form_set_props`; signing applies it |
 | 2026-10-12 | minor | Exclusive image crops resize with their pixels across nested states, intervening operators and content streams; shared clips remain fixed. Synthetic engine/tool regressions and private image save/reopen checks; estimates unchanged. |
 | 2026-10-12 | minor | Gap 13: measured large-file memory; edits no longer keep the previous working file while writing the next (peak 3 → 2 copies); file-backed input recorded as blocked on gap 2 |

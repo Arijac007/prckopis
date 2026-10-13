@@ -2403,3 +2403,24 @@ animation effects	Off	Désactivés
 	Just these fields	Uniquement ces champs
 	This document has no other fields.	Ce document n'a pas d'autres champs.
 	Choose at least one field.	Choisissez au moins un champ.
+	Edit codes…	Modifier les codes…
+	Redaction Code Editor	Éditeur de codes de biffure
+	Code sets	Jeux de codes
+	No code sets yet. Type a name and choose New set.	Aucun jeu de codes pour l’instant. Saisissez un nom et choisissez Nouveau jeu.
+	New set	Nouveau jeu
+	Codes in this set	Codes de ce jeu
+	Code:	Code :
+	Import…	Importer…
+	Type a name first.	Saisissez d’abord un nom.
+	That name is already used.	Ce nom est déjà utilisé.
+	Type a code first.	Saisissez d’abord un code.
+	This set already has that code.	Ce jeu contient déjà ce code.
+	The name, code or description is too long.	Le nom, le code ou la description est trop long.
+	There are too many code sets or codes.	Il y a trop de jeux de codes ou de codes.
+	That set or code no longer exists.	Ce jeu ou ce code n’existe plus.
+	Imported {n} code set(s) from {name}; skipped {k} unreadable or repeated entries.	Jeux de codes importés depuis {name} : {n} ; entrées illisibles ou en double ignorées : {k}.
+	Imported {n} code set(s) from {name}.	Jeux de codes importés depuis {name} : {n}.
+	{name} is too large for a code set file (at most 1 MB).	{name} est trop volumineux pour un fichier de jeu de codes (1 Mo au maximum).
+	{name} is not a redaction code set file.	{name} n’est pas un fichier de jeu de codes de biffure.
+	Bank Account Numbers (IBAN)	Numéros de compte bancaire (IBAN)
+	Croatian Personal ID Numbers (OIB)	Numéros d’identification personnels croates (OIB)

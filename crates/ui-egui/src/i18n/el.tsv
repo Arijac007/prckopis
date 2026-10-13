@@ -2418,3 +2418,24 @@ animation effects	Off	Ανενεργά
 	Just these fields	Μόνο αυτά τα πεδία
 	This document has no other fields.	Αυτό το έγγραφο δεν έχει άλλα πεδία.
 	Choose at least one field.	Επιλέξτε τουλάχιστον ένα πεδίο.
+	Edit codes…	Επεξεργασία κωδικών…
+	Redaction Code Editor	Επεξεργαστής κωδικών απόκρυψης
+	Code sets	Σύνολα κωδικών
+	No code sets yet. Type a name and choose New set.	Δεν υπάρχουν ακόμη σύνολα κωδικών. Πληκτρολογήστε ένα όνομα και επιλέξτε Νέο σύνολο.
+	New set	Νέο σύνολο
+	Codes in this set	Κωδικοί σε αυτό το σύνολο
+	Code:	Κωδικός:
+	Import…	Εισαγωγή…
+	Type a name first.	Πληκτρολογήστε πρώτα ένα όνομα.
+	That name is already used.	Αυτό το όνομα χρησιμοποιείται ήδη.
+	Type a code first.	Πληκτρολογήστε πρώτα έναν κωδικό.
+	This set already has that code.	Αυτό το σύνολο έχει ήδη αυτόν τον κωδικό.
+	The name, code or description is too long.	Το όνομα, ο κωδικός ή η περιγραφή είναι πολύ μεγάλο.
+	There are too many code sets or codes.	Υπάρχουν πάρα πολλά σύνολα κωδικών ή κωδικοί.
+	That set or code no longer exists.	Αυτό το σύνολο ή ο κωδικός δεν υπάρχει πια.
+	Imported {n} code set(s) from {name}; skipped {k} unreadable or repeated entries.	Εισήχθησαν σύνολα κωδικών από το {name}: {n}· παραλείφθηκαν μη αναγνώσιμες ή επαναλαμβανόμενες καταχωρίσεις: {k}.
+	Imported {n} code set(s) from {name}.	Εισήχθησαν σύνολα κωδικών από το {name}: {n}.
+	{name} is too large for a code set file (at most 1 MB).	Το αρχείο {name} είναι πολύ μεγάλο για αρχείο συνόλου κωδικών (μέγιστο 1 MB).
+	{name} is not a redaction code set file.	Το {name} δεν είναι αρχείο συνόλου κωδικών απόκρυψης.
+	Bank Account Numbers (IBAN)	Αριθμοί τραπεζικών λογαριασμών (IBAN)
+	Croatian Personal ID Numbers (OIB)	Κροατικοί αριθμοί προσωπικής ταυτοποίησης (OIB)

@@ -2404,3 +2404,24 @@ animation effects	Off	Aus
 	Just these fields	Nur diese Felder
 	This document has no other fields.	Dieses Dokument hat keine anderen Felder.
 	Choose at least one field.	Wählen Sie mindestens ein Feld.
+	Edit codes…	Codes bearbeiten…
+	Redaction Code Editor	Schwärzungscode-Editor
+	Code sets	Codesätze
+	No code sets yet. Type a name and choose New set.	Noch keine Codesätze. Geben Sie einen Namen ein und wählen Sie „Neuer Satz“.
+	New set	Neuer Satz
+	Codes in this set	Codes in diesem Satz
+	Code:	Code:
+	Import…	Importieren…
+	Type a name first.	Geben Sie zuerst einen Namen ein.
+	That name is already used.	Dieser Name wird bereits verwendet.
+	Type a code first.	Geben Sie zuerst einen Code ein.
+	This set already has that code.	Dieser Satz enthält diesen Code bereits.
+	The name, code or description is too long.	Name, Code oder Beschreibung ist zu lang.
+	There are too many code sets or codes.	Es gibt zu viele Codesätze oder Codes.
+	That set or code no longer exists.	Dieser Satz oder Code existiert nicht mehr.
+	Imported {n} code set(s) from {name}; skipped {k} unreadable or repeated entries.	Codesätze aus {name} importiert: {n}; übersprungene unlesbare oder doppelte Einträge: {k}.
+	Imported {n} code set(s) from {name}.	Codesätze aus {name} importiert: {n}.
+	{name} is too large for a code set file (at most 1 MB).	{name} ist zu groß für eine Codesatz-Datei (höchstens 1 MB).
+	{name} is not a redaction code set file.	{name} ist keine Schwärzungscodesatz-Datei.
+	Bank Account Numbers (IBAN)	Bankkontonummern (IBAN)
+	Croatian Personal ID Numbers (OIB)	Kroatische persönliche Identifikationsnummern (OIB)

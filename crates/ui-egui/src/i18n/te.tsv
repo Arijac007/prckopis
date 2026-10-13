@@ -2315,3 +2315,24 @@ animation effects	Off	ఆఫ్
 	Just these fields	ఈ ఫీల్డ్‌లు మాత్రమే
 	This document has no other fields.	ఈ పత్రంలో ఇతర ఫీల్డ్‌లు లేవు.
 	Choose at least one field.	కనీసం ఒక ఫీల్డ్‌ను ఎంచుకోండి.
+	Edit codes…	కోడ్‌లను సవరించు…
+	Redaction Code Editor	రెడాక్షన్ కోడ్ ఎడిటర్
+	Code sets	కోడ్ సెట్‌లు
+	No code sets yet. Type a name and choose New set.	ఇంకా కోడ్ సెట్‌లు లేవు. ఒక పేరు టైప్ చేసి కొత్త సెట్ ఎంచుకోండి.
+	New set	కొత్త సెట్
+	Codes in this set	ఈ సెట్‌లోని కోడ్‌లు
+	Code:	కోడ్:
+	Import…	దిగుమతి చేయండి…
+	Type a name first.	ముందుగా ఒక పేరు టైప్ చేయండి.
+	That name is already used.	ఆ పేరు ఇప్పటికే ఉపయోగంలో ఉంది.
+	Type a code first.	ముందుగా ఒక కోడ్ టైప్ చేయండి.
+	This set already has that code.	ఈ సెట్‌లో ఆ కోడ్ ఇప్పటికే ఉంది.
+	The name, code or description is too long.	పేరు, కోడ్ లేదా వివరణ చాలా పొడవుగా ఉంది.
+	There are too many code sets or codes.	కోడ్ సెట్‌లు లేదా కోడ్‌లు చాలా ఎక్కువగా ఉన్నాయి.
+	That set or code no longer exists.	ఆ సెట్ లేదా కోడ్ ఇక లేదు.
+	Imported {n} code set(s) from {name}; skipped {k} unreadable or repeated entries.	{name} నుండి దిగుమతి చేసిన కోడ్ సెట్‌లు: {n}; దాటవేసిన చదవలేని లేదా పునరావృత నమోదులు: {k}.
+	Imported {n} code set(s) from {name}.	{name} నుండి దిగుమతి చేసిన కోడ్ సెట్‌లు: {n}.
+	{name} is too large for a code set file (at most 1 MB).	కోడ్ సెట్ ఫైల్‌కు {name} చాలా పెద్దది (గరిష్ఠంగా 1 MB).
+	{name} is not a redaction code set file.	{name} రెడాక్షన్ కోడ్ సెట్ ఫైల్ కాదు.
+	Bank Account Numbers (IBAN)	బ్యాంక్ ఖాతా సంఖ్యలు (IBAN)
+	Croatian Personal ID Numbers (OIB)	క్రొయేషియా వ్యక్తిగత గుర్తింపు సంఖ్యలు (OIB)

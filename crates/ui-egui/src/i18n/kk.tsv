@@ -2401,3 +2401,24 @@ animation effects	Off	Өшірулі
 	Just these fields	Тек осы өрістер
 	This document has no other fields.	Бұл құжатта басқа өрістер жоқ.
 	Choose at least one field.	Кемінде бір өрісті таңдаңыз.
+	Edit codes…	Кодтарды өңдеу…
+	Redaction Code Editor	Жасыру кодтарының редакторы
+	Code sets	Код жиындары
+	No code sets yet. Type a name and choose New set.	Әзірге код жиындары жоқ. Атау енгізіп, «Жаңа жиын» таңдаңыз.
+	New set	Жаңа жиын
+	Codes in this set	Осы жиындағы кодтар
+	Code:	Код:
+	Import…	Импорттау…
+	Type a name first.	Алдымен атау енгізіңіз.
+	That name is already used.	Бұл атау бұрыннан қолданылады.
+	Type a code first.	Алдымен код енгізіңіз.
+	This set already has that code.	Бұл жиында ол код бұрыннан бар.
+	The name, code or description is too long.	Атау, код немесе сипаттама тым ұзын.
+	There are too many code sets or codes.	Код жиындары немесе кодтар тым көп.
+	That set or code no longer exists.	Ол жиын немесе код енді жоқ.
+	Imported {n} code set(s) from {name}; skipped {k} unreadable or repeated entries.	{name} ішінен импортталған код жиындары: {n}; өткізіп жіберілген оқылмайтын не қайталанған жазбалар: {k}.
+	Imported {n} code set(s) from {name}.	{name} ішінен импортталған код жиындары: {n}.
+	{name} is too large for a code set file (at most 1 MB).	{name} код жиыны файлы үшін тым үлкен (ең көбі 1 МБ).
+	{name} is not a redaction code set file.	{name} жасыру кодтары жиынының файлы емес.
+	Bank Account Numbers (IBAN)	Банк шотының нөмірлері (IBAN)
+	Croatian Personal ID Numbers (OIB)	Хорватияның жеке сәйкестендіру нөмірлері (OIB)

@@ -100,7 +100,10 @@ pub mod units;
 mod web_print;
 pub use print_ui::{Handling as PrintHandling, PrintDraft, PrinterSource, Which as PrintWhich, system_printers};
 mod redact_ui;
-pub use redact_ui::{HiddenDraft, PagesDraft as RedactPagesDraft, RedactPrefs, SearchDraft as RedactSearchDraft, SearchMode as RedactSearchMode};
+pub use redact_ui::{
+    CodeEditorDraft as RedactCodeEditorDraft, CodeSetChoice as RedactCodeSetChoice, HiddenDraft, PagesDraft as RedactPagesDraft, RedactPrefs,
+    SearchDraft as RedactSearchDraft, SearchMode as RedactSearchMode,
+};
 pub mod i18n;
 
 /// [`PrckopisApp::date_text`] for callers that already borrow other parts of the app.
@@ -285,6 +288,8 @@ pub enum Dialog {
     RedactPages,
     RedactSearch,
     RedactProps,
+    /// Redaction properties ▸ Edit codes… (the Redaction Code Editor).
+    RedactCodes,
     RedactApply,
     /// File ▸ Print.
     Print,
@@ -720,6 +725,7 @@ pub struct PrckopisApp {
     pub field_props: Option<prepare::FieldDraft>,
     pub bulk_field_props: Option<bulk_fields::Draft>,
     pub redact_prefs: RedactPrefs,
+    pub redact_code_editor: RedactCodeEditorDraft,
     pub redact_pages_draft: RedactPagesDraft,
     pub redact_search: RedactSearchDraft,
     pub hidden_draft: HiddenDraft,
@@ -963,6 +969,7 @@ impl PrckopisApp {
             field_props: None,
             bulk_field_props: None,
             redact_prefs: RedactPrefs::default(),
+            redact_code_editor: RedactCodeEditorDraft::default(),
             redact_pages_draft: RedactPagesDraft::default(),
             redact_search: RedactSearchDraft::default(),
             hidden_draft: HiddenDraft::default(),
@@ -1754,7 +1761,7 @@ impl PrckopisApp {
     /// Serialize the user's persistent state (recent files, theme). Local only.
     pub fn persist(&self) -> String {
         let trusted: Vec<String> = self.session.trusted_certificates().iter().map(prckopis_engine::sign::x509::to_pem).collect();
-        serde_json::json!({
+        let mut v = serde_json::json!({
             "docking": self.docking,
             "docking_left_open": self.left_open,
             "docking_right": self.right,
@@ -1811,8 +1818,10 @@ impl PrckopisApp {
             "combine_view": self.combine_view.as_str(),
             "combine_zoom": self.combine_zoom,
             "comments_panel_closed": self.comments_panel_closed,
-        })
-        .to_string()
+        });
+        // Outside the macro above, which is at its recursion limit.
+        v["redaction_code_sets"] = self.redact_prefs.code_sets.to_json();
+        v.to_string()
     }
 
     /// Restore state written by `persist`. Unknown or malformed data is ignored.
@@ -1949,6 +1958,8 @@ impl PrckopisApp {
             self.digital_ids = ids;
         }
         self.custom_stamps = stamps_ui::decode(&v["custom_stamps"]);
+        // Settings are untrusted: unreadable sets and codes are left out.
+        self.redact_prefs.code_sets = prckopis_engine::RedactionCodeSets::from_json(&v["redaction_code_sets"]);
         self.custom_actions = actions_ui::decode(&v["actions"]);
         if let Some(on) = v["javascript"].as_bool() {
             self.session.set_javascript(on);

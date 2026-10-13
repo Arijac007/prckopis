@@ -2425,3 +2425,24 @@ animation effects	Off	Вимкнено
 	Just these fields	Лише ці поля
 	This document has no other fields.	У цьому документі немає інших полів.
 	Choose at least one field.	Виберіть принаймні одне поле.
+	Edit codes…	Редагувати коди…
+	Redaction Code Editor	Редактор кодів вилучення
+	Code sets	Набори кодів
+	No code sets yet. Type a name and choose New set.	Наборів кодів ще немає. Введіть назву й виберіть «Новий набір».
+	New set	Новий набір
+	Codes in this set	Коди в цьому наборі
+	Code:	Код:
+	Import…	Імпортувати…
+	Type a name first.	Спершу введіть назву.
+	That name is already used.	Ця назва вже використовується.
+	Type a code first.	Спершу введіть код.
+	This set already has that code.	У цьому наборі вже є такий код.
+	The name, code or description is too long.	Назва, код або опис задовгі.
+	There are too many code sets or codes.	Забагато наборів кодів або кодів.
+	That set or code no longer exists.	Цього набору або коду більше немає.
+	Imported {n} code set(s) from {name}; skipped {k} unreadable or repeated entries.	Імпортовано наборів кодів з {name}: {n}; пропущено нечитабельних або повторюваних записів: {k}.
+	Imported {n} code set(s) from {name}.	Імпортовано наборів кодів з {name}: {n}.
+	{name} is too large for a code set file (at most 1 MB).	Файл {name} завеликий для файлу набору кодів (не більше 1 МБ).
+	{name} is not a redaction code set file.	{name} — не файл набору кодів вилучення.
+	Bank Account Numbers (IBAN)	Номери банківських рахунків (IBAN)
+	Croatian Personal ID Numbers (OIB)	Хорватські персональні ідентифікаційні номери (OIB)

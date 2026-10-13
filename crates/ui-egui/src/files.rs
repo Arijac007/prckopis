@@ -26,6 +26,20 @@ pub enum FilePurpose {
     CreateMultipleSeparate,
     /// Find text and redact ▸ Import list: a text file with one word or phrase per line.
     RedactWords,
+    /// Redaction Code Editor ▸ Import: a redaction code-set file (JSON).
+    RedactCodes,
+}
+
+impl FilePurpose {
+    /// The largest file this purpose reads, when it is limited.
+    #[cfg(not(target_arch = "wasm32"))]
+    fn max_bytes(self) -> Option<usize> {
+        match self {
+            Self::RedactWords => Some(crate::redact_ui::MAX_WORD_LIST_BYTES),
+            Self::RedactCodes => Some(prckopis_engine::REDACTION_CODES_MAX_FILE_BYTES),
+            _ => None,
+        }
+    }
 }
 
 /// Discover installed document fonts off the GUI thread, only when the picker is opened.
@@ -65,6 +79,9 @@ fn files_picker(purpose: FilePurpose) -> rfd::AsyncFileDialog {
     }
     if purpose == FilePurpose::RedactWords {
         return dialog.add_filter(tl!("Text"), &["txt"]);
+    }
+    if purpose == FilePurpose::RedactCodes {
+        return dialog.add_filter("JSON", &["json"]);
     }
     if !matches!(purpose, FilePurpose::CreateMultiple | FilePurpose::CreateMultipleSeparate | FilePurpose::InsertPages | FilePurpose::Combine) {
         return dialog.add_filter("PDF", &["pdf"]);
@@ -321,8 +338,14 @@ impl PrckopisApp {
         let mut modified = Vec::new();
         for p in paths {
             let name = p.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_else(|| "file.pdf".into());
-            if purpose == FilePurpose::RedactWords && std::fs::metadata(p).is_ok_and(|m| m.len() > crate::redact_ui::MAX_WORD_LIST_BYTES as u64) {
-                self.notify_fmt("{name} is too large for a word list (at most 1 MB).", &[("name", &name)]);
+            if let Some(max) = purpose.max_bytes()
+                && std::fs::metadata(p).is_ok_and(|m| m.len() > max as u64)
+            {
+                if purpose == FilePurpose::RedactCodes {
+                    self.notify_fmt("{name} is too large for a code set file (at most 1 MB).", &[("name", &name)]);
+                } else {
+                    self.notify_fmt("{name} is too large for a word list (at most 1 MB).", &[("name", &name)]);
+                }
                 return;
             }
             let read = if matches!(purpose, FilePurpose::TextFont { .. }) {
@@ -471,6 +494,11 @@ impl PrckopisApp {
                 }
                 self.redact_search.words = prckopis_engine::redact_word_list(&prckopis_engine::decode_text(&bytes)).join("\n");
                 self.redact_search.mode = crate::redact_ui::SearchMode::Words;
+            }
+            FilePurpose::RedactCodes => {
+                let Some((name, bytes)) = files.into_iter().next() else { return };
+                // Checks its size itself (the web reads the whole file first).
+                self.import_redaction_codes(&name, &bytes);
             }
         }
     }

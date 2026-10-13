@@ -2412,3 +2412,24 @@ animation effects	Off	Disattivati
 	Just these fields	Solo questi campi
 	This document has no other fields.	Questo documento non ha altri campi.
 	Choose at least one field.	Scegli almeno un campo.
+	Edit codes…	Modifica codici…
+	Redaction Code Editor	Editor dei codici di oscuramento
+	Code sets	Set di codici
+	No code sets yet. Type a name and choose New set.	Ancora nessun set di codici. Digita un nome e scegli Nuovo set.
+	New set	Nuovo set
+	Codes in this set	Codici in questo set
+	Code:	Codice:
+	Import…	Importa…
+	Type a name first.	Digita prima un nome.
+	That name is already used.	Questo nome è già in uso.
+	Type a code first.	Digita prima un codice.
+	This set already has that code.	Questo set contiene già quel codice.
+	The name, code or description is too long.	Il nome, il codice o la descrizione è troppo lungo.
+	There are too many code sets or codes.	Ci sono troppi set di codici o codici.
+	That set or code no longer exists.	Quel set o codice non esiste più.
+	Imported {n} code set(s) from {name}; skipped {k} unreadable or repeated entries.	Set di codici importati da {name}: {n}; voci illeggibili o ripetute saltate: {k}.
+	Imported {n} code set(s) from {name}.	Set di codici importati da {name}: {n}.
+	{name} is too large for a code set file (at most 1 MB).	{name} è troppo grande per un file di set di codici (al massimo 1 MB).
+	{name} is not a redaction code set file.	{name} non è un file di set di codici di oscuramento.
+	Bank Account Numbers (IBAN)	Numeri di conto bancario (IBAN)
+	Croatian Personal ID Numbers (OIB)	Numeri di identificazione personale croati (OIB)
