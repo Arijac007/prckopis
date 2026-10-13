@@ -2396,3 +2396,11 @@ animation effects	Off	Aus
 	Downloads	Downloads
 	Choose this folder	Diesen Ordner wählen
 	This folder can't be read ({e}). Allow Prckopis to access files in Android Settings ▸ Apps ▸ Prckopis ▸ Permissions.	Dieser Ordner kann nicht gelesen werden ({e}). Erlaube Prckopis den Dateizugriff unter Android-Einstellungen > Apps > Prckopis > Berechtigungen.
+	Signed	Signiert
+	Nothing happens when signed	Beim Signieren passiert nichts
+	Mark as read-only:	Schreibgeschützt machen:
+	All fields	Alle Felder
+	All fields except these	Alle Felder außer diesen
+	Just these fields	Nur diese Felder
+	This document has no other fields.	Dieses Dokument hat keine anderen Felder.
+	Choose at least one field.	Wählen Sie mindestens ein Feld.

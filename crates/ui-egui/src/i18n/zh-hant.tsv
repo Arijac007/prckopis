@@ -2268,3 +2268,11 @@ animation effects	Off	關
 	Downloads	下載
 	Choose this folder	選擇此資料夾
 	This folder can't be read ({e}). Allow Prckopis to access files in Android Settings ▸ Apps ▸ Prckopis ▸ Permissions.	無法讀取此資料夾（{e}）。請在 Android 設定 > 應用程式 > Prckopis > 權限 中允許 Prckopis 存取檔案。
+	Signed	簽署時
+	Nothing happens when signed	簽署時不執行任何動作
+	Mark as read-only:	設為唯讀：
+	All fields	所有欄位
+	All fields except these	除這些以外的所有欄位
+	Just these fields	僅這些欄位
+	This document has no other fields.	此文件沒有其他欄位。
+	Choose at least one field.	請至少選擇一個欄位。

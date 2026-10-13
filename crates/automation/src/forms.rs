@@ -2,7 +2,7 @@
 //! prepare a form (add, change and delete fields).
 
 use prckopis_engine::form_scripts::{CalcOp, Calculate, Format, Validate};
-use prckopis_engine::{Edit, FieldProps, FieldValue, FormField, FormFieldKind, NewField, field_flags};
+use prckopis_engine::{Edit, FieldProps, FieldValue, FormField, FormFieldKind, NewField, SignatureLock, field_flags};
 use serde_json::{Value, json};
 
 use crate::{Args, Automation, Result, ToolError, failed};
@@ -132,6 +132,32 @@ fn calculate_arg(v: &Value) -> Result<Calculate> {
     Ok(Calculate::Simple { op, fields })
 }
 
+/// `form_set_props`' `lock`: `sign_document`'s shape (`"all"`, `{"include": [...]}`,
+/// `{"exclude": [...]}`), or `"none"` to remove the lock.
+fn signature_lock_arg(v: &Value) -> Result<Option<SignatureLock>> {
+    if v.as_str() == Some("none") {
+        return Ok(None);
+    }
+    Ok(Some(
+        match crate::signing::parse_lock(v)
+            .map_err(|_| bad("lock is \"all\", {\"include\": [field names]}, {\"exclude\": [field names]} or \"none\""))?
+        {
+            prckopis_engine::sign::FieldLock::All => SignatureLock::All,
+            prckopis_engine::sign::FieldLock::Include(names) => SignatureLock::Include(names),
+            prckopis_engine::sign::FieldLock::Exclude(names) => SignatureLock::Exclude(names),
+        },
+    ))
+}
+
+/// A signature field's lock as `form_fields` reports it (the shape `sign_list` uses).
+fn signature_lock_json(lock: &SignatureLock) -> Value {
+    match lock {
+        SignatureLock::All => json!("all"),
+        SignatureLock::Include(names) => json!({ "include": names }),
+        SignatureLock::Exclude(names) => json!({ "exclude": names }),
+    }
+}
+
 fn format_json(f: &Format) -> Value {
     match f {
         Format::None => Value::Null,
@@ -212,6 +238,9 @@ impl Automation {
                 }
                 if let Some(s) = doc.field_check_style(&f.name) {
                     o.insert("check_style".into(), json!(s.label().to_lowercase()));
+                }
+                if let Some(lock) = doc.field_signature_lock(&f.name) {
+                    o.insert("lock".into(), signature_lock_json(&lock));
                 }
                 if f.actions.format != Format::None {
                     o.insert("format".into(), format_json(&f.actions.format));
@@ -458,6 +487,7 @@ impl Automation {
                 Some(r) => return Err(ToolError::InvalidArgs(format!("rotation must be 0, 90, 180 or 270, not {r}"))),
             },
             actions: None,
+            signature_lock: a.get("lock").map(signature_lock_arg).transpose()?,
             check_style: match a.opt_str("check_style")? {
                 None => None,
                 Some(s) => Some(

@@ -2404,3 +2404,11 @@ animation effects	Off	Disattivati
 	Downloads	Download
 	Choose this folder	Scegli questa cartella
 	This folder can't be read ({e}). Allow Prckopis to access files in Android Settings ▸ Apps ▸ Prckopis ▸ Permissions.	Impossibile leggere questa cartella ({e}). Consenti a Prckopis l'accesso ai file in Impostazioni Android > App > Prckopis > Autorizzazioni.
+	Signed	Firmato
+	Nothing happens when signed	Non succede nulla alla firma
+	Mark as read-only:	Rendi di sola lettura:
+	All fields	Tutti i campi
+	All fields except these	Tutti i campi tranne questi
+	Just these fields	Solo questi campi
+	This document has no other fields.	Questo documento non ha altri campi.
+	Choose at least one field.	Scegli almeno un campo.

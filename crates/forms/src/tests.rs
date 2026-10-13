@@ -1819,3 +1819,97 @@ fn invalid_appearance_patches_are_refused_before_anything_is_written() {
     assert!(set_props(&mut doc, "name", &props).is_err());
     assert_eq!(write_incremental(&doc, &SaveOptions::default()).unwrap(), before);
 }
+
+#[test]
+fn a_signature_field_lock_is_written_read_back_and_removed() {
+    let mut doc = fixture();
+    let sig = add_field(&mut doc, 0, [50.0, 220.0, 250.0, 270.0], &NewField::Signature, None).unwrap();
+    let lock_of = |doc: &Document, name: &str| signature_lock(doc, field(&fields(doc), name));
+    assert_eq!(lock_of(&doc, &sig), None, "a new signature field locks nothing");
+    let set =
+        |doc: &mut Document, lock: Option<SignatureLock>| set_props(doc, &sig, &FieldProps { signature_lock: Some(lock), ..FieldProps::default() });
+    // "Just these fields", naming a terminal field and a parent ("address").
+    set(&mut doc, Some(SignatureLock::Include(vec!["name".into(), "address".into()]))).unwrap();
+    let doc2 = reopen(&doc);
+    assert_eq!(lock_of(&doc2, &sig), Some(SignatureLock::Include(vec!["name".into(), "address".into()])));
+    // Written as an indirect /SigFieldLock dictionary (ISO 32000-2 Table 236).
+    let f = field(&fields(&doc2), &sig).clone();
+    let raw = doc2.get(f.obj).as_dict().unwrap().get(b"Lock").cloned().unwrap();
+    let r = raw.as_ref().expect("an indirect reference");
+    let d = doc2.get(r).as_dict().cloned().unwrap();
+    assert_eq!(d.name(b"Type"), Some(&b"SigFieldLock"[..]));
+    assert_eq!(d.name(b"Action"), Some(&b"Include"[..]));
+    // "All fields except these", then "All fields" (no /Fields).
+    set(&mut doc, Some(SignatureLock::Exclude(vec!["notes".into()]))).unwrap();
+    assert_eq!(lock_of(&doc, &sig), Some(SignatureLock::Exclude(vec!["notes".into()])));
+    set(&mut doc, Some(SignatureLock::All)).unwrap();
+    assert_eq!(lock_of(&doc, &sig), Some(SignatureLock::All));
+    let f = field(&fields(&doc), &sig).clone();
+    let lock = doc.resolve(doc.get(f.obj).as_dict().unwrap().get(b"Lock").unwrap());
+    assert!(lock.as_dict().unwrap().get(b"Fields").is_none());
+    // "Nothing happens when signed" removes it.
+    set(&mut doc, None).unwrap();
+    assert_eq!(lock_of(&doc, &sig), None);
+    assert!(doc.get(f.obj).as_dict().unwrap().get(b"Lock").is_none());
+    let doc = reopen(&doc);
+    assert_eq!(lock_of(&doc, &sig), None);
+}
+
+#[test]
+fn a_signature_field_lock_is_refused_when_it_makes_no_sense() {
+    let mut doc = fixture();
+    let sig = add_field(&mut doc, 0, [50.0, 220.0, 250.0, 270.0], &NewField::Signature, None).unwrap();
+    let lock = |l: SignatureLock| FieldProps { signature_lock: Some(Some(l)), ..FieldProps::default() };
+    // Only signature fields lock other fields.
+    assert!(set_props(&mut doc, "name", &lock(SignatureLock::All)).is_err());
+    assert!(matches!(set_props(&mut doc, &sig, &lock(SignatureLock::Include(vec!["nope".into()]))), Err(FormError::NoSuchField(_))));
+    assert!(set_props(&mut doc, &sig, &lock(SignatureLock::Include(Vec::new()))).is_err(), "just these fields needs one");
+    assert!(set_props(&mut doc, &sig, &lock(SignatureLock::Exclude(vec!["name".into(), "name".into()]))).is_err());
+    assert!(set_props(&mut doc, &sig, &lock(SignatureLock::Exclude(vec![" ".into()]))).is_err());
+    // "addr" is not a parent of "address.city".
+    assert!(set_props(&mut doc, &sig, &lock(SignatureLock::Include(vec!["addr".into()]))).is_err());
+    assert_eq!(signature_lock(&doc, field(&fields(&doc), &sig)), None, "nothing was written");
+}
+
+#[test]
+fn a_malformed_signature_field_lock_is_ignored() {
+    use prckopis_cos::{Dict, PdfString};
+    let mut doc = fixture();
+    let sig = add_field(&mut doc, 0, [50.0, 220.0, 250.0, 270.0], &NewField::Signature, None).unwrap();
+    let obj = field(&fields(&doc), &sig).obj;
+    let dict = |entries: Vec<(&str, Object)>| {
+        let mut d = Dict::new();
+        for (k, v) in entries {
+            d.set(k.as_bytes().to_vec(), v);
+        }
+        Object::Dict(d)
+    };
+    let names = Object::Array(vec![Object::String(PdfString::text("name"))]);
+    let weird = [
+        dict(vec![("Type", Object::name("SigFieldLock"))]),
+        dict(vec![("Action", Object::name("Include"))]),
+        dict(vec![("Action", Object::name("Exclude")), ("Fields", Object::Int(5))]),
+        dict(vec![("Action", Object::name("Bogus")), ("Fields", names.clone())]),
+        dict(vec![("Action", Object::String(PdfString::text("All")))]),
+        Object::Int(42),
+        Object::Ref(prckopis_cos::ObjRef::new(9999, 0)),
+    ];
+    for lock in weird {
+        let shown = format!("{lock:?}");
+        doc.update_dict(obj, |d| d.set(b"Lock".to_vec(), lock)).unwrap();
+        assert_eq!(signature_lock(&doc, field(&fields(&doc), &sig)), None, "{shown}");
+    }
+    // A self-referencing /Fields entry and a number: the strings are kept, the rest skipped.
+    let r = doc.add(Object::Null);
+    let cyclic = dict(vec![
+        ("Action", Object::name("Include")),
+        ("Fields", Object::Array(vec![Object::Ref(r), Object::Int(3), Object::String(PdfString::text("name"))])),
+    ]);
+    doc.set(r, cyclic.clone());
+    doc.update_dict(obj, |x| x.set(b"Lock".to_vec(), Object::Ref(r))).unwrap();
+    assert_eq!(signature_lock(&doc, field(&fields(&doc), &sig)), Some(SignatureLock::Include(vec!["name".into()])));
+    // A text field's /Lock is never read.
+    let name = field(&fields(&doc), "name").obj;
+    doc.update_dict(name, |x| x.set(b"Lock".to_vec(), cyclic)).unwrap();
+    assert_eq!(signature_lock(&doc, field(&fields(&doc), "name")), None);
+}

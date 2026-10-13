@@ -2391,3 +2391,11 @@ animation effects	Off	Kapalı
 	Downloads	İndirilenler
 	Choose this folder	Bu klasörü seç
 	This folder can't be read ({e}). Allow Prckopis to access files in Android Settings ▸ Apps ▸ Prckopis ▸ Permissions.	Bu klasör okunamıyor ({e}). Android Ayarlar > Uygulamalar > Prckopis > İzinler bölümünden Prckopis'in dosyalara erişmesine izin ver.
+	Signed	İmzalandı
+	Nothing happens when signed	İmzalanınca hiçbir şey olmaz
+	Mark as read-only:	Salt okunur yap:
+	All fields	Tüm alanlar
+	All fields except these	Bunlar dışındaki tüm alanlar
+	Just these fields	Yalnızca bu alanlar
+	This document has no other fields.	Bu belgede başka alan yok.
+	Choose at least one field.	En az bir alan seçin.

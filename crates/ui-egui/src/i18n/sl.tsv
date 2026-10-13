@@ -2400,3 +2400,11 @@ animation effects	Off	Izklopljeni
 	Downloads	Prenosi
 	Choose this folder	Izberi to mapo
 	This folder can't be read ({e}). Allow Prckopis to access files in Android Settings ▸ Apps ▸ Prckopis ▸ Permissions.	Te mape ni mogoče prebrati ({e}). Prckopisu dovoli dostop do datotek v nastavitvah Androida > Aplikacije > Prckopis > Dovoljenja.
+	Signed	Podpisano
+	Nothing happens when signed	Ob podpisu se ne zgodi nič
+	Mark as read-only:	Označi samo za branje:
+	All fields	Vsa polja
+	All fields except these	Vsa polja razen teh
+	Just these fields	Samo ta polja
+	This document has no other fields.	Ta dokument nima drugih polj.
+	Choose at least one field.	Izberite vsaj eno polje.

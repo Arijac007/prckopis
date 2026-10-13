@@ -7,7 +7,7 @@
 
 use egui::{Color32, CornerRadius, Pos2, Rect, Stroke, vec2};
 use prckopis_engine::form_scripts::{CalcOp, Calculate, DATE_PRESETS, Format, TIME_PRESETS, Validate, format_value};
-use prckopis_engine::{BorderStyle, Edit, FieldFont, FieldLook, FieldProps, FormField, FormFieldKind, NewField};
+use prckopis_engine::{BorderStyle, Edit, FieldFont, FieldLook, FieldProps, FormField, FormFieldKind, NewField, SignatureLock};
 use prckopis_render::DocInfo;
 
 use crate::canvas::{DocView, PageXform};
@@ -664,9 +664,13 @@ impl crate::PrckopisApp {
             self.session.get(id).map(|doc| doc.form.iter().filter(|x| x.name != name).map(|x| x.name.clone()).collect()).unwrap_or_default();
         d.others = others.clone();
         d.actions = self.session.get(id).map(|doc| doc.field_actions(name)).unwrap_or_default();
+        d.set_signature_lock(self.session.get(id).and_then(|doc| doc.field_signature_lock(name)));
         if let Some(o) = d.original.as_mut() {
             o.others = others;
             o.actions = d.actions.clone();
+            o.lock_on = d.lock_on;
+            o.lock_scope = d.lock_scope;
+            o.lock_fields = d.lock_fields.clone();
         }
         self.field_props = Some(d);
         self.dialog = Some(crate::Dialog::FieldProps);
@@ -683,6 +687,28 @@ pub enum FieldTab {
     Validate,
     Calculate,
     Actions,
+    /// Signature fields: what signing does to the other fields (`/Lock`).
+    Signed,
+}
+
+/// Signed tab: which fields "Mark as read-only" covers.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum LockScope {
+    All,
+    AllExcept,
+    Just,
+}
+
+impl LockScope {
+    pub const ALL: [LockScope; 3] = [LockScope::All, LockScope::AllExcept, LockScope::Just];
+
+    pub fn label(self) -> &'static str {
+        match self {
+            LockScope::All => "All fields",
+            LockScope::AllExcept => "All fields except these",
+            LockScope::Just => "Just these fields",
+        }
+    }
 }
 
 /// Actions tab: the "Select Action" choices.
@@ -775,6 +801,11 @@ pub struct FieldDraft {
     /// Actions tab: each trigger's action, and the one being added.
     pub actions: Vec<(prckopis_engine::FieldTrigger, prckopis_engine::FieldAction)>,
     pub new_action: ActionDraft,
+    /// Signed tab: "Mark as read-only" (off: "Nothing happens when signed").
+    pub lock_on: bool,
+    pub lock_scope: LockScope,
+    /// The fields "All fields except these" or "Just these fields" names (fully qualified).
+    pub lock_fields: Vec<String>,
     original: Box<Option<FieldDraft>>,
 }
 
@@ -835,6 +866,9 @@ impl FieldDraft {
             others: Vec::new(),
             actions: Vec::new(),
             new_action: ActionDraft::default(),
+            lock_on: false,
+            lock_scope: LockScope::All,
+            lock_fields: Vec::new(),
             original: Box::new(None),
         };
         d.original = Box::new(Some(d.clone()));
@@ -862,7 +896,32 @@ impl FieldDraft {
             t.extend([(FieldTab::Format, "Format"), (FieldTab::Validate, "Validate"), (FieldTab::Calculate, "Calculate")]);
         }
         t.push((FieldTab::Actions, "Actions"));
+        if self.kind == FormFieldKind::Signature {
+            t.push((FieldTab::Signed, "Signed"));
+        }
         t
+    }
+
+    /// Load the Signed tab from a signature field's lock.
+    pub fn set_signature_lock(&mut self, lock: Option<SignatureLock>) {
+        self.lock_on = lock.is_some();
+        (self.lock_scope, self.lock_fields) = match lock {
+            None | Some(SignatureLock::All) => (LockScope::All, Vec::new()),
+            Some(SignatureLock::Exclude(l)) => (LockScope::AllExcept, l),
+            Some(SignatureLock::Include(l)) => (LockScope::Just, l),
+        };
+    }
+
+    /// The lock the Signed tab describes (`None`: nothing happens when signed).
+    pub fn signature_lock(&self) -> Option<SignatureLock> {
+        if !self.lock_on {
+            return None;
+        }
+        Some(match self.lock_scope {
+            LockScope::All => SignatureLock::All,
+            LockScope::AllExcept => SignatureLock::Exclude(self.lock_fields.clone()),
+            LockScope::Just => SignatureLock::Include(self.lock_fields.clone()),
+        })
     }
 
     /// The properties that changed (`None` when nothing did).
@@ -894,6 +953,7 @@ impl FieldDraft {
             locked: ch(self.locked, o.locked),
             actions: (self.actions != o.actions).then(|| self.actions.clone()),
             default_value: (self.default != o.default).then(|| (!self.default.is_empty()).then(|| self.default.clone())),
+            signature_lock: (self.signature_lock() != o.signature_lock()).then(|| self.signature_lock()),
         };
         (p != FieldProps::default()).then_some(p)
     }
@@ -1077,6 +1137,7 @@ pub(crate) fn body(ui: &mut egui::Ui, d: &mut FieldDraft, t: &crate::theme::Toke
             FieldTab::Validate => validate_tab(ui, d),
             FieldTab::Calculate => calculate_tab(ui, d, t),
             FieldTab::Actions => actions_tab(ui, d, t),
+            FieldTab::Signed => signed_tab(ui, d, t),
             FieldTab::Options => match d.kind {
                 FormFieldKind::Text => {
                     use prckopis_engine::field_flags as ff;
@@ -1222,6 +1283,11 @@ pub(crate) fn body(ui: &mut egui::Ui, d: &mut FieldDraft, t: &crate::theme::Toke
             cancel = true;
         }
     });
+    // "Just these fields" needs a field: keep the dialog open on the Signed tab.
+    if apply && d.lock_on && d.lock_scope == LockScope::Just && d.lock_fields.is_empty() {
+        apply = false;
+        d.tab = FieldTab::Signed;
+    }
     (apply, cancel)
 }
 
@@ -1507,6 +1573,48 @@ fn actions_tab(ui: &mut egui::Ui, d: &mut FieldDraft, t: &crate::theme::Tokens) 
             d.actions.remove(i);
         }
     });
+}
+
+/// Signed tab (signature fields): which fields become read-only when the field is signed.
+fn signed_tab(ui: &mut egui::Ui, d: &mut FieldDraft, t: &crate::theme::Tokens) {
+    widgets::radio_value(ui, &mut d.lock_on, false, tl!("Nothing happens when signed"));
+    ui.horizontal(|ui| {
+        widgets::radio_value(ui, &mut d.lock_on, true, tl!("Mark as read-only:"));
+        ui.add_enabled_ui(d.lock_on, |ui| {
+            egui::ComboBox::from_id_salt("sig-lock-scope").selected_text(tl!(d.lock_scope.label())).show_ui(ui, |ui| {
+                for s in LockScope::ALL {
+                    ui.selectable_value(&mut d.lock_scope, s, tl!(s.label()));
+                }
+            });
+        });
+    });
+    if !d.lock_on || d.lock_scope == LockScope::All {
+        return;
+    }
+    // The document's other fields, and any name the lock lists that isn't one (a parent's name
+    // locks its kids).
+    let mut names: Vec<String> = d.others.clone();
+    names.extend(d.lock_fields.iter().filter(|n| !d.others.contains(n)).cloned());
+    ui.add_space(4.0);
+    if names.is_empty() {
+        ui.label(egui::RichText::new(tl!("This document has no other fields.")).small().color(t.text_muted));
+        return;
+    }
+    egui::ScrollArea::vertical().id_salt("sig-lock-fields").max_height(180.0).show(ui, |ui| {
+        for name in &names {
+            let mut on = d.lock_fields.contains(name);
+            if ui.add(widgets::checkbox(&mut on, name)).changed() {
+                if on {
+                    d.lock_fields.push(name.clone());
+                } else {
+                    d.lock_fields.retain(|f| f != name);
+                }
+            }
+        }
+    });
+    if d.lock_scope == LockScope::Just && d.lock_fields.is_empty() {
+        ui.label(egui::RichText::new(tl!("Choose at least one field.")).small().color(t.text_muted));
+    }
 }
 
 fn calculate_tab(ui: &mut egui::Ui, d: &mut FieldDraft, t: &crate::theme::Tokens) {

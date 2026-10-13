@@ -2394,3 +2394,11 @@ animation effects	Off	Ki
 	Downloads	Letöltések
 	Choose this folder	Ennek a mappának a kiválasztása
 	This folder can't be read ({e}). Allow Prckopis to access files in Android Settings ▸ Apps ▸ Prckopis ▸ Permissions.	Ez a mappa nem olvasható ({e}). Engedélyezd a Prckopis számára a fájlhozzáférést az Android Beállítások > Alkalmazások > Prckopis > Engedélyek menüben.
+	Signed	Aláírva
+	Nothing happens when signed	Aláíráskor nem történik semmi
+	Mark as read-only:	Csak olvashatóvá tétel:
+	All fields	Minden mező
+	All fields except these	Minden mező, kivéve ezeket
+	Just these fields	Csak ezek a mezők
+	This document has no other fields.	Ebben a dokumentumban nincsenek más mezők.
+	Choose at least one field.	Válasszon legalább egy mezőt.

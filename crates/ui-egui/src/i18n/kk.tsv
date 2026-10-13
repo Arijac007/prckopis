@@ -2393,3 +2393,11 @@ animation effects	Off	Өшірулі
 	Downloads	Жүктеп алынғандар
 	Choose this folder	Осы қалтаны таңдау
 	This folder can't be read ({e}). Allow Prckopis to access files in Android Settings ▸ Apps ▸ Prckopis ▸ Permissions.	Бұл қалтаны оқу мүмкін емес ({e}). Android параметрлері > Қолданбалар > Prckopis > Рұқсаттар бөлімінде Prckopis-ке файлдарға қол жеткізуге рұқсат беріңіз.
+	Signed	Қол қойылған
+	Nothing happens when signed	Қол қойғанда ештеңе болмайды
+	Mark as read-only:	Тек оқуға арналған ету:
+	All fields	Барлық өрістер
+	All fields except these	Осылардан басқа барлық өрістер
+	Just these fields	Тек осы өрістер
+	This document has no other fields.	Бұл құжатта басқа өрістер жоқ.
+	Choose at least one field.	Кемінде бір өрісті таңдаңыз.

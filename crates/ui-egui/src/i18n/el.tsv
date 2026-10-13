@@ -2410,3 +2410,11 @@ animation effects	Off	Ανενεργά
 	Downloads	Λήψεις
 	Choose this folder	Επιλογή αυτού του φακέλου
 	This folder can't be read ({e}). Allow Prckopis to access files in Android Settings ▸ Apps ▸ Prckopis ▸ Permissions.	Δεν είναι δυνατή η ανάγνωση αυτού του φακέλου ({e}). Επίτρεψε στο Prckopis την πρόσβαση σε αρχεία από Ρυθμίσεις Android > Εφαρμογές > Prckopis > Άδειες.
+	Signed	Υπογεγραμμένο
+	Nothing happens when signed	Δεν συμβαίνει τίποτα κατά την υπογραφή
+	Mark as read-only:	Μόνο για ανάγνωση:
+	All fields	Όλα τα πεδία
+	All fields except these	Όλα τα πεδία εκτός από αυτά
+	Just these fields	Μόνο αυτά τα πεδία
+	This document has no other fields.	Αυτό το έγγραφο δεν έχει άλλα πεδία.
+	Choose at least one field.	Επιλέξτε τουλάχιστον ένα πεδίο.

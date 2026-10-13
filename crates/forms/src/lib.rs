@@ -21,6 +21,7 @@ pub mod appearance;
 mod author;
 pub mod detect;
 mod scripting;
+mod sig_lock;
 pub use actions::{FieldAction, Trigger, field_actions, set_field_actions};
 pub use author::{
     BorderStyle, CheckStyle, FieldFont, FieldProps, Look, LookPatch, NewField, add_field, check_style, delete_field, duplicate_field, look,
@@ -30,6 +31,7 @@ pub use scripting::{
     FieldChange, FieldEvent, NoScripts, ScriptResult, Scripts, apply_script_changes, document_scripts, document_scripts_named, set_document_script,
     set_field_script,
 };
+pub use sig_lock::{MAX_LOCK_FIELDS, SignatureLock, signature_lock};
 
 #[cfg(test)]
 mod tests;

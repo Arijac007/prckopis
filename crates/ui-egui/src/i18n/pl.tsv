@@ -2374,3 +2374,11 @@ animation effects	Off	Wyłączone
 	Downloads	Pobrane
 	Choose this folder	Wybierz ten folder
 	This folder can't be read ({e}). Allow Prckopis to access files in Android Settings ▸ Apps ▸ Prckopis ▸ Permissions.	Nie można odczytać tego folderu ({e}). Zezwól Prckopis na dostęp do plików w Ustawieniach Androida > Aplikacje > Prckopis > Uprawnienia.
+	Signed	Podpisano
+	Nothing happens when signed	Po podpisaniu nic się nie dzieje
+	Mark as read-only:	Ustaw tylko do odczytu:
+	All fields	Wszystkie pola
+	All fields except these	Wszystkie pola oprócz tych
+	Just these fields	Tylko te pola
+	This document has no other fields.	Ten dokument nie ma innych pól.
+	Choose at least one field.	Wybierz co najmniej jedno pole.
