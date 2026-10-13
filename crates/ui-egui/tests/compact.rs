@@ -99,13 +99,46 @@ fn the_theme_button_and_more_menu_are_on_the_phone_bar() {
         h.run_steps(2);
     }
     assert_eq!(h.state().theme_preference, ThemePreference::Dark);
-    // More: workspaces, Print, Document properties, Full screen, theme, Preferences.
-    h.get_by_label("More options").click();
+}
+
+#[test]
+fn the_phone_menu_is_pages_of_large_rows() {
+    use prckopis_ui_egui::phone_menu::PhoneMenu;
+    let mut h = phone(true);
+    h.get_by_label("Menu").click();
     h.run_steps(2);
-    for item in ["Read", "Edit", "E-Sign", "Print…", "Document properties…", "Full screen mode", "Preferences…"] {
-        assert!(h.query_by_label(item).is_some(), "{item} is in More");
+    assert_eq!(h.state().compact_menu, Some(PhoneMenu::Root));
+    // The first page: the document, the workspaces, the way to the other pages.
+    for item in ["Open…", "Save as…", "Print…", "Document properties…", "All tools", "Read", "E-Sign", "Side panels", "Preferences…"] {
+        // (All tools is also the top bar's button.)
+        assert!(h.query_all_by_label(item).count() >= 1, "{item} is on the first page");
     }
-    h.get_by_label("Edit").click();
+    // A menu opens as a page of its own; Back returns to the first page, and closes it there.
+    // (The menus are below the fold at this size: open the page directly.)
+    h.state_mut().compact_menu = Some(PhoneMenu::Commands("Pages"));
     h.run_steps(2);
+    h.get_by_label("Organize pages");
+    h.key_press(egui::Key::Escape);
+    h.run_steps(2);
+    assert_eq!(h.state().compact_menu, Some(PhoneMenu::Root));
+    // A workspace from the menu: its tools open in the sheet and the menu closes. (The first
+    // "Edit" is the workspace; the Edit menu's row comes later, below the fold.)
+    h.query_all_by_label("Edit").next().expect("the Edit workspace").click();
+    h.run_steps(2);
+    assert_eq!(h.state().compact_menu, None);
     assert!(h.state().left_open, "a workspace opens its tools in the sheet");
+    // A side panel from the menu's page of panels.
+    h.state_mut().left_open = false;
+    h.state_mut().compact_menu = Some(PhoneMenu::Panels);
+    h.run_steps(2);
+    h.get_by_label("Form fields").click();
+    h.run_steps(2);
+    assert_eq!((h.state().compact_menu, h.state().right), (None, Some(RightPanel::Fields)));
+    // A row runs its command: Document properties opens its dialog.
+    h.state_mut().choose_right_panel(None);
+    h.state_mut().compact_menu = Some(PhoneMenu::Root);
+    h.run_steps(2);
+    h.get_by_label("Document properties…").click();
+    h.run_steps(2);
+    assert!(h.state().dialog.is_some() && h.state().compact_menu.is_none());
 }

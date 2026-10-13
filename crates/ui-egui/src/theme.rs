@@ -380,6 +380,18 @@ pub fn touch_spacing(ctx: &egui::Context) {
         return;
     }
     ctx.all_styles_mut(|s| {
+        // Text a size up from the desktop's, read at arm's length on a small screen.
+        for (style, size) in [
+            (egui::TextStyle::Body, 15.0),
+            (egui::TextStyle::Button, 15.0),
+            (egui::TextStyle::Small, 12.5),
+            (egui::TextStyle::Heading, 19.0),
+            (egui::TextStyle::Monospace, 14.0),
+        ] {
+            if let Some(font) = s.text_styles.get_mut(&style) {
+                font.size = size;
+            }
+        }
         s.spacing.interact_size.y = TOUCH_TARGET;
         s.spacing.button_padding = egui::vec2(12.0, 9.0);
         s.spacing.item_spacing = egui::vec2(10.0, 8.0);

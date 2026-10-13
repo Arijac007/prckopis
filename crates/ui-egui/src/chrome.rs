@@ -5,7 +5,6 @@ use egui::{Align, Align2, Color32, CornerRadius, Layout, Rect, Sense, Stroke, ve
 use crate::canvas::{DocView, Fit, PageLayout};
 use crate::theme::{self, ThemePreference, Tokens};
 use crate::{Dialog, Mode, PrckopisApp, PropsTab, RightPanel, icons, widgets};
-use prckopis_engine::DocId;
 
 /// Height of the tab strip when it doubles as the macOS title bar (#789). AppKit draws the traffic
 /// lights itself, centred in the standard 28 pt title-bar band at the top of the window, and moving
@@ -694,20 +693,9 @@ const COMPACT_BAR: f32 = 52.0;
 /// Icon buttons in the phone layout: a finger-sized box that still fits eight to a phone's width.
 const COMPACT_ICON: f32 = 38.0;
 
-/// The side panels the phone layout's panel button offers, with their icons.
-const COMPACT_PANELS: [(RightPanel, &str, &str); 7] = [
-    (RightPanel::Pages, "files", "Page thumbnails"),
-    (RightPanel::Bookmarks, "bookmark", "Bookmarks"),
-    (RightPanel::Comments, "message-square-text", "Comments"),
-    (RightPanel::Fields, "text-cursor-input", "Form fields"),
-    (RightPanel::Signatures, "signature", "Signatures"),
-    (RightPanel::Attachments, "paperclip", "Attachments"),
-    (RightPanel::Layers, "layers", "Layers"),
-];
-
-/// The phone layout's top bar: Menu, All tools, the document (tap to switch to another open one),
-/// then Find tools and commands, Open, Save, the display theme (tap: system, light, dark) and More
-/// (workspaces, Print, Document properties, Full screen, theme and Preferences).
+/// The phone layout's top bar: Menu (the phone menu's pages), All tools, the document (tap: the
+/// open documents), then Find tools and commands, Open, Save and the display theme (tap: system,
+/// light, dark).
 pub fn compact_top_bar(app: &mut PrckopisApp, ui: &mut egui::Ui) {
     let t = Tokens::get(ui.ctx());
     egui::Panel::top("compact_top_bar")
@@ -716,8 +704,12 @@ pub fn compact_top_bar(app: &mut PrckopisApp, ui: &mut egui::Ui) {
         .show(ui, |ui| {
             ui.horizontal_centered(|ui| {
                 ui.spacing_mut().item_spacing.x = 0.0;
-                main_menu(app, ui);
+                let menu_open = app.compact_menu.is_some();
+                if icons::button(ui, "list", COMPACT_ICON, menu_open, tl!("Menu")).clicked() {
+                    app.compact_menu = if menu_open { None } else { Some(crate::phone_menu::PhoneMenu::Root) };
+                }
                 if icons::button(ui, "layout-grid", COMPACT_ICON, app.left_open, tl!("All tools")).clicked() {
+                    app.compact_menu = None;
                     app.left_open = !app.left_open;
                     if app.left_open {
                         app.right = None;
@@ -726,18 +718,20 @@ pub fn compact_top_bar(app: &mut PrckopisApp, ui: &mut egui::Ui) {
                 let has_doc = app.active.is_some();
                 ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                     ui.spacing_mut().item_spacing.x = 0.0;
-                    compact_more_menu(app, ui, has_doc);
                     compact_theme_button(app, ui);
                     if has_doc {
                         let tip = crate::commands::command_tip(ui.ctx(), tl!("Save ({key})"), "file.save");
                         if icons::button(ui, "save", COMPACT_ICON, false, &tip).clicked() {
+                            app.compact_menu = None;
                             app.run_command("file.save");
                         }
                     }
                     if icons::button(ui, "folder-open", COMPACT_ICON, false, tl!("Open")).clicked() {
+                        app.compact_menu = None;
                         app.open_dialog();
                     }
                     if icons::button(ui, "search", COMPACT_ICON, false, tl!("Find tools and commands")).clicked() {
+                        app.compact_menu = None;
                         app.palette_open = true;
                     }
                     // The rest of the bar: the open document, or Home.
@@ -765,92 +759,21 @@ fn compact_theme_button(app: &mut PrckopisApp, ui: &mut egui::Ui) {
     }
 }
 
-/// More: what the desktop's mode bar and title bar offer and the phone bar has no room for.
-fn compact_more_menu(app: &mut PrckopisApp, ui: &mut egui::Ui, has_doc: bool) {
-    let t = Tokens::get(ui.ctx());
-    let resp = icons::button(ui, "ellipsis-vertical", COMPACT_ICON, false, tl!("More options"));
-    egui::Popup::menu(&resp).show(|ui| {
-        ui.set_min_width(230.0);
-        for (mode, label) in
-            [(Mode::AllTools, "All tools"), (Mode::Read, "Read"), (Mode::Edit, "Edit"), (Mode::Convert, "Convert"), (Mode::Sign, "E-Sign")]
-        {
-            if ui.add(widgets::radio(app.mode == mode, tl!(label))).clicked() {
-                // Read mode is the page alone; the others open their tools in the sheet.
-                app.switch_mode(mode, mode != Mode::Read);
-                if mode == Mode::Read {
-                    app.left_open = false;
-                }
-                ui.close();
-            }
-        }
-        ui.separator();
-        ui.add_enabled_ui(has_doc, |ui| {
-            if ui.button(tl!("Print…")).clicked() {
-                app.run_command("print.dialog");
-                ui.close();
-            }
-            if ui.button(tl!("Document properties…")).clicked() {
-                app.dialog = Some(Dialog::Properties(PropsTab::Description));
-                ui.close();
-            }
-            if ui.button(tl!("Full screen mode")).clicked() {
-                app.execute("view.full_screen");
-                ui.close();
-            }
-        });
-        ui.separator();
-        ui.label(egui::RichText::new(tl!("Display theme")).color(t.text_faint).small());
-        theme_menu(app, ui);
-        if ui.button(tl!("Preferences…")).clicked() {
-            app.dialog = Some(Dialog::Preferences);
-            ui.close();
-        }
-    });
-}
-
-/// The name of the document shown (or Home); tapping it lists the open documents, Home and Close.
+/// The name of the document shown (or Home); tapping it opens the phone menu's open documents.
 fn document_switcher(app: &mut PrckopisApp, ui: &mut egui::Ui) {
     let t = Tokens::get(ui.ctx());
-    let names: Vec<(DocId, String, bool)> =
-        app.views.iter().filter_map(|v| app.session.get(v.id).map(|d| (v.id, d.display_name(), d.dirty))).collect();
-    let current = app.active.and_then(|i| names.get(i)).map_or_else(
+    let current = app.active.and_then(|i| app.views.get(i)).and_then(|v| app.session.get(v.id)).map_or_else(
         || tl!("Home").to_owned(),
-        |(_, n, dirty)| {
-            let n = tab_name(n);
-            if *dirty { format!("{n} •") } else { n }
+        |d| {
+            let n = tab_name(&d.display_name());
+            if d.dirty { format!("{n} •") } else { n }
         },
     );
     let width = ui.available_width().max(60.0);
-    let label = egui::RichText::new(current).font(theme::medium(14.0)).color(t.text);
-    let resp = ui.add_sized([width, COMPACT_ICON], egui::Button::new(label).frame(false).truncate());
-    let mut action = None;
-    egui::Popup::menu(&resp).show(|ui| {
-        ui.set_min_width(240.0);
-        if ui.add(egui::Button::selectable(app.active.is_none(), tl!("Home"))).clicked() {
-            app.active = None;
-            app.combine_tab.focused = false;
-            ui.close();
-        }
-        if !names.is_empty() {
-            ui.separator();
-        }
-        for (i, (_, name, dirty)) in names.iter().enumerate() {
-            let shown = if *dirty { format!("{} •", tab_name(name)) } else { tab_name(name) };
-            if ui.add(egui::Button::selectable(app.active == Some(i), shown)).clicked() {
-                app.active = Some(i);
-                ui.close();
-            }
-        }
-        if let Some((id, _, _)) = app.active.and_then(|i| names.get(i)) {
-            ui.separator();
-            if ui.button(tl!("Close Tab")).clicked() {
-                action = Some(crate::tab_context::Action::Close(*id));
-                ui.close();
-            }
-        }
-    });
-    if let Some(action) = action {
-        app.tab_action(action);
+    let label = egui::RichText::new(current).font(theme::medium(15.0)).color(t.text);
+    if ui.add_sized([width, COMPACT_ICON], egui::Button::new(label).frame(false).truncate()).clicked() {
+        let page = crate::phone_menu::PhoneMenu::Documents;
+        app.compact_menu = if app.compact_menu == Some(page) { None } else { Some(page) };
     }
 }
 
@@ -862,7 +785,7 @@ pub fn compact_bottom_bar(app: &mut PrckopisApp, ui: &mut egui::Ui) {
     let Some(doc) = app.session.get(id) else { return };
     let page_count = doc.info.pages.len();
     let labels: Vec<String> = doc.info.pages.iter().map(|p| p.label.clone()).collect();
-    let mut panel = None;
+    let mut open_panels = false;
     egui::Panel::bottom("compact_bottom_bar")
         .exact_size(COMPACT_BAR)
         .frame(egui::Frame::NONE.fill(t.chrome).inner_margin(egui::Margin::symmetric(4, 0)).stroke(Stroke::new(1.0, t.divider)))
@@ -892,20 +815,9 @@ pub fn compact_bottom_bar(app: &mut PrckopisApp, ui: &mut egui::Ui) {
                 ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                     ui.spacing_mut().item_spacing.x = 2.0;
                     let showing = app.right.is_some();
-                    let resp = icons::button(ui, "panel-right", COMPACT_ICON, showing, tl!("Side panels"));
-                    egui::Popup::menu(&resp).show(|ui| {
-                        ui.set_min_width(220.0);
-                        for (p, icon, label) in COMPACT_PANELS {
-                            let row = ui.horizontal(|ui| {
-                                ui.add(icons::image(icon, 18.0, t.text_muted));
-                                ui.add(egui::Button::selectable(app.right == Some(p), tl!(label)))
-                            });
-                            if row.inner.clicked() {
-                                panel = Some(if app.right == Some(p) { None } else { Some(p) });
-                                ui.close();
-                            }
-                        }
-                    });
+                    if icons::button(ui, "panel-right", COMPACT_ICON, showing, tl!("Side panels")).clicked() {
+                        open_panels = true;
+                    }
                     let Some(view) = app.views.get_mut(index) else { return };
                     if icons::button(ui, "zoom-in", COMPACT_ICON, false, tl!("Zoom in")).clicked() {
                         view.zoom_step(true);
@@ -921,9 +833,13 @@ pub fn compact_bottom_bar(app: &mut PrckopisApp, ui: &mut egui::Ui) {
                 });
             });
         });
-    if let Some(p) = panel {
-        app.left_open = false;
-        app.choose_right_panel(p);
+    if open_panels {
+        // A showing panel closes; otherwise the menu's page of panels opens.
+        if app.right.is_some() {
+            app.choose_right_panel(None);
+        } else {
+            app.compact_menu = Some(crate::phone_menu::PhoneMenu::Panels);
+        }
     }
 }
 

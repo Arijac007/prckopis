@@ -26,6 +26,7 @@ mod a11y_ui;
 mod actions_ui;
 #[cfg(target_os = "android")]
 mod android_files;
+pub mod phone_menu;
 #[cfg(target_os = "android")]
 pub use android_files::set_file_access_request;
 mod appearance;
@@ -554,6 +555,8 @@ pub struct PrckopisApp {
     /// [`COMPACT_MAX_WIDTH`], so a tablet in landscape keeps the desktop layout. Not saved: the
     /// host sets it ([`Self::set_compact`]).
     pub compact: bool,
+    /// The phone layout's menu page, while it is open (it covers the page).
+    pub compact_menu: Option<phone_menu::PhoneMenu>,
     /// Files delivered asynchronously (web drag-and-drop, web file picker).
     pub inbox: Inbox,
     /// The browser's startup `?file=` download. Unlike a deliberate Open or drop, a late
@@ -873,6 +876,7 @@ impl PrckopisApp {
             unlock_prompt: None,
             full_screen: false,
             compact: false,
+            compact_menu: None,
             inbox: Default::default(),
             startup_inbox: Default::default(),
             startup_superseded: false,
@@ -2045,6 +2049,27 @@ impl PrckopisApp {
             ("left", _) => self.left_open = value != "closed",
             // `--compact on`: the phone layout (Android sets it; here for screenshots and tests).
             ("compact", _) => self.set_compact(value != "off"),
+            // `--phone-menu root|file|edit|pages|view|help|recent|documents|panels|theme|off`.
+            ("phone-menu", _) => {
+                use phone_menu::PhoneMenu as P;
+                self.compact_menu = Some(match value {
+                    "off" => {
+                        self.compact_menu = None;
+                        return Ok(());
+                    }
+                    "root" => P::Root,
+                    "file" => P::Commands("File"),
+                    "edit" => P::Commands("Edit"),
+                    "pages" => P::Commands("Pages"),
+                    "view" => P::Commands("View"),
+                    "help" => P::Commands("Help"),
+                    "recent" => P::Recent,
+                    "documents" => P::Documents,
+                    "panels" => P::Panels,
+                    "theme" => P::Theme,
+                    _ => return Err("phone-menu must be root, file, edit, pages, view, help, recent, documents, panels, theme or off".into()),
+                });
+            }
             ("home", _) => self.active = None,
             // `--preflight pdfx-4`: open Preflight with that profile and analyze the document.
             ("preflight", _) => {
@@ -2316,6 +2341,13 @@ impl PrckopisApp {
             return;
         }
         self.registry_shortcuts(ctx);
+        // On a phone, Back (Escape) goes back a page in the menu, or closes it.
+        if self.compact_layout(ctx)
+            && let Some(page) = self.compact_menu
+            && ctx.input_mut(|i| i.consume_key(egui::Modifiers::NONE, Key::Escape))
+        {
+            self.compact_menu = page.parent();
+        }
         // On a phone, Back (Escape) closes the sheet over the page: the tools, then a side panel.
         if self.compact_layout(ctx)
             && (self.left_open || self.right.is_some())
@@ -2698,6 +2730,14 @@ impl PrckopisApp {
         canvas::set_side(canvas::COMPACT_SIDE);
         theme::touch_spacing(ctx);
         chrome::compact_top_bar(self, ui);
+        if let Some(page) = self.compact_menu {
+            // The menu covers the page; the top bar stays, so Menu closes it again.
+            let t = theme::Tokens::get(ctx);
+            egui::CentralPanel::default().frame(egui::Frame::NONE.fill(t.panel)).show(ui, |ui| {
+                self.compact_menu = phone_menu::show(self, ui, page);
+            });
+            return;
+        }
         if self.active.is_some() {
             chrome::compact_bottom_bar(self, ui);
         }
