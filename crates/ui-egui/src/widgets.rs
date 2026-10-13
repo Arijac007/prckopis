@@ -12,30 +12,77 @@ const FIELD_MIN_HEIGHT: f32 = 30.0;
 /// Padding inside every modal.
 const DIALOG_PAD_X: i8 = 20;
 const DIALOG_PAD_Y: i8 = 16;
+/// Padding inside a modal on a phone-sized window, where every point of width counts.
+const NARROW_DIALOG_PAD: i8 = 10;
+/// Windows narrower than this (points) are phone-sized: dialogs fit the window and scroll.
+pub const NARROW_WINDOW: f32 = 600.0;
+
+/// Whether the window is phone-sized ([`NARROW_WINDOW`]).
+pub fn narrow(ctx: &egui::Context) -> bool {
+    ctx.content_rect().width() < NARROW_WINDOW
+}
+
+fn dialog_pad(ctx: &egui::Context) -> (i8, i8) {
+    if narrow(ctx) { (NARROW_DIALOG_PAD, NARROW_DIALOG_PAD) } else { (DIALOG_PAD_X, DIALOG_PAD_Y) }
+}
 
 fn dialog_frame(ctx: &egui::Context) -> egui::Frame {
     let t = Tokens::get(ctx);
+    let (x, y) = dialog_pad(ctx);
     egui::Frame::new()
         .fill(t.card)
         .stroke(Stroke::new(1.0, t.border))
         .corner_radius(CornerRadius::same(10))
-        .inner_margin(egui::Margin::symmetric(DIALOG_PAD_X, DIALOG_PAD_Y))
+        .inner_margin(egui::Margin::symmetric(x, y))
         .shadow(ctx.global_style().visuals.window_shadow)
 }
 
 /// A modal with the card fill, a 10-point corner and room around its contents.
 pub fn modal(ctx: &egui::Context, id: impl std::hash::Hash + std::fmt::Debug) -> egui::Modal {
-    egui::Modal::new(egui::Id::new(id)).frame(dialog_frame(ctx))
+    let id = egui::Id::new(id);
+    let modal = egui::Modal::new(id).frame(dialog_frame(ctx));
+    if narrow(ctx) {
+        // Centred, an area only gets the half of the window below its centre to grow into; on a
+        // phone the dialog needs the whole height: hang it from just below the top.
+        modal.area(egui::Modal::default_area(id).anchor(egui::Align2::CENTER_TOP, egui::vec2(0.0, 24.0)))
+    } else {
+        modal
+    }
 }
 
 /// Show [`modal`], outline its controls, and remember the card rect for layout checks.
+///
+/// On a phone-sized window the dialog hangs from the top, is at most the window's width (less a
+/// margin) and pans sideways when something in it is wider, so no part of it is out of reach; text
+/// wraps to that width.
 pub fn show_modal<R>(ctx: &egui::Context, id: &str, content: impl FnOnce(&mut egui::Ui) -> R) -> egui::ModalResponse<R> {
     let stored = egui::Id::new(id);
+    let (pad_x, pad_y) = dialog_pad(ctx);
+    let screen = ctx.content_rect();
+    let narrow = narrow(ctx);
     modal(ctx, id).show(ctx, |ui| {
         begin_dialog(ui);
-        let inner = content(ui);
+        let inner = if narrow {
+            let width = (screen.width() - 2.0 * f32::from(pad_x) - 16.0).max(200.0);
+            // Sideways only: text wraps at the window's width, and the few controls laid out wider
+            // than a phone (fixed-width grids) can be panned to instead of hanging off the screen.
+            // Not up and down: buttons aligned to a dialog's bottom would be pushed out of sight,
+            // and the long dialogs scroll their own bodies.
+            ui.set_max_width(width);
+            egui::ScrollArea::horizontal()
+                .id_salt(stored.with("scroll"))
+                .max_width(width)
+                .auto_shrink([true, true])
+                .show(ui, |ui| {
+                    ui.set_max_width(width);
+                    content(ui)
+                })
+                .inner
+        } else {
+            content(ui)
+        };
         // The frame's stroke sits outside this content rect; the stored card is the fill.
-        let card = ui.min_rect().expand2(egui::vec2(f32::from(DIALOG_PAD_X), f32::from(DIALOG_PAD_Y)));
+        let card = ui.min_rect().expand2(egui::vec2(f32::from(pad_x), f32::from(pad_y)));
         ui.ctx().data_mut(|d| d.insert_temp(stored.with("card"), card));
         inner
     })

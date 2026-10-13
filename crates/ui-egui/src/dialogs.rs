@@ -75,13 +75,15 @@ fn dialogs(app: &mut PrckopisApp, ctx: &egui::Context) {
     let mut close = false;
     let mut next = dialog;
     let modal = widgets::show_modal(ctx, "dialog", |ui| {
-        ui.set_width(match dialog {
+        let width: f32 = match dialog {
             Dialog::Properties(_) => 640.0,
             Dialog::Print => 820.0,
             Dialog::FieldProps | Dialog::BulkFieldProps => 600.0,
             Dialog::About => 780.0,
             _ => 520.0,
-        });
+        };
+        // On a phone, the window's width (show_modal bounds it there).
+        ui.set_width(width.min(ui.max_rect().width()));
         match dialog {
             Dialog::CreateImages => {
                 let (go, cancel) = crate::create_ui::image_import_body(ui, app);
