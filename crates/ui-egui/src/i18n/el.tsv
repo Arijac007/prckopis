@@ -2406,3 +2406,7 @@ animation effects	Off	Ανενεργά
 	The signer locked all form fields.	Ο υπογράφων κλείδωσε όλα τα πεδία φόρμας.
 	The signer locked these form fields: {}.	Ο υπογράφων κλείδωσε αυτά τα πεδία φόρμας: {}.
 	The signer locked every form field except: {}.	Ο υπογράφων κλείδωσε όλα τα πεδία φόρμας εκτός από: {}.
+	Internal storage	Εσωτερικός χώρος αποθήκευσης
+	Downloads	Λήψεις
+	Choose this folder	Επιλογή αυτού του φακέλου
+	This folder can't be read ({e}). Allow Prckopis to access files in Android Settings ▸ Apps ▸ Prckopis ▸ Permissions.	Δεν είναι δυνατή η ανάγνωση αυτού του φακέλου ({e}). Επίτρεψε στο Prckopis την πρόσβαση σε αρχεία από Ρυθμίσεις Android > Εφαρμογές > Prckopis > Άδειες.

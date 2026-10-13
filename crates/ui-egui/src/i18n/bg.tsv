@@ -2354,3 +2354,7 @@ animation effects	Off	Изключени
 	The signer locked all form fields.	Подписващият е заключил всички полета на формуляра.
 	The signer locked these form fields: {}.	Подписващият е заключил тези полета на формуляра: {}.
 	The signer locked every form field except: {}.	Подписващият е заключил всички полета на формуляра освен: {}.
+	Internal storage	Вътрешно хранилище
+	Downloads	Изтегляния
+	Choose this folder	Избор на тази папка
+	This folder can't be read ({e}). Allow Prckopis to access files in Android Settings ▸ Apps ▸ Prckopis ▸ Permissions.	Тази папка не може да бъде прочетена ({e}). Разрешете на Prckopis достъп до файловете от Настройки на Android > Приложения > Prckopis > Разрешения.

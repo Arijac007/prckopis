@@ -2387,3 +2387,7 @@ animation effects	Off	Kapalı
 	The signer locked all form fields.	İmzalayan tüm form alanlarını kilitledi.
 	The signer locked these form fields: {}.	İmzalayan şu form alanlarını kilitledi: {}.
 	The signer locked every form field except: {}.	İmzalayan şunlar dışındaki tüm form alanlarını kilitledi: {}.
+	Internal storage	Dahili depolama
+	Downloads	İndirilenler
+	Choose this folder	Bu klasörü seç
+	This folder can't be read ({e}). Allow Prckopis to access files in Android Settings ▸ Apps ▸ Prckopis ▸ Permissions.	Bu klasör okunamıyor ({e}). Android Ayarlar > Uygulamalar > Prckopis > İzinler bölümünden Prckopis'in dosyalara erişmesine izin ver.

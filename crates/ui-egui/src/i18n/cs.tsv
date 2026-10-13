@@ -2464,3 +2464,7 @@ animation effects	Off	Vypnuto
 	The signer locked all form fields.	Podepisující uzamkl všechna pole formuláře.
 	The signer locked these form fields: {}.	Podepisující uzamkl tato pole formuláře: {}.
 	The signer locked every form field except: {}.	Podepisující uzamkl všechna pole formuláře kromě: {}.
+	Internal storage	Interní úložiště
+	Downloads	Stažené soubory
+	Choose this folder	Vybrat tuto složku
+	This folder can't be read ({e}). Allow Prckopis to access files in Android Settings ▸ Apps ▸ Prckopis ▸ Permissions.	Tuto složku nelze přečíst ({e}). Povolte aplikaci Prckopis přístup k souborům v Nastavení Androidu > Aplikace > Prckopis > Oprávnění.

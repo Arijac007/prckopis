@@ -2396,3 +2396,7 @@ animation effects	Off	Izklopljeni
 	The signer locked all form fields.	Podpisnik je zaklenil vsa polja obrazca.
 	The signer locked these form fields: {}.	Podpisnik je zaklenil ta polja obrazca: {}.
 	The signer locked every form field except: {}.	Podpisnik je zaklenil vsa polja obrazca razen: {}.
+	Internal storage	Notranji pomnilnik
+	Downloads	Prenosi
+	Choose this folder	Izberi to mapo
+	This folder can't be read ({e}). Allow Prckopis to access files in Android Settings ▸ Apps ▸ Prckopis ▸ Permissions.	Te mape ni mogoče prebrati ({e}). Prckopisu dovoli dostop do datotek v nastavitvah Androida > Aplikacije > Prckopis > Dovoljenja.

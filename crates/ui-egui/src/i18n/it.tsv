@@ -2400,3 +2400,7 @@ animation effects	Off	Disattivati
 	The signer locked all form fields.	Il firmatario ha bloccato tutti i campi del modulo.
 	The signer locked these form fields: {}.	Il firmatario ha bloccato questi campi del modulo: {}.
 	The signer locked every form field except: {}.	Il firmatario ha bloccato tutti i campi del modulo tranne: {}.
+	Internal storage	Memoria interna
+	Downloads	Download
+	Choose this folder	Scegli questa cartella
+	This folder can't be read ({e}). Allow Prckopis to access files in Android Settings ▸ Apps ▸ Prckopis ▸ Permissions.	Impossibile leggere questa cartella ({e}). Consenti a Prckopis l'accesso ai file in Impostazioni Android > App > Prckopis > Autorizzazioni.

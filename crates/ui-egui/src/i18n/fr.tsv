@@ -2391,3 +2391,7 @@ animation effects	Off	Désactivés
 	The signer locked all form fields.	Le signataire a verrouillé tous les champs du formulaire.
 	The signer locked these form fields: {}.	Le signataire a verrouillé ces champs du formulaire : {}.
 	The signer locked every form field except: {}.	Le signataire a verrouillé tous les champs du formulaire sauf : {}.
+	Internal storage	Stockage interne
+	Downloads	Téléchargements
+	Choose this folder	Choisir ce dossier
+	This folder can't be read ({e}). Allow Prckopis to access files in Android Settings ▸ Apps ▸ Prckopis ▸ Permissions.	Impossible de lire ce dossier ({e}). Autorise Prckopis à accéder aux fichiers dans Paramètres Android > Applications > Prckopis > Autorisations.

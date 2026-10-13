@@ -2355,3 +2355,7 @@ animation effects	Off	关
 	The signer locked all form fields.	签名者锁定了所有表单域。
 	The signer locked these form fields: {}.	签名者锁定了以下表单域：{}。
 	The signer locked every form field except: {}.	签名者锁定了除以下各项外的所有表单域：{}。
+	Internal storage	内部存储
+	Downloads	下载
+	Choose this folder	选择此文件夹
+	This folder can't be read ({e}). Allow Prckopis to access files in Android Settings ▸ Apps ▸ Prckopis ▸ Permissions.	无法读取此文件夹（{e}）。请在 Android 设置 > 应用 > Prckopis > 权限 中允许 Prckopis 访问文件。

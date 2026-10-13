@@ -2412,3 +2412,7 @@ animation effects	Off	معطّلة
 	The signer locked all form fields.	قفل الموقِّع كل حقول النموذج.
 	The signer locked these form fields: {}.	قفل الموقِّع حقول النموذج هذه: {}.
 	The signer locked every form field except: {}.	قفل الموقِّع كل حقول النموذج باستثناء: {}.
+	Internal storage	وحدة التخزين الداخلية
+	Downloads	التنزيلات
+	Choose this folder	اختيار هذا المجلد
+	This folder can't be read ({e}). Allow Prckopis to access files in Android Settings ▸ Apps ▸ Prckopis ▸ Permissions.	تتعذر قراءة هذا المجلد ({e}). اسمح لـ Prckopis بالوصول إلى الملفات من إعدادات Android > التطبيقات > Prckopis > الأذونات.

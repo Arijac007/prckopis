@@ -2389,3 +2389,7 @@ animation effects	Off	Өшірулі
 	The signer locked all form fields.	Қол қоюшы пішіннің барлық өрістерін құлыптады.
 	The signer locked these form fields: {}.	Қол қоюшы пішіннің мына өрістерін құлыптады: {}.
 	The signer locked every form field except: {}.	Қол қоюшы мыналардан басқа пішіннің барлық өрістерін құлыптады: {}.
+	Internal storage	Ішкі жад
+	Downloads	Жүктеп алынғандар
+	Choose this folder	Осы қалтаны таңдау
+	This folder can't be read ({e}). Allow Prckopis to access files in Android Settings ▸ Apps ▸ Prckopis ▸ Permissions.	Бұл қалтаны оқу мүмкін емес ({e}). Android параметрлері > Қолданбалар > Prckopis > Рұқсаттар бөлімінде Prckopis-ке файлдарға қол жеткізуге рұқсат беріңіз.

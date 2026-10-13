@@ -2390,3 +2390,7 @@ animation effects	Off	Ki
 	The signer locked all form fields.	Az aláíró az összes űrlapmezőt zárolta.
 	The signer locked these form fields: {}.	Az aláíró ezeket az űrlapmezőket zárolta: {}.
 	The signer locked every form field except: {}.	Az aláíró az összes űrlapmezőt zárolta, kivéve: {}.
+	Internal storage	Belső tárhely
+	Downloads	Letöltések
+	Choose this folder	Ennek a mappának a kiválasztása
+	This folder can't be read ({e}). Allow Prckopis to access files in Android Settings ▸ Apps ▸ Prckopis ▸ Permissions.	Ez a mappa nem olvasható ({e}). Engedélyezd a Prckopis számára a fájlhozzáférést az Android Beállítások > Alkalmazások > Prckopis > Engedélyek menüben.

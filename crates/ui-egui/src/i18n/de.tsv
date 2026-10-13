@@ -2392,3 +2392,7 @@ animation effects	Off	Aus
 	The signer locked all form fields.	Der Unterzeichner hat alle Formularfelder gesperrt.
 	The signer locked these form fields: {}.	Der Unterzeichner hat diese Formularfelder gesperrt: {}.
 	The signer locked every form field except: {}.	Der Unterzeichner hat alle Formularfelder gesperrt außer: {}.
+	Internal storage	Interner Speicher
+	Downloads	Downloads
+	Choose this folder	Diesen Ordner wählen
+	This folder can't be read ({e}). Allow Prckopis to access files in Android Settings ▸ Apps ▸ Prckopis ▸ Permissions.	Dieser Ordner kann nicht gelesen werden ({e}). Erlaube Prckopis den Dateizugriff unter Android-Einstellungen > Apps > Prckopis > Berechtigungen.

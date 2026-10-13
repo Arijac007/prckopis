@@ -2303,3 +2303,7 @@ animation effects	Off	ఆఫ్
 	The signer locked all form fields.	సంతకం చేసినవారు అన్ని ఫారమ్ ఫీల్డ్‌లను లాక్ చేశారు.
 	The signer locked these form fields: {}.	సంతకం చేసినవారు ఈ ఫారమ్ ఫీల్డ్‌లను లాక్ చేశారు: {}.
 	The signer locked every form field except: {}.	సంతకం చేసినవారు వీటిని మినహా అన్ని ఫారమ్ ఫీల్డ్‌లను లాక్ చేశారు: {}.
+	Internal storage	అంతర్గత నిల్వ
+	Downloads	డౌన్‌లోడ్‌లు
+	Choose this folder	ఈ ఫోల్డర్‌ను ఎంచుకో
+	This folder can't be read ({e}). Allow Prckopis to access files in Android Settings ▸ Apps ▸ Prckopis ▸ Permissions.	ఈ ఫోల్డర్‌ను చదవలేము ({e}). Android సెట్టింగ్‌లు > యాప్‌లు > Prckopis > అనుమతులు లో Prckopis‌కు ఫైళ్ల యాక్సెస్ అనుమతించండి.

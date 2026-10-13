@@ -2391,3 +2391,7 @@ animation effects	Off	オフ
 	The signer locked all form fields.	署名者はすべてのフォームフィールドをロックしました。
 	The signer locked these form fields: {}.	署名者は次のフォームフィールドをロックしました: {}。
 	The signer locked every form field except: {}.	署名者は次を除くすべてのフォームフィールドをロックしました: {}。
+	Internal storage	内部ストレージ
+	Downloads	ダウンロード
+	Choose this folder	このフォルダを選択
+	This folder can't be read ({e}). Allow Prckopis to access files in Android Settings ▸ Apps ▸ Prckopis ▸ Permissions.	このフォルダを読み取れません ({e})。Android の設定 > アプリ > Prckopis > 権限 で Prckopis にファイルへのアクセスを許可してください。

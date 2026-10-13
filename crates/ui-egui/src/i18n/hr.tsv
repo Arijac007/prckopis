@@ -2569,3 +2569,7 @@ signature pad	Type	Upiši
 	The signer locked all form fields.	Potpisnik je zaključao sva polja obrasca.
 	The signer locked these form fields: {}.	Potpisnik je zaključao ova polja obrasca: {}.
 	The signer locked every form field except: {}.	Potpisnik je zaključao sva polja obrasca osim: {}.
+	Internal storage	Interna pohrana
+	Downloads	Preuzimanja
+	Choose this folder	Odaberi ovu mapu
+	This folder can't be read ({e}). Allow Prckopis to access files in Android Settings ▸ Apps ▸ Prckopis ▸ Permissions.	Ova mapa se ne može pročitati ({e}). Dopusti Prckopisu pristup datotekama u Android postavkama > Aplikacije > Prckopis > Dopuštenja.

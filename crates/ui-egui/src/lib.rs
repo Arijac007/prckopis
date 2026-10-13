@@ -24,6 +24,8 @@ macro_rules! tl_ctx {
 
 mod a11y_ui;
 mod actions_ui;
+#[cfg(target_os = "android")]
+mod android_files;
 mod appearance;
 pub mod canvas;
 mod chrome;
@@ -2539,6 +2541,9 @@ impl eframe::App for PrckopisApp {
             ctx.request_repaint();
             return;
         }
+        // Android has no native file dialogs: the app answers them with its own browser.
+        #[cfg(target_os = "android")]
+        android_files::show(&ctx);
         for view in &mut self.views {
             view.begin_render_frame();
         }

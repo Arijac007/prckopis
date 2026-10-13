@@ -2413,3 +2413,7 @@ animation effects	Off	Вимкнено
 	The signer locked all form fields.	Підписант заблокував усі поля форми.
 	The signer locked these form fields: {}.	Підписант заблокував ці поля форми: {}.
 	The signer locked every form field except: {}.	Підписант заблокував усі поля форми, крім: {}.
+	Internal storage	Внутрішня пам'ять
+	Downloads	Завантаження
+	Choose this folder	Вибрати цю папку
+	This folder can't be read ({e}). Allow Prckopis to access files in Android Settings ▸ Apps ▸ Prckopis ▸ Permissions.	Не вдається прочитати цю папку ({e}). Дозвольте Prckopis доступ до файлів у налаштуваннях Android > Застосунки > Prckopis > Дозволи.
