@@ -13,6 +13,7 @@ use std::collections::{BTreeSet, HashMap};
 use prckopis_cos::Document;
 
 mod alt;
+mod autotag;
 mod content;
 mod headings;
 mod report;
@@ -20,6 +21,7 @@ mod structure;
 mod tags;
 
 pub use alt::{AltError, Figure, figures, mark_decorative, set_alt};
+pub use autotag::{AutotagError, AutotagSummary, MAX_ELEMENTS, autotag};
 pub use headings::{Heading, headings};
 pub use report::{REPORT_WORDS, report_html};
 pub use tags::{TagError, TagInfo, TagPlacement, TagProperty, move_tag, set_tag_property, tags};

@@ -5785,3 +5785,40 @@ fn searching_a_folder_finds_text_in_every_pdf() {
     assert_eq!(r["count"], 0);
     assert!(a.call("text_find_folder", &json!({ "folder": "../", "query": "x" })).is_err(), "confined to the root");
 }
+
+#[test]
+fn accessibility_autotag_tags_saves_incrementally_and_undoes() {
+    let dir = workdir("autotag");
+    let mut a = auto(&dir);
+    let doc = ok(&mut a, "doc_open", json!({ "path": "a.pdf" }))["doc"].as_u64().unwrap();
+    let status =
+        |r: &Value, id: &str| r["results"].as_array().unwrap().iter().find(|x| x["rule"] == id).unwrap()["status"].as_str().unwrap().to_owned();
+    let before = ok(&mut a, "accessibility_check", json!({ "doc": doc }));
+    assert_eq!((status(&before, "tagged-pdf"), status(&before, "tagged-content")), ("failed".into(), "failed".into()));
+    let r = ok(&mut a, "accessibility_autotag", json!({ "doc": doc }));
+    assert_eq!(
+        r,
+        json!({ "pages": 3, "headings": 0, "paragraphs": 3, "figures": 0, "annotations": 0, "artifacts": 0, "skipped_pages": [], "tags": 4 })
+    );
+    let tags = ok(&mut a, "accessibility_tags", json!({ "doc": doc }));
+    assert_eq!(tags["tags"][0]["type"], "Document");
+    assert_eq!((tags["tags"][3]["type"].as_str(), tags["tags"][3]["page"].as_u64()), (Some("P"), Some(3)));
+    let after = ok(&mut a, "accessibility_check", json!({ "doc": doc }));
+    assert_eq!((status(&after, "tagged-pdf"), status(&after, "tagged-content")), ("passed".into(), "passed".into()));
+    // Already tagged: an error an agent can act on, and nothing changes.
+    match a.call("accessibility_autotag", &json!({ "doc": doc })) {
+        Err(ToolError::Failed(m)) => assert!(m.contains("already tagged"), "{m}"),
+        other => panic!("expected a failure, got {other:?}"),
+    }
+    // Saved incrementally: the original bytes stay in front, and the tags read back.
+    ok(&mut a, "doc_save", json!({ "doc": doc, "path": "tagged.pdf", "full": false }));
+    let original = std::fs::read(dir.join("a.pdf")).unwrap();
+    let saved = std::fs::read(dir.join("tagged.pdf")).unwrap();
+    assert!(saved.starts_with(&original), "an incremental save");
+    let reopened = prckopis_cos::Document::open(std::sync::Arc::new(saved)).unwrap();
+    assert_eq!(prckopis_engine::a11y::tags(&reopened).len(), 4);
+    // Undo removes the tags again.
+    assert_eq!(ok(&mut a, "edit_undo", json!({ "doc": doc }))["undone"], "Automatically tag PDF");
+    assert_eq!(ok(&mut a, "accessibility_tags", json!({ "doc": doc }))["count"], 0);
+    assert_eq!(status(&ok(&mut a, "accessibility_check", json!({ "doc": doc })), "tagged-pdf"), "failed");
+}

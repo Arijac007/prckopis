@@ -2426,3 +2426,7 @@ animation effects	Off	Aus
 	Bank Account Numbers (IBAN)	Bankkontonummern (IBAN)
 	Croatian Personal ID Numbers (OIB)	Kroatische persönliche Identifikationsnummern (OIB)
 	Allow access to files	Zugriff auf Dateien erlauben
+	Tags added. Headings: {headings}, paragraphs: {paragraphs}, figures: {figures}, annotations: {annotations}.	Tags hinzugefügt. Überschriften: {headings}, Absätze: {paragraphs}, Abbildungen: {figures}, Anmerkungen: {annotations}.
+	Add alternate text to the figures.	Füge den Abbildungen Alternativtext hinzu.
+	Pages left untagged (content could not be read): {pages}	Seiten ohne Tags (Inhalt konnte nicht gelesen werden): {pages}
+	Automatic tagging builds tags from the page content: headings, paragraphs, figures and links in content order. Check the result and add alternate text to figures.	Automatisches Taggen erstellt Tags aus dem Seiteninhalt: Überschriften, Absätze, Abbildungen und Links in der Reihenfolge des Inhalts. Prüfe das Ergebnis und füge den Abbildungen Alternativtext hinzu.

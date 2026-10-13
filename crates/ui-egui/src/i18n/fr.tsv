@@ -2425,3 +2425,7 @@ animation effects	Off	Désactivés
 	Bank Account Numbers (IBAN)	Numéros de compte bancaire (IBAN)
 	Croatian Personal ID Numbers (OIB)	Numéros d’identification personnels croates (OIB)
 	Allow access to files	Autoriser l'accès aux fichiers
+	Tags added. Headings: {headings}, paragraphs: {paragraphs}, figures: {figures}, annotations: {annotations}.	Balises ajoutées. Titres : {headings}, paragraphes : {paragraphs}, figures : {figures}, annotations : {annotations}.
+	Add alternate text to the figures.	Ajoutez un texte de remplacement aux figures.
+	Pages left untagged (content could not be read): {pages}	Pages laissées sans balises (contenu illisible) : {pages}
+	Automatic tagging builds tags from the page content: headings, paragraphs, figures and links in content order. Check the result and add alternate text to figures.	Le balisage automatique crée les balises à partir du contenu des pages : titres, paragraphes, figures et liens, dans l’ordre du contenu. Vérifiez le résultat et ajoutez un texte de remplacement aux figures.

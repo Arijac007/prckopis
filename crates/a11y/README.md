@@ -21,4 +21,7 @@ let html = report_html(&report, "file.pdf", "2026-10-02", "en", &in_english);  /
 - The report is a self-contained HTML page. Fixes that edit the document (language, title, tab
   order) live in the engine (`Document::accessibility_fix`).
 
-Not yet: autotagging, the Tags/Order/Content panels, the Reading Order tool (M12.1–M12.2).
+- **Autotag** (`autotag`): builds a structure tree for an untagged document (headings by size, paragraphs, figures, artifacts, Link/Form/Annot elements, MCIDs, parent tree, MarkInfo) in content order.
+- **Tags**: list reachable tags, edit their properties, move a tag among its siblings.
+
+Not yet: autotag of lists, tables and columns, the Order/Content panels, the visual Reading Order tool (M12.1–M12.2).

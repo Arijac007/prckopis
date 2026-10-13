@@ -2337,3 +2337,7 @@ animation effects	Off	ఆఫ్
 	Bank Account Numbers (IBAN)	బ్యాంక్ ఖాతా సంఖ్యలు (IBAN)
 	Croatian Personal ID Numbers (OIB)	క్రొయేషియా వ్యక్తిగత గుర్తింపు సంఖ్యలు (OIB)
 	Allow access to files	ఫైళ్ల యాక్సెస్‌ను అనుమతించు
+	Tags added. Headings: {headings}, paragraphs: {paragraphs}, figures: {figures}, annotations: {annotations}.	ట్యాగ్‌లు జోడించబడ్డాయి. హెడింగ్‌లు: {headings}, పేరాలు: {paragraphs}, చిత్రాలు: {figures}, వ్యాఖ్యానాలు: {annotations}.
+	Add alternate text to the figures.	చిత్రాలకు ప్రత్యామ్నాయ టెక్స్ట్ జోడించండి.
+	Pages left untagged (content could not be read): {pages}	ట్యాగ్ లేకుండా మిగిలిన పేజీలు (కంటెంట్‌ను చదవలేకపోయాము): {pages}
+	Automatic tagging builds tags from the page content: headings, paragraphs, figures and links in content order. Check the result and add alternate text to figures.	స్వయంచాలక ట్యాగింగ్ పేజీ కంటెంట్ నుండి ట్యాగ్‌లను సృష్టిస్తుంది: హెడింగ్‌లు, పేరాలు, చిత్రాలు మరియు లింక్‌లు కంటెంట్ క్రమంలో. ఫలితాన్ని తనిఖీ చేసి, చిత్రాలకు ప్రత్యామ్నాయ టెక్స్ట్ జోడించండి.

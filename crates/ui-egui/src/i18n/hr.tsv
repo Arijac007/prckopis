@@ -2603,3 +2603,7 @@ signature pad	Type	Upiši
 	Bank Account Numbers (IBAN)	Brojevi bankovnih računa (IBAN)
 	Croatian Personal ID Numbers (OIB)	Hrvatski osobni identifikacijski brojevi (OIB)
 	Allow access to files	Dopusti pristup datotekama
+	Tags added. Headings: {headings}, paragraphs: {paragraphs}, figures: {figures}, annotations: {annotations}.	Oznake su dodane. Naslovi: {headings}, odlomci: {paragraphs}, slike: {figures}, bilješke: {annotations}.
+	Add alternate text to the figures.	Dodajte zamjenski tekst slikama.
+	Pages left untagged (content could not be read): {pages}	Stranice ostale bez oznaka (sadržaj nije bilo moguće pročitati): {pages}
+	Automatic tagging builds tags from the page content: headings, paragraphs, figures and links in content order. Check the result and add alternate text to figures.	Automatsko označavanje stvara oznake iz sadržaja stranica: naslove, odlomke, slike i poveznice redoslijedom sadržaja. Provjerite rezultat i dodajte zamjenski tekst slikama.

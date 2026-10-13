@@ -8813,11 +8813,11 @@ title = "Automatically tag a document"
 area = "M"
 tier = "P1"
 milestone = "M12"
-status = "planned"
-commands = []
-tools = []
-evidence = []
-notes = ""
+status = "partial"
+commands = ["a11y.autotag"]
+tools = ["accessibility_autotag"]
+evidence = ["crates/a11y/src/tests.rs::autotag_builds_a_structure_tree_the_checker_accepts", "crates/a11y/src/tests.rs::autotag_round_trips_through_an_incremental_save", "crates/a11y/src/tests.rs::autotag_levels_headings_without_skipping", "crates/a11y/src/tests.rs::autotag_keeps_existing_marked_content_and_nests_inside_it", "crates/a11y/src/tests.rs::autotag_refuses_documents_it_cannot_tag_and_never_panics", "crates/automation/tests/automation.rs::accessibility_autotag_tags_saves_incrementally_and_undoes", "crates/ui-egui/tests/accessibility.rs::autotag_from_the_tags_panel_and_the_command"]
+notes = "Prepare for accessibility ▸ Automatically tag PDF (and the button in the empty Tags panel) tags an untagged document as one undoable edit, saved incrementally: a StructTreeRoot with one Document element, a ParentTree, MCIDs wrapped around whole graphics objects in the page content (nested inside existing marked content, after existing MCIDs), /StructParents, /MarkInfo /Marked true. Text blocks (by size and line spacing) become P, or H1–H6 when at least 1.2× the body size, with levels that never skip; images and image forms become Figure, forms with text P, paths and shadings artifacts; annotations become Link/Form/Annot elements with OBJR and their pages tab in structure order. The checker's tagged-PDF, tagged-content, tagged-annotations, tagged-fields, tab-order and heading-nesting rules pass afterwards; figures still need alternate text. Refuses already-tagged documents; pages whose content can't be read completely are left untouched and recorded. Missing against Acrobat: reading order by layout (columns) rather than content order, lists, tables, bold-only headings, splitting a text object across paragraphs by layout, replacing existing tags, and an autotag report."
 
 [[feature]]
 id = "a11y.autotag-fields"
@@ -8825,11 +8825,11 @@ title = "Autotag form fields"
 area = "M"
 tier = "P1"
 milestone = "M12"
-status = "planned"
-commands = []
-tools = []
-evidence = []
-notes = ""
+status = "partial"
+commands = ["a11y.autotag"]
+tools = ["accessibility_autotag"]
+evidence = ["crates/a11y/src/tests.rs::autotag_builds_a_structure_tree_the_checker_accepts"]
+notes = "Automatically tag PDF gives each widget a Form element (OBJR, /StructParent, parent tree) and its page structure tab order, so the tagged-form-fields rule passes. Missing: tagging the fields of an already-tagged document, placing a field next to its label in reading order, and Acrobat's form-field recognition before tagging."
 
 [[feature]]
 id = "a11y.reading-order-tool"
@@ -8852,8 +8852,8 @@ milestone = "M12"
 status = "partial"
 commands = ["a11y.tags"]
 tools = ["accessibility_tags"]
-evidence = ["crates/ui-egui/tests/accessibility.rs::tags_panel_edits_a_tag_property_and_undoes_it", "crates/ui-egui/tests/accessibility.rs::checker_finding_opens_its_structure_tag"]
-notes = "The right-side Tags panel lists reachable indirect tags as a collapsible hierarchy, filters by type or title with ancestors, navigates to their page and edits properties. Checker findings linked to indirect tags open the matching tag without losing unsaved edits. Inline tags, adding/deleting tags, artifact marking and finding content remain planned in #982."
+evidence = ["crates/ui-egui/tests/accessibility.rs::tags_panel_edits_a_tag_property_and_undoes_it", "crates/ui-egui/tests/accessibility.rs::checker_finding_opens_its_structure_tag", "crates/ui-egui/tests/accessibility.rs::autotag_from_the_tags_panel_and_the_command"]
+notes = "The right-side Tags panel lists reachable indirect tags as a collapsible hierarchy, filters by type or title with ancestors, navigates to their page and edits properties. Checker findings linked to indirect tags open the matching tag without losing unsaved edits. An untagged document offers Automatically tag PDF in the panel (also on a phone). Inline tags, adding/deleting tags, artifact marking and finding content remain planned in #982."
 
 [[feature]]
 id = "a11y.tag-properties"

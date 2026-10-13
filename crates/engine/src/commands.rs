@@ -328,6 +328,7 @@ pub const COMMANDS: &[CommandSpec] = &[
     c("a11y.reading_options", "Change reading options…", None, None, Document, "book-open"),
     c("a11y.alt_text", "Add alternate text…", None, None, Modification, "image"),
     c("a11y.tags", "Tags panel", None, None, Document, "tag"),
+    c("a11y.autotag", "Automatically tag PDF", None, None, Modification, "tag"),
     c("export.all_images", "Export all images…", FILE, None, Copying, "image"),
     c("edit.header_footer", "Add header & footer…", None, None, Modification, "heading"),
     c("edit.header_footer.update", "Update header & footer…", None, None, Marks(crate::MarkKind::HeaderFooter), "heading"),

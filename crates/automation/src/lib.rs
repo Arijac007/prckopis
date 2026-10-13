@@ -757,6 +757,7 @@ impl Automation {
             "accessibility_tags" => self.accessibility_tags(&a)?,
             "accessibility_set_tag_property" => self.accessibility_set_tag_property(&a)?,
             "accessibility_move_tag" => self.accessibility_move_tag(&a)?,
+            "accessibility_autotag" => self.accessibility_autotag(&a)?,
             "sign_id_create" => self.sign_id_create(&a)?,
             "sign_document" => self.sign_document(&a)?,
             "sign_timestamp_servers" => self.sign_timestamp_servers(&a)?,

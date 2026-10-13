@@ -2421,3 +2421,7 @@ animation effects	Off	Kapalı
 	Bank Account Numbers (IBAN)	Banka hesap numaraları (IBAN)
 	Croatian Personal ID Numbers (OIB)	Hırvatistan kişisel kimlik numaraları (OIB)
 	Allow access to files	Dosyalara erişime izin ver
+	Tags added. Headings: {headings}, paragraphs: {paragraphs}, figures: {figures}, annotations: {annotations}.	Etiketler eklendi. Başlıklar: {headings}, paragraflar: {paragraphs}, şekiller: {figures}, ek açıklamalar: {annotations}.
+	Add alternate text to the figures.	Şekillere alternatif metin ekleyin.
+	Pages left untagged (content could not be read): {pages}	Etiketsiz kalan sayfalar (içerik okunamadı): {pages}
+	Automatic tagging builds tags from the page content: headings, paragraphs, figures and links in content order. Check the result and add alternate text to figures.	Otomatik etiketleme, sayfa içeriğinden etiketler oluşturur: başlıklar, paragraflar, şekiller ve bağlantılar içerik sırasıyla. Sonucu kontrol edin ve şekillere alternatif metin ekleyin.

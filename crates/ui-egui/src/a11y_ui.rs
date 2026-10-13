@@ -620,6 +620,36 @@ impl PrckopisApp {
         self.dialog = Some(Dialog::AltText);
     }
 
+    /// Prepare for accessibility ▸ Automatically tag PDF: one undo step, then the Tags panel and
+    /// a summary of what was tagged (and what is left for a person to do).
+    pub(crate) fn autotag_document(&mut self) {
+        if !self.apply_edit(prckopis_engine::Edit::Autotag) {
+            return;
+        }
+        let Some((_, id)) = self.active_ids() else { return };
+        let Some(s) = self.session.get(id).and_then(|d| d.autotag_summary.clone()) else { return };
+        self.choose_right_panel(Some(crate::RightPanel::Tags));
+        let mut message = crate::i18n::fmt(
+            tl!("Tags added. Headings: {headings}, paragraphs: {paragraphs}, figures: {figures}, annotations: {annotations}."),
+            &[
+                ("headings", &s.headings.to_string()),
+                ("paragraphs", &s.paragraphs.to_string()),
+                ("figures", &s.figures.to_string()),
+                ("annotations", &s.annotations.to_string()),
+            ],
+        );
+        if s.figures > 0 {
+            message.push(' ');
+            message.push_str(tl!("Add alternate text to the figures."));
+        }
+        if !s.skipped_pages.is_empty() {
+            let pages: Vec<String> = s.skipped_pages.iter().map(|p| (p + 1).to_string()).collect();
+            message.push(' ');
+            message.push_str(&crate::i18n::fmt(tl!("Pages left untagged (content could not be read): {pages}"), &[("pages", &pages.join(", "))]));
+        }
+        self.notify(message);
+    }
+
     /// Save & Close: one undo step for every change.
     pub(crate) fn save_alt_text(&mut self) {
         let d = std::mem::take(&mut self.alt_draft);
